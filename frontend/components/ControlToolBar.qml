@@ -9,10 +9,6 @@ Item {
     width: row.implicitWidth + 8
     height: row.implicitHeight + 8
 
-    onSelectedToolChanged: {
-        console.log(selectedTool)
-    }
-
     Rectangle {
         anchors.fill: parent
         color: "#1A1B26"

@@ -34,5 +34,14 @@ Window {
                 },
             ]
         }
+
+        OCRTextArea {
+            width: 560
+            height: 120
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 24
+        }
     }
 }
