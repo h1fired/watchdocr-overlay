@@ -1,6 +1,10 @@
 from PySide6.QtCore import QObject
 from common.service import ServicesAccessor
 from common.event import EventSystem
+from typing import TypeVar, Type
+
+
+T = TypeVar('T')
 
 
 class ViewModel(QObject):
@@ -12,7 +16,7 @@ class ViewModel(QObject):
         self.__accessor = accessor
         self.__event = event_system
 
-    def get_service(self, service):
+    def get_service(self, service: Type[T]) -> T:
         return self.__accessor.get(service)
 
     def event(self):

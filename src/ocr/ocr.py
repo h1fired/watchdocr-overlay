@@ -3,9 +3,17 @@ from common.observer import Observer
 from dataclasses import dataclass
 from PIL import ImageFile
 import pytesseract
+from enum import IntEnum
 
 
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+
+
+class OCRState(IntEnum):
+    STAND_BY = 0
+    RECOGNIZING = 1
+    FINISHED = 2
+    ERROR = 3
 
 
 @dataclass
@@ -22,11 +30,27 @@ class OCRTranslate:
 
 class OCRTranslateManager:
     obs_data = Observer()
+    obs_state = Observer()
 
     def __init__(self):
         self._ocr = OCRTranslate()
+        self._state = OCRState.STAND_BY
 
     def recognize(self, image: ImageFile):
+        if self._state == OCRState.RECOGNIZING:
+            raise RuntimeError('OCR translation already started')
+        self._state = OCRState.RECOGNIZING
+        self.obs_state.notify(OCRState.RECOGNIZING)
         tasks = TaskManager()
         f = tasks.execute(lambda t: self._ocr.recognize(image))
-        f.observe(on_result=self.obs_data.notify)
+        f.observe(
+            on_finish=self._on_finish,
+            on_result=self._on_result
+        )
+
+    def _on_finish(self):
+        self._state = OCRState.FINISHED
+        self.obs_state.notify(OCRState.FINISHED)
+
+    def _on_result(self, data):
+        self.obs_data.notify(data)
