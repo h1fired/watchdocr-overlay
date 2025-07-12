@@ -33,12 +33,12 @@ Item {
                 {
                     "id": "fullscreen",
                     "text": "",
-                    "icon": "../../resources/icons/fullscreen.svg"
+                    "icon": "../../../resources/icons/fullscreen.svg"
                 },
                 {
                     "id": "selection",
                     "text": "",
-                    "icon": "../../resources/icons/selection.svg"
+                    "icon": "../../../resources/icons/selection.svg"
                 },
             ]
         }
