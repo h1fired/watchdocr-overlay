@@ -8,7 +8,6 @@ Item {
     width: 800
     height: 600
 
-    property bool selecting: false
     property point startPoint: Qt.point(0, 0)
     property point endPoint: Qt.point(0, 0)
     property bool animationEnabled: false
@@ -21,12 +20,6 @@ Item {
         border.color: "#664CFF"
         border.width: 1
         radius: 6
-        visible: selecting
-
-        x: Math.min(startPoint.x, endPoint.x) - 1
-        y: Math.min(startPoint.y, endPoint.y) - 1
-        width: Math.abs(endPoint.x - startPoint.x) + 2
-        height: Math.abs(endPoint.y - startPoint.y) + 2
 
         Rectangle {
             id: selectionRectGradient
@@ -70,23 +63,28 @@ Item {
         onPressed: (event) => {
             startPoint = Qt.point(event.x, event.y)
             endPoint = startPoint
-            selecting = true
         }
 
         onPositionChanged: (event) => {
-            if (selecting) {
-                endPoint = Qt.point(event.x, event.y)
+            endPoint = Qt.point(event.x, event.y)
+            if (root.rectIsValid(root.startPoint, root.endPoint)) {
                 root.box = root.calculateRect(root.startPoint, root.endPoint)
+                root.repaintRect()
             }
         }
 
         onReleased: (event) => {
             endPoint = Qt.point(event.x, event.y)
-            // selecting = false
-
-            root.box = root.calculateRect(root.startPoint, root.endPoint)
-            root.absoluteBox = root.calculateRect(root.startPoint, root.endPoint, true)
+            if (root.rectIsValid(root.startPoint, root.endPoint)) {
+                root.box = root.calculateRect(root.startPoint, root.endPoint)
+                root.absoluteBox = root.calculateRect(root.startPoint, root.endPoint, true)
+                root.repaintRect()
+            }
         }
+    }
+
+    function rectIsValid(p1, p2) {
+        return (Math.abs(p2.x - p1.x) > 0 || Math.abs(p2.y - p1.y) > 0)
     }
 
     function calculateRect(p1, p2, absolute=false) {
@@ -99,5 +97,12 @@ Item {
         var w = Math.abs(p2.x - p1.x)
         var h = Math.abs(p2.y - p1.y)
         return Qt.rect(x, y, w, h)
+    }
+
+    function repaintRect() {
+        selectionRect.x = Math.min(startPoint.x, endPoint.x) - 1
+        selectionRect.y = Math.min(startPoint.y, endPoint.y) - 1
+        selectionRect.width = Math.abs(endPoint.x - startPoint.x) + 2
+        selectionRect.height = Math.abs(endPoint.y - startPoint.y) + 2
     }
 }
