@@ -17,7 +17,7 @@ Item {
 
     Rectangle {
         id: selectionRect
-        color: "#21223140"
+        color: "transparent"
         border.color: "#664CFF"
         border.width: 1
         radius: 6
@@ -76,6 +76,7 @@ Item {
         onPositionChanged: (event) => {
             if (selecting) {
                 endPoint = Qt.point(event.x, event.y)
+                root.box = root.calculateRect(root.startPoint, root.endPoint)
             }
         }
 
@@ -83,21 +84,20 @@ Item {
             endPoint = Qt.point(event.x, event.y)
             // selecting = false
 
-            // Relative box
-            var x = Math.min(root.startPoint.x, root.endPoint.x)
-            var y = Math.min(root.startPoint.y, root.endPoint.y)
-            var w = Math.abs(root.endPoint.x - root.startPoint.x)
-            var h = Math.abs(root.endPoint.y - root.startPoint.y)
-            root.box = Qt.rect(x, y, w, h)
-
-            // Absolute box
-            var aStartPoint = root.mapToGlobal(root.startPoint)
-            var aEndPoint = root.mapToGlobal(root.endPoint)
-            var ax = Math.min(aStartPoint.x, aEndPoint.x)
-            var ay = Math.min(aStartPoint.y, aEndPoint.y)
-            var aw = Math.abs(aEndPoint.x - aStartPoint.x)
-            var ah = Math.abs(aEndPoint.y - aStartPoint.y)
-            root.absoluteBox = Qt.rect(ax, ay, aw, ah)
+            root.box = root.calculateRect(root.startPoint, root.endPoint)
+            root.absoluteBox = root.calculateRect(root.startPoint, root.endPoint, true)
         }
+    }
+
+    function calculateRect(p1, p2, absolute=false) {
+        if (absolute) {
+            p1 = root.mapToGlobal(p1)
+            p2 = root.mapToGlobal(p2)
+        }
+        var x = Math.min(p1.x, p2.x)
+        var y = Math.min(p1.y, p2.y)
+        var w = Math.abs(p2.x - p1.x)
+        var h = Math.abs(p2.y - p1.y)
+        return Qt.rect(x, y, w, h)
     }
 }

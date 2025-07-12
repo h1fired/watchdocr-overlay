@@ -18,15 +18,42 @@ Item {
     // UI
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0.067, 0.067, 0.067, 0.5)
+        color: "transparent"
+
+        Canvas {
+            id: canvas
+            opacity: 0.4
+            anchors.fill: parent
+            onPaint: {
+                var ctx = getContext("2d");
+                ctx.fillStyle = "black";
+
+                // Draw a rectangle with a transparent hole
+                ctx.beginPath();
+                ctx.fillRect(0, 0, parent.width, parent.height); // Outer rectangle
+                ctx.globalCompositeOperation = "destination-out";
+                ctx.fillStyle = "black";
+                ctx.fillRect(
+                    selectionArea.box.x,
+                    selectionArea.box.y,
+                    selectionArea.box.width,
+                    selectionArea.box.height,
+                );
+                ctx.globalCompositeOperation = "source-over";
+            }
+        }
 
         SelectionArea {
+            id: selectionArea
             anchors.fill: parent
             enabled: root.mode != OCROverlay.Mode.Recognizing
             animationEnabled: root.mode == OCROverlay.Mode.Recognizing
 
             onAbsoluteBoxChanged: {
-                ocroverlaymodel.QMLareaSelected(absoluteBox)
+                ocroverlaymodel.QMLareaSelected(absoluteBox);
+            }
+            onBoxChanged: {
+                canvas.requestPaint();
             }
         }
 
