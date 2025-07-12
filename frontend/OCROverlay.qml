@@ -7,9 +7,12 @@ Item {
     id: root
 
     // Controls
-    property var modes: ["selection", "recognizing", "result"]
-    property string mode: modes[0]
-
+    enum Mode {
+        Selection = 0,
+        Recognizing = 1,
+        Result = 2
+    }
+    property string mode: OCROverlay.Mode.Result
 
     // UI
     Rectangle {
@@ -18,6 +21,8 @@ Item {
 
         SelectionArea {
             anchors.fill: parent
+            enabled: root.mode == OCROverlay.Mode.Selection
+            animationEnabled: root.mode == OCROverlay.Mode.Recognizing
         }
 
         ControlToolBar {
@@ -39,7 +44,7 @@ Item {
         }
 
         OCRTextArea {
-            visible: mode == "result"
+            visible: mode == OCROverlay.Mode.Result
 
             width: 560
             height: 120

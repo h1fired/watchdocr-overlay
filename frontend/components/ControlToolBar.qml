@@ -4,10 +4,11 @@ import QtQuick.Controls 2.15
 
 Item {
     id: root
-    property var items: []
-    property string selectedTool: items[0].id
     width: row.implicitWidth + 8
     height: row.implicitHeight + 8
+
+    property var items: []
+    property string selectedTool: items[0].id
 
     Rectangle {
         anchors.fill: parent
