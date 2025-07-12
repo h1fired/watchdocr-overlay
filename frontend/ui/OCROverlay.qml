@@ -18,7 +18,7 @@ Item {
     // UI
     Rectangle {
         anchors.fill: parent
-        color: "#111111"
+        color: Qt.rgba(0.067, 0.067, 0.067, 0.5)
 
         SelectionArea {
             anchors.fill: parent

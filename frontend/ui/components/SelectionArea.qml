@@ -23,10 +23,10 @@ Item {
         radius: 6
         visible: selecting
 
-        x: Math.min(startPoint.x, endPoint.x)
-        y: Math.min(startPoint.y, endPoint.y)
-        width: Math.abs(endPoint.x - startPoint.x)
-        height: Math.abs(endPoint.y - startPoint.y)
+        x: Math.min(startPoint.x, endPoint.x) - 1
+        y: Math.min(startPoint.y, endPoint.y) - 1
+        width: Math.abs(endPoint.x - startPoint.x) + 2
+        height: Math.abs(endPoint.y - startPoint.y) + 2
 
         Rectangle {
             id: selectionRectGradient
