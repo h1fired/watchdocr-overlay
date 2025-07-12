@@ -1,8 +1,7 @@
 import QtQuick 2.15
-
-
-import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Shapes 2.15
+
 
 Item {
     id: root
@@ -25,6 +24,13 @@ Item {
         y: Math.min(startPoint.y, endPoint.y)
         width: Math.abs(endPoint.x - startPoint.x)
         height: Math.abs(endPoint.y - startPoint.y)
+
+        gradient: Gradient {
+            orientation: Qt.Horizontal
+            GradientStop { position: 0.0; color: Qt.rgba(0.4, 0.298, 1.0, 0.0) }
+            GradientStop { position: 0.5; color: Qt.rgba(0.4, 0.298, 1.0, 0.3) }
+            GradientStop { position: 1.0; color: Qt.rgba(0.4, 0.298, 1.0, 0.0) }
+        }
     }
 
     MouseArea {
@@ -44,11 +50,7 @@ Item {
 
         onReleased: (event) => {
             endPoint = Qt.point(event.x, event.y)
-            selecting = false
-
-            console.log("Selection area:", 
-                        selectionRect.x, selectionRect.y, 
-                        selectionRect.width, selectionRect.height)
+            // selecting = false
         }
     }
 }
