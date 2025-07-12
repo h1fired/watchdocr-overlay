@@ -11,7 +11,7 @@ Item {
     property bool selecting: false
     property point startPoint: Qt.point(0, 0)
     property point endPoint: Qt.point(0, 0)
-    property bool animationEnabled: true
+    property bool animationEnabled: false
 
     Rectangle {
         id: selectionRect
