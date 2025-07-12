@@ -28,9 +28,9 @@ Item {
                 var ctx = getContext("2d");
                 ctx.fillStyle = "black";
 
-                // Draw a rectangle with a transparent hole
+                // Draw a rectangle with a transparent box
                 ctx.beginPath();
-                ctx.fillRect(0, 0, parent.width, parent.height); // Outer rectangle
+                ctx.fillRect(0, 0, parent.width, parent.height);
                 ctx.globalCompositeOperation = "destination-out";
                 ctx.fillStyle = "black";
                 ctx.fillRect(

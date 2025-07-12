@@ -13,5 +13,4 @@ def grab_window_area(box: tuple[int, int, int, int]):
     with mss() as sct:
         sct_img = sct.grab(box)
         img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-        img.save('o_test.png')
         return img
