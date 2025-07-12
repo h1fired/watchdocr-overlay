@@ -13,6 +13,7 @@ Item {
         Result = 2
     }
     property string mode: OCROverlay.Mode.Result
+    property string text: ocroverlaymodel.text
 
     // UI
     Rectangle {
@@ -52,6 +53,8 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
+
+            text: root.text
         }
     }
 

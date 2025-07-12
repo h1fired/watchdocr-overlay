@@ -5,6 +5,9 @@ from src.app import CoreApplication
 
 from frontend.viewmodels.ocroverlay import OCROverlayViewModel
 
+from src.ocr.service import OCRTranslateService
+from PIL import Image
+
 
 if __name__ == '__main__':
     core = CoreApplication()
@@ -23,6 +26,10 @@ if __name__ == '__main__':
         obj = vm(engine, core.accessor(), core.event_system())
         obj.load()
         viewmodels_objs.append(obj)
+
+    # ! Test service
+    s = core.accessor().get(OCRTranslateService)
+    s.recognize(Image.open('test.webp'))
 
     # Run GUI
     sys.exit(app.exec())
