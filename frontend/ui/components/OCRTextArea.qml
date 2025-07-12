@@ -8,6 +8,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: "#000000"
+        border.width: 1
+        border.color: "#1F1F1F"
         radius: 6
     }
 
