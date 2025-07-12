@@ -1,9 +1,9 @@
 from common.task import TaskManager
 from common.observer import Observer
 from dataclasses import dataclass
-from PIL import ImageFile
 import pytesseract
 from enum import IntEnum
+from .window import grab_window_area
 
 
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
@@ -22,7 +22,8 @@ class OCRData:
 
 
 class OCRTranslate:
-    def recognize(self, image: ImageFile):
+    def recognize(self, window_box: tuple[int, int, int, int]):
+        image = grab_window_area(window_box)
         text = pytesseract.image_to_string(image)
         data = OCRData(text)
         return data
@@ -36,13 +37,13 @@ class OCRTranslateManager:
         self._ocr = OCRTranslate()
         self._state = OCRState.STAND_BY
 
-    def recognize(self, image: ImageFile):
+    def recognize(self, window_box: tuple[int, int, int, int]):
         if self._state == OCRState.RECOGNIZING:
             raise RuntimeError('OCR translation already started')
         self._state = OCRState.RECOGNIZING
         self.obs_state.notify(OCRState.RECOGNIZING)
         tasks = TaskManager()
-        f = tasks.execute(lambda t: self._ocr.recognize(image))
+        f = tasks.execute(lambda t: self._ocr.recognize(window_box))
         f.observe(
             on_finish=self._on_finish,
             on_result=self._on_result

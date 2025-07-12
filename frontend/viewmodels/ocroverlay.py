@@ -2,7 +2,6 @@ from common.event import Event
 from frontend.common.mvvm import ViewModel
 from src.ocr.service import OCRTranslateService, OCRState
 from PySide6.QtCore import Property, Slot, Signal, QRect
-from PIL import Image
 
 
 class OCROverlayViewModel(ViewModel):
@@ -56,6 +55,9 @@ class OCROverlayViewModel(ViewModel):
 
     @Slot(QRect)
     def QMLareaSelected(self, rect: QRect):
-        print(rect)
+        box = (
+            rect.x(), rect.y(),
+            rect.x() + rect.width(), rect.y() + rect.height()
+        )
         s = self.get_service(OCRTranslateService)
-        s.recognize(Image.open('test.webp'))
+        s.recognize(box)

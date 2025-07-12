@@ -13,6 +13,7 @@ Item {
     property point endPoint: Qt.point(0, 0)
     property bool animationEnabled: false
     property rect box: Qt.rect(0, 0, 0, 0)
+    property rect absoluteBox: Qt.rect(0, 0, 0, 0)
 
     Rectangle {
         id: selectionRect
@@ -82,11 +83,21 @@ Item {
             endPoint = Qt.point(event.x, event.y)
             // selecting = false
 
+            // Relative box
             var x = Math.min(root.startPoint.x, root.endPoint.x)
             var y = Math.min(root.startPoint.y, root.endPoint.y)
             var w = Math.abs(root.endPoint.x - root.startPoint.x)
             var h = Math.abs(root.endPoint.y - root.startPoint.y)
             root.box = Qt.rect(x, y, w, h)
+
+            // Absolute box
+            var aStartPoint = root.mapToGlobal(root.startPoint)
+            var aEndPoint = root.mapToGlobal(root.endPoint)
+            var ax = Math.min(aStartPoint.x, aEndPoint.x)
+            var ay = Math.min(aStartPoint.y, aEndPoint.y)
+            var aw = Math.abs(aEndPoint.x - aStartPoint.x)
+            var ah = Math.abs(aEndPoint.y - aStartPoint.y)
+            root.absoluteBox = Qt.rect(ax, ay, aw, ah)
         }
     }
 }

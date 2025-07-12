@@ -22,11 +22,11 @@ Item {
 
         SelectionArea {
             anchors.fill: parent
-            enabled: root.mode == OCROverlay.Mode.Selection
+            enabled: root.mode != OCROverlay.Mode.Recognizing
             animationEnabled: root.mode == OCROverlay.Mode.Recognizing
 
-            onBoxChanged: {
-                ocroverlaymodel.QMLareaSelected(box)
+            onAbsoluteBoxChanged: {
+                ocroverlaymodel.QMLareaSelected(absoluteBox)
             }
         }
 
