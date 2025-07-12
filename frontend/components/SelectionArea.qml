@@ -17,7 +17,7 @@ Item {
         color: "#21223140"
         border.color: "#664CFF"
         border.width: 1
-        radius: 3
+        radius: 6
         visible: selecting
 
         x: Math.min(startPoint.x, endPoint.x)
@@ -25,12 +25,39 @@ Item {
         width: Math.abs(endPoint.x - startPoint.x)
         height: Math.abs(endPoint.y - startPoint.y)
 
-        gradient: Gradient {
-            orientation: Qt.Horizontal
-            GradientStop { position: 0.0; color: Qt.rgba(0.4, 0.298, 1.0, 0.0) }
-            GradientStop { position: 0.5; color: Qt.rgba(0.4, 0.298, 1.0, 0.3) }
-            GradientStop { position: 1.0; color: Qt.rgba(0.4, 0.298, 1.0, 0.0) }
+        Rectangle {
+            id: selectionRectGradient
+            anchors.fill: parent
+            radius: 6
+
+            property var gradientPos: 0.0
+
+            gradient: Gradient {
+                orientation: Qt.Horizontal
+                GradientStop {
+                    position: selectionRectGradient.gradientPos - 1.0;
+                    color: Qt.rgba(0.4, 0.298, 1.0, 0.0)
+                }
+                GradientStop {
+                    position: selectionRectGradient.gradientPos
+                    color: Qt.rgba(0.4, 0.298, 1.0, 0.3)
+                }
+                GradientStop {
+                    position: selectionRectGradient.gradientPos + 1.0;
+                    color: Qt.rgba(0.4, 0.298, 1.0, 0.0)
+                }
+            }
+
+            NumberAnimation on gradientPos {
+                from: -1.0
+                to: 2.0
+                duration: 1500
+                loops: Animation.Infinite
+                easing.type: Easing.InOutQuad
+                running: false
+            }
         }
+
     }
 
     MouseArea {
