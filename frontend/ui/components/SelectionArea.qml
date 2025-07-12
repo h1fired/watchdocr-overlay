@@ -12,6 +12,7 @@ Item {
     property point startPoint: Qt.point(0, 0)
     property point endPoint: Qt.point(0, 0)
     property bool animationEnabled: false
+    property rect box: Qt.rect(0, 0, 0, 0)
 
     Rectangle {
         id: selectionRect
@@ -28,6 +29,7 @@ Item {
 
         Rectangle {
             id: selectionRectGradient
+            visible: animationEnabled
             anchors.fill: parent
             radius: 6
 
@@ -79,6 +81,12 @@ Item {
         onReleased: (event) => {
             endPoint = Qt.point(event.x, event.y)
             // selecting = false
+
+            var x = Math.min(root.startPoint.x, root.endPoint.x)
+            var y = Math.min(root.startPoint.y, root.endPoint.y)
+            var w = Math.abs(root.endPoint.x - root.startPoint.x)
+            var h = Math.abs(root.endPoint.y - root.startPoint.y)
+            root.box = Qt.rect(x, y, w, h)
         }
     }
 }

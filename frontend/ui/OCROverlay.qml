@@ -12,7 +12,7 @@ Item {
         Recognizing = 1,
         Result = 2
     }
-    property string mode: OCROverlay.Mode.Result
+    property int mode: ocroverlaymodel.mode
     property string text: ocroverlaymodel.text
 
     // UI
@@ -24,6 +24,10 @@ Item {
             anchors.fill: parent
             enabled: root.mode == OCROverlay.Mode.Selection
             animationEnabled: root.mode == OCROverlay.Mode.Recognizing
+
+            onBoxChanged: {
+                ocroverlaymodel.QMLareaSelected(box)
+            }
         }
 
         ControlToolBar {

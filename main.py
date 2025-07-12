@@ -5,9 +5,6 @@ from src.app import CoreApplication
 
 from frontend.viewmodels.ocroverlay import OCROverlayViewModel
 
-from src.ocr.service import OCRTranslateService
-from PIL import Image
-
 
 if __name__ == '__main__':
     core = CoreApplication()
@@ -15,9 +12,6 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     engine = QQmlApplicationEngine()
-    engine.load('frontend/ui/window.qml')
-    if not engine.rootObjects():
-        sys.exit(-1)
 
     # Load viewmodels
     viewmodels = (OCROverlayViewModel,)
@@ -27,9 +21,10 @@ if __name__ == '__main__':
         obj.load()
         viewmodels_objs.append(obj)
 
-    # ! Test service
-    s = core.accessor().get(OCRTranslateService)
-    s.recognize(Image.open('test.webp'))
+    # Load QML window
+    engine.load('frontend/ui/window.qml')
+    if not engine.rootObjects():
+        sys.exit(-1)
 
     # Run GUI
     sys.exit(app.exec())
