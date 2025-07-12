@@ -13,9 +13,18 @@ Item {
     property bool animationEnabled: false
     property rect box: Qt.rect(0, 0, 0, 0)
     property rect absoluteBox: Qt.rect(0, 0, 0, 0)
+    property bool selection: false
+
+    onSelectionChanged: {
+        if (!selection) {
+            box = Qt.rect(0, 0, 0, 0)
+            absoluteBox = Qt.rect(0, 0, 0, 0)
+        }
+    }
 
     Rectangle {
         id: selectionRect
+        visible: root.selection
         color: "transparent"
         border.color: "#664CFF"
         border.width: 1
@@ -63,22 +72,27 @@ Item {
         onPressed: (event) => {
             startPoint = Qt.point(event.x, event.y)
             endPoint = startPoint
+            root.selection = true
         }
 
         onPositionChanged: (event) => {
-            endPoint = Qt.point(event.x, event.y)
-            if (root.rectIsValid(root.startPoint, root.endPoint)) {
-                root.box = root.calculateRect(root.startPoint, root.endPoint)
-                root.repaintRect()
+            if (root.selection) {
+                endPoint = Qt.point(event.x, event.y)
+                if (root.rectIsValid(root.startPoint, root.endPoint)) {
+                    root.box = root.calculateRect(root.startPoint, root.endPoint)
+                    root.repaintRect()
+                }
             }
         }
 
         onReleased: (event) => {
-            endPoint = Qt.point(event.x, event.y)
-            if (root.rectIsValid(root.startPoint, root.endPoint)) {
-                root.box = root.calculateRect(root.startPoint, root.endPoint)
-                root.absoluteBox = root.calculateRect(root.startPoint, root.endPoint, true)
-                root.repaintRect()
+            if (root.selection) {
+                endPoint = Qt.point(event.x, event.y)
+                if (root.rectIsValid(root.startPoint, root.endPoint)) {
+                    root.box = root.calculateRect(root.startPoint, root.endPoint)
+                    root.absoluteBox = root.calculateRect(root.startPoint, root.endPoint, true)
+                    root.repaintRect()
+                }
             }
         }
     }

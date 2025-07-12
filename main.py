@@ -1,9 +1,31 @@
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtGui import QIcon, QAction
+from PySide6.QtCore import QObject
 import sys
 from src.app import CoreApplication
 
 from frontend.viewmodels.ocroverlay import OCROverlayViewModel
+
+
+class SystemTray(QObject):
+    def __init__(self, window, app):
+        super().__init__(window)
+
+        self.tray = QSystemTrayIcon(QIcon("resources/icons/tray.svg"), app)
+        self.tray.show()
+
+        self.menu = QMenu()
+        self.show_action = QAction("Show")
+        self.quit_action = QAction("Quit")
+
+        self.show_action.triggered.connect(window.show)
+        self.quit_action.triggered.connect(app.quit)
+
+        self.menu.addAction(self.show_action)
+        self.menu.addAction(self.quit_action)
+
+        self.tray.setContextMenu(self.menu)
 
 
 if __name__ == '__main__':
@@ -11,6 +33,7 @@ if __name__ == '__main__':
     core.init()
 
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
     engine = QQmlApplicationEngine()
 
     # Load viewmodels
@@ -25,6 +48,9 @@ if __name__ == '__main__':
     engine.load('frontend/ui/window.qml')
     if not engine.rootObjects():
         sys.exit(-1)
+
+    # Create tray
+    tray = SystemTray(engine.rootObjects()[0], app)
 
     # Run GUI
     sys.exit(app.exec())

@@ -6,6 +6,11 @@ import "components"
 Item {
     id: root
 
+    function reset() {
+        mode = OCROverlay.Mode.Selection
+        selectionArea.selection = false
+    }
+
     // Controls
     enum Mode {
         Selection = 0,
@@ -89,4 +94,7 @@ Item {
         }
     }
 
+    Component.onDestruction: {
+        console.log("Item is being destroyed (e.g., on window close)")
+    }
 }

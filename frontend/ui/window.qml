@@ -4,6 +4,7 @@ import QtQuick.Controls 2.15
 
 
 Window {
+    id: window
     visible: true
     x: 0
     y: 0
@@ -14,11 +15,15 @@ Window {
     flags: Qt.FramelessWindowHint | Qt.Window
 
     OCROverlay {
+        id: overlay
         anchors.fill: parent
     }
 
     Shortcut {
         sequences: ["Escape"]
-        onActivated: Qt.quit()
+        onActivated: () => {
+            window.close()
+            overlay.reset()
+        }
     }
 }
