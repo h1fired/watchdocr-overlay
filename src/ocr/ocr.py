@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import pytesseract
 from enum import IntEnum
 from .window import grab_window_area
+from .spell import clean_text
 
 
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
@@ -25,6 +26,7 @@ class OCRTranslate:
     def recognize(self, window_box: tuple[int, int, int, int]):
         image = grab_window_area(window_box)
         text = pytesseract.image_to_string(image)
+        text = clean_text(text)
         data = OCRData(text)
         return data
 
