@@ -1,6 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
-import "components"
+import "components" as Componenets
 
 
 Item {
@@ -68,19 +68,21 @@ Item {
             }
         }
 
-        SelectionArea {
+        Componenets.SelectionArea {
             id: selectionArea
             anchors.fill: parent
 
-            onAbsoluteBoxChanged: {
-                ocroverlaymodel.QMLareaSelected(absoluteBox);
-            }
             onBoxChanged: {
                 canvas.requestPaint();
             }
+
+            onBoxReleased: {
+                var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+                ocroverlaymodel.QMLareaSelected(absoluteBox);
+            }
         }
 
-        ControlToolBar {
+        Componenets.ControlToolBar {
             anchors.topMargin: 8
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
@@ -98,7 +100,7 @@ Item {
             ]
         }
 
-        OCRTextArea {
+        Componenets.OCRTextArea {
             id: textArea
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom

@@ -1,31 +1,93 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Shapes 2.15
 
 
 Item {
+    function relativeToAbsoluteBox(box) {
+        var p = root.mapToGlobal(box.x, box.y)
+        return Qt.rect(p.x, p.y, box.width, box.height)
+    }
+
+    function rectFromPoints(p1, p2) {
+        var x = Math.min(p1.x, p2.x)
+        var y = Math.min(p1.y, p2.y)
+        var w = Math.abs(p2.x - p1.x)
+        var h = Math.abs(p2.y - p1.y)
+        return Qt.rect(x, y, w, h)
+    }
+
+    function clear() {
+        root._startPoint = Qt.point(0, 0)
+        root._endPoint = Qt.point(0, 0)
+        root.box = Qt.rect(0, 0, 0, 0)
+        root.animationEnabled = false
+    }
+
+    function selectBox(rect) {
+        root.box = rect
+    }
+
     id: root
     width: 800
     height: 600
 
-    property point startPoint: Qt.point(0, 0)
-    property point endPoint: Qt.point(0, 0)
     property rect box: Qt.rect(0, 0, 0, 0)
-    property rect absoluteBox: Qt.rect(0, 0, 0, 0)
     property bool animationEnabled: false
+    property bool drawBorders: true
+    signal boxReleased()
 
+    property point _startPoint: Qt.point(0, 0)
+    property point _endPoint: Qt.point(0, 0)
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+
+        onPressed: (event) => {
+            root._startPoint = Qt.point(event.x, event.y);
+            root._endPoint = root._startPoint;
+        }
+
+        onPositionChanged: (event) => {
+            root._endPoint = Qt.point(event.x, event.y);
+            root.box = root._redesignRect(root.rectFromPoints(root._startPoint, root._endPoint));
+        }
+
+        onReleased: (event) => {
+            root._endPoint = Qt.point(event.x, event.y);
+            root.box = root._redesignRect(root.rectFromPoints(root._startPoint, root._endPoint));
+            root.boxReleased();
+        }
+    }
+
+    function _redesignRect(rect) {
+        if (rect.width <= 0) {
+            rect.width = 10
+        }
+        if (rect.height <= 0) {
+            rect.height = 10
+        }
+        return rect
+    }
+
+    // Visual components
     Rectangle {
-        id: selectionRect
+        visible: root.drawBorders
+
         color: "transparent"
         border.color: "#664CFF"
         border.width: 1
-        radius: 6
 
+        x: root.box.x
+        y: root.box.y
+        width: root.box.width
+        height: root.box.height
+
+        // Gradient
         Rectangle {
             id: selectionRectGradient
-            visible: animationEnabled
+            visible: root.animationEnabled
             anchors.fill: parent
-            radius: 6
 
             property var gradientPos: 0.0
 
@@ -54,63 +116,5 @@ Item {
                 running: root.animationEnabled
             }
         }
-
-    }
-
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        onPressed: (event) => {
-            startPoint = Qt.point(event.x, event.y)
-            endPoint = startPoint
-        }
-
-        onPositionChanged: (event) => {
-            endPoint = Qt.point(event.x, event.y)
-            if (isValidPoints(startPoint, endPoint)) {
-                root.box = root.calculateArea(root.startPoint, root.endPoint)
-                root.repaintArea()
-            }
-        }
-
-        onReleased: (event) => {
-            endPoint = Qt.point(event.x, event.y)
-            if (isValidPoints(startPoint, endPoint)) {
-                root.box = root.calculateArea(root.startPoint, root.endPoint)
-                root.absoluteBox = root.calculateArea(root.startPoint, root.endPoint, true)
-                root.repaintArea()
-            }
-        }
-    }
-
-    function isValidPoints(p1, p2) {
-        return (Math.abs(endPoint.x - startPoint.x) > 0 && Math.abs(endPoint.y - startPoint.y) > 0)
-    }
-
-    function calculateArea(p1, p2, absolute=false) {
-        if (absolute) {
-            p1 = root.mapToGlobal(p1)
-            p2 = root.mapToGlobal(p2)
-        }
-        var x = Math.min(p1.x, p2.x)
-        var y = Math.min(p1.y, p2.y)
-        var w = Math.abs(p2.x - p1.x)
-        var h = Math.abs(p2.y - p1.y)
-        return Qt.rect(x, y, w, h)
-    }
-
-    function repaintArea() {
-        selectionRect.x = Math.min(startPoint.x, endPoint.x) - 1
-        selectionRect.y = Math.min(startPoint.y, endPoint.y) - 1
-        selectionRect.width = Math.abs(endPoint.x - startPoint.x) + 2
-        selectionRect.height = Math.abs(endPoint.y - startPoint.y) + 2
-    }
-
-    function clear() {
-        startPoint = Qt.point(0, 0)
-        endPoint = Qt.point(0, 0)
-        box = Qt.rect(0, 0, 0, 0)
-        absoluteBox = Qt.rect(0, 0, 0, 0)
-        repaintArea()
     }
 }
