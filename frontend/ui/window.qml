@@ -23,7 +23,14 @@ Window {
         sequences: ["Escape"]
         onActivated: () => {
             window.close()
-            overlay.reset()
+        }
+    }
+
+    onVisibleChanged: {
+        if (window.visible) {
+            overlay.mode = OCROverlay.Mode.Selection
+        } else {
+            overlay.mode = OCROverlay.Mode.StandBy
         }
     }
 }

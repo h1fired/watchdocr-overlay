@@ -6,19 +6,22 @@ import "components"
 Item {
     id: root
 
-    function reset() {
-        mode = OCROverlay.Mode.Selection
-        selectionArea.selection = false
-    }
-
     // Controls
     enum Mode {
         Selection = 0,
         Recognizing = 1,
-        Result = 2
+        Result = 2,
+        StandBy = 3
     }
     property int mode: ocroverlaymodel.mode
     property string text: ocroverlaymodel.text
+
+    onModeChanged: {
+        if (mode == OCROverlay.Mode.StandBy) {
+            selectionArea.clear()
+            canvas.requestPaint();
+        }
+    }
 
     // UI
     Rectangle {
@@ -51,11 +54,11 @@ Item {
         SelectionArea {
             id: selectionArea
             anchors.fill: parent
-            enabled: root.mode != OCROverlay.Mode.Recognizing
-            animationEnabled: root.mode == OCROverlay.Mode.Recognizing
 
             onAbsoluteBoxChanged: {
-                ocroverlaymodel.QMLareaSelected(absoluteBox);
+                if (selectionArea.isValidArea(absoluteBox)) {
+                   ocroverlaymodel.QMLareaSelected(absoluteBox);
+                }
             }
             onBoxChanged: {
                 canvas.requestPaint();
@@ -81,20 +84,12 @@ Item {
         }
 
         OCRTextArea {
-            visible: mode == OCROverlay.Mode.Result
-
-            width: 560
-            height: 120
-
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
-
+            width: 560
+            height: 120
             text: root.text
         }
-    }
-
-    Component.onDestruction: {
-        console.log("Item is being destroyed (e.g., on window close)")
     }
 }
