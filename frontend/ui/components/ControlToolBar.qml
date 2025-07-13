@@ -1,14 +1,14 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Controls.Basic 2.15
 
 
 Item {
     id: root
+
+    signal fullscreenSelected()
+
     width: row.implicitWidth + 8
     height: row.implicitHeight + 8
-
-    property var items: []
-    property string selectedTool: items[0].id
 
     Rectangle {
         anchors.fill: parent
@@ -21,33 +21,47 @@ Item {
             id: row
             anchors.centerIn: parent
             anchors.margins: 4
+            spacing: 4
 
-            Repeater {
-                model: items
+            Button {
+                width: 40
+                height: 32
+                background: Rectangle {
+                    color: "#664CFF"
+                    radius: 3
+                }
+                icon.source: "../../../resources/icons/selection.svg"
+                icon.color: "#FFFFFF"
 
-                ToolButton {
-                    id: btnTool
-                    width: 40
-                    height: 32
-                    background: Rectangle {
-                        radius: 3
-                        color: btnTool.checked ? "#664CFF" : "transparent"
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor 
+                    onPressed: (mouse) => {
+                        mouse.accepted = false
                     }
+                }
+            }
 
-                    text: modelData.text.toUpperCase()
-                    icon.source: modelData.icon
+            Button {
+                id: btnFullscreen
+                width: 40
+                height: 32
+                background: Rectangle {
+                    color: btnFullscreen.hovered ? "#242638" : "transparent"
+                    radius: 3
+                }
+                icon.source: "../../../resources/icons/fullscreen.svg"
+                icon.color: "#FFFFFF"
 
-                    checked: root.selectedTool === modelData.id
-                    onClicked: {
-                        root.selectedTool = modelData.id
-                    }
+                onClicked: {
+                    root.fullscreenSelected();
+                }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor 
-                        onPressed: (mouse) => {
-                            mouse.accepted = false
-                        }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor 
+                    onPressed: (mouse) => {
+                        mouse.accepted = false
                     }
                 }
             }

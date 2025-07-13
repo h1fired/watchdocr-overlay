@@ -42,6 +42,7 @@ Item {
 
     // UI
     Rectangle {
+        id: rootRect
         anchors.fill: parent
         color: "transparent"
 
@@ -86,18 +87,20 @@ Item {
             anchors.topMargin: 8
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
-            items: [
-                {
-                    "id": "fullscreen",
-                    "text": "",
-                    "icon": "../../../resources/icons/fullscreen.svg"
-                },
-                {
-                    "id": "selection",
-                    "text": "",
-                    "icon": "../../../resources/icons/selection.svg"
-                },
-            ]
+
+            onFullscreenSelected: {
+                if (mode == OCROverlay.Mode.Recognizing || mode == OCROverlay.Mode.StandBy) {
+                    return
+                }
+                selectionArea.selectBox(Qt.rect(
+                    root.x,
+                    root.y,
+                    root.width,
+                    root.height,
+                ))
+                var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+                ocroverlaymodel.QMLareaSelected(absoluteBox);
+            }
         }
 
         Componenets.OCRTextArea {
