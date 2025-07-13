@@ -13,7 +13,8 @@ Item {
         Result = 2,
         StandBy = 3
     }
-    property int mode: ocroverlaymodel.mode
+    property int qtMode: ocroverlaymodel.mode
+    property int mode: OCROverlay.Mode.StandBy
     property string text: ocroverlaymodel.text
 
     onModeChanged: {
@@ -21,6 +22,22 @@ Item {
             selectionArea.clear()
             canvas.requestPaint();
         }
+
+        textArea.visible = (mode == OCROverlay.Mode.Result || mode == OCROverlay.Mode.Recognizing)
+        selectionArea.animationEnabled = (mode == OCROverlay.Mode.Recognizing)
+        selectionArea.enabled = (mode == OCROverlay.Mode.Selection || mode == OCROverlay.Mode.Result)
+    }
+
+    onVisibleChanged: {
+        if (window.visible) {
+            overlay.mode = OCROverlay.Mode.Selection
+        } else {
+            overlay.mode = OCROverlay.Mode.StandBy
+        }
+    }
+
+    onQtModeChanged: {
+        mode = qtMode
     }
 
     // UI
@@ -56,9 +73,7 @@ Item {
             anchors.fill: parent
 
             onAbsoluteBoxChanged: {
-                if (selectionArea.isValidArea(absoluteBox)) {
-                   ocroverlaymodel.QMLareaSelected(absoluteBox);
-                }
+                ocroverlaymodel.QMLareaSelected(absoluteBox);
             }
             onBoxChanged: {
                 canvas.requestPaint();
@@ -84,6 +99,7 @@ Item {
         }
 
         OCRTextArea {
+            id: textArea
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24

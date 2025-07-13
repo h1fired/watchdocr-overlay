@@ -231,7 +231,7 @@ class _TaskWrapper:
             self._signal_obs.notify('RESULT', result)
         except Exception as e:
             self._signal_obs.notify('ERROR', e)
-            log.error(f'[TASK] {e}')
+            log.exception(f'[TASK] {e}')
         self._is_executing = False
         if self._last_execution:
             self._finish_event.set()

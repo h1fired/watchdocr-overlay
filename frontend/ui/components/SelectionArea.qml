@@ -67,20 +67,24 @@ Item {
 
         onPositionChanged: (event) => {
             endPoint = Qt.point(event.x, event.y)
-            root.box = root.calculateArea(root.startPoint, root.endPoint)
-            root.repaintArea()
+            if (isValidPoints(startPoint, endPoint)) {
+                root.box = root.calculateArea(root.startPoint, root.endPoint)
+                root.repaintArea()
+            }
         }
 
         onReleased: (event) => {
             endPoint = Qt.point(event.x, event.y)
-            root.box = root.calculateArea(root.startPoint, root.endPoint)
-            root.absoluteBox = root.calculateArea(root.startPoint, root.endPoint, true)
-            root.repaintArea()
+            if (isValidPoints(startPoint, endPoint)) {
+                root.box = root.calculateArea(root.startPoint, root.endPoint)
+                root.absoluteBox = root.calculateArea(root.startPoint, root.endPoint, true)
+                root.repaintArea()
+            }
         }
     }
 
-    function isValidArea(area) {
-        return (area.width > 0 && area.height > 0)
+    function isValidPoints(p1, p2) {
+        return (Math.abs(endPoint.x - startPoint.x) > 0 && Math.abs(endPoint.y - startPoint.y) > 0)
     }
 
     function calculateArea(p1, p2, absolute=false) {
