@@ -21,6 +21,7 @@ Window {
 
     Shortcut {
         sequences: ["Escape"]
+        context: Qt.ApplicationShortcut
         onActivated: () => {
             window.close()
         }
