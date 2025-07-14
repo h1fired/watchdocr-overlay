@@ -49,6 +49,7 @@ Item {
         TextArea {
             id: textBlock
             anchors.fill: scrollView
+            textFormat: TextEdit.MarkdownText
 
             color: "#FFFFFF"
             selectionColor: "#073BA5"

@@ -18,6 +18,10 @@ class OCRState(IntEnum):
     ERROR = 3
 
 
+class Messages:
+    EMPTY_RECOGNITION = '*Error: Cannot recognize text*'
+
+
 @dataclass
 class OCRData:
     text: str
@@ -31,7 +35,10 @@ class OCRTranslate:
         image = grab_window_area(window_box)
         text = pytesseract.image_to_string(image)
         text = clean_text(text)
-        text = self._translator.translate(text)
+        if text:
+            text = self._translator.translate(text)
+        else:
+            text = Messages.EMPTY_RECOGNITION
         data = OCRData(text)
         return data
 
