@@ -2,10 +2,10 @@ from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QObject
-import sys
 from src.app import CoreApplication
-
 from frontend.viewmodels.ocroverlay import OCROverlayViewModel
+from config import config
+import sys
 
 
 class SystemTray(QObject):
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         viewmodels_objs.append(obj)
 
     # Load QML window
-    engine.load('frontend/ui/window.qml')
+    engine.load(config.QML_WINDOW_FILE)
     if not engine.rootObjects():
         sys.exit(-1)
 

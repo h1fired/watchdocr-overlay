@@ -14,8 +14,8 @@ Item {
         StandBy = 3
     }
     property int qtMode: ocroverlaymodel.mode
-    property int mode: OCROverlay.Mode.StandBy
     property string text: ocroverlaymodel.text
+    property int mode: OCROverlay.Mode.StandBy
 
     onModeChanged: {
         if (mode == OCROverlay.Mode.StandBy) {

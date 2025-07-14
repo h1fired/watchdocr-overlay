@@ -17,13 +17,14 @@ Window {
     OCROverlay {
         id: overlay
         anchors.fill: parent
-    }
 
-    Shortcut {
-        sequences: ["Escape"]
-        context: Qt.ApplicationShortcut
-        onActivated: () => {
-            window.close()
+        focus: true
+
+        Keys.onPressed: (event)=> {
+            if (event.key == Qt.Key_Escape) {
+                window.close()
+                event.accepted = true;
+            }
         }
     }
 

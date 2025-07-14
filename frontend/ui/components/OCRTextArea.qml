@@ -9,6 +9,10 @@ Item {
     ScrollView {
         id: scrollView
         anchors.fill: parent
+        leftPadding: 8
+        rightPadding: 8
+        topPadding: 4
+        bottomPadding: 4
 
         ScrollBar.horizontal: ScrollBar {
             policy: ScrollBar.AlwaysOff
@@ -42,18 +46,17 @@ Item {
             bottomLeftRadius: 6
         }
 
-        Text {
-            anchors.fill: parent
-            anchors.margins: 12
+        TextArea {
             id: textBlock
+            anchors.fill: scrollView
 
             color: "#FFFFFF"
+            selectionColor: "#073BA5"
+            wrapMode: Text.WordWrap
+            font.pointSize: 12
+            readOnly: true
 
             text: root.text
-            wrapMode: Text.WordWrap
-            anchors.centerIn: parent
-            font.pointSize: 10
-            elide: Text.ElideRight
         }
     }
 }
