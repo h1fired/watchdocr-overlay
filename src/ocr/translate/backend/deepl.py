@@ -1,8 +1,9 @@
 from . import TranslationBackend
+from config import config
 import deepl
 
 
-API_KEY = '05445a92-e919-487e-9731-007952f66c32:fx'
+API_KEY = config.DEEPL_API_KEY
 
 
 class DeeplTranslationBackend(TranslationBackend):
