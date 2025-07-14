@@ -31,12 +31,16 @@ class OCRTranslate:
     def __init__(self):
         self._translator = Translator()
 
-    def recognize(self, window_box: tuple[int, int, int, int]):
+    def recognize(
+        self,
+        window_box: tuple[int, int, int, int],
+        target_language: str = 'EN'
+    ):
         image = grab_window_area(window_box)
         text = pytesseract.image_to_string(image)
         text = clean_text(text)
         if text:
-            text = self._translator.translate(text)
+            text = self._translator.translate(text, target_language)
         else:
             text = Messages.EMPTY_RECOGNITION
         data = OCRData(text)
@@ -51,13 +55,20 @@ class OCRTranslateManager:
         self._ocr = OCRTranslate()
         self._state = OCRState.STAND_BY
 
-    def recognize(self, window_box: tuple[int, int, int, int]):
+    def recognize(
+        self,
+        window_box: tuple[int, int, int, int],
+        target_language: str = 'EN'
+    ):
         if self._state == OCRState.RECOGNIZING:
             raise RuntimeError('OCR translation already started')
         self._state = OCRState.RECOGNIZING
         self.obs_state.notify(OCRState.RECOGNIZING)
         tasks = TaskManager()
-        f = tasks.execute(lambda t: self._ocr.recognize(window_box))
+        f = tasks.execute(lambda t: self._ocr.recognize(
+            window_box,
+            target_language
+        ))
         f.observe(
             on_finish=self._on_finish,
             on_result=self._on_result

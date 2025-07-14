@@ -2,6 +2,7 @@ from common.event import Event
 from frontend.common.mvvm import ViewModel
 from src.ocr.service import OCRTranslateService, OCRState
 from PySide6.QtCore import Property, Slot, Signal, QRect
+from config import config
 
 
 class OCROverlayViewModel(ViewModel):
@@ -60,4 +61,4 @@ class OCROverlayViewModel(ViewModel):
             rect.x() + rect.width(), rect.y() + rect.height()
         )
         s = self.get_service(OCRTranslateService)
-        s.recognize(box)
+        s.recognize(box, config.TRANSLATION_TARGET_LANG)

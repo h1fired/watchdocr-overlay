@@ -11,6 +11,6 @@ class DeeplTranslationBackend(TranslationBackend):
     def load(self):
         self.client = deepl.DeepLClient(API_KEY)
 
-    def translate(self, text):
-        result = self.client.translate_text(text, target_lang='UK')
+    def translate(self, text, translate_to='EN'):
+        result = self.client.translate_text(text, target_lang=translate_to)
         return result.text
