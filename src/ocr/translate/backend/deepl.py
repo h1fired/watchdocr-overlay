@@ -2,7 +2,7 @@ from . import TranslationBackend
 import deepl
 
 
-API_KEY = ''
+API_KEY = '05445a92-e919-487e-9731-007952f66c32:fx'
 
 
 class DeeplTranslationBackend(TranslationBackend):
