@@ -1,9 +1,9 @@
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
-from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtGui import QIcon, QAction
-from PySide6.QtCore import QObject
+from qt.qml import QQmlApplicationEngine
+from qt.core import QObject, QIcon, QAction, QApplication, QSystemTrayIcon, QMenu, Signal
+from qt.utils import invokeFunc
 from src.app import CoreApplication
 from frontend.viewmodels.ocroverlay import OCROverlayViewModel
+from frontend.utils import ghotkey
 from config import config
 import sys
 
@@ -28,7 +28,16 @@ class SystemTray(QObject):
         self.tray.setContextMenu(self.menu)
 
 
+class SystemObject(QObject):
+    visibilityChanged = Signal()
+
+    def requestVisibilityChange(self):
+        self.visibilityChanged.emit()
+
+
 if __name__ == '__main__':
+    ghotkey.install_keyboard_hook_proc()
+
     core = CoreApplication()
     core.init()
 
@@ -44,6 +53,10 @@ if __name__ == '__main__':
         obj.load()
         viewmodels_objs.append(obj)
 
+    # Pass system object to QML
+    system_obj = SystemObject(app)
+    engine.rootContext().setContextProperty('system', system_obj)
+
     # Load QML window
     engine.load(config.QML_WINDOW_FILE)
     if not engine.rootObjects():
@@ -51,6 +64,14 @@ if __name__ == '__main__':
 
     # Create tray
     tray = SystemTray(engine.rootObjects()[0], app)
+
+    # Register open/close hotkey
+    window = engine.rootObjects()[0]
+
+    @invokeFunc
+    def toggle_window_visibility():
+        system_obj.requestVisibilityChange()
+    ghotkey.bind(config.WINDOW_TOGGLE_HOTKEY, toggle_window_visibility)
 
     # Run GUI
     sys.exit(app.exec())

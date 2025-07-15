@@ -17,15 +17,7 @@ Window {
     OCROverlay {
         id: overlay
         anchors.fill: parent
-
         focus: true
-
-        Keys.onPressed: (event)=> {
-            if (event.key == Qt.Key_Escape) {
-                window.close()
-                event.accepted = true;
-            }
-        }
     }
 
     onVisibleChanged: {
@@ -33,6 +25,18 @@ Window {
             overlay.mode = OCROverlay.Mode.Selection
         } else {
             overlay.mode = OCROverlay.Mode.StandBy
+        }
+    }
+
+    Connections {
+        target: system
+
+        function onVisibilityChanged() {
+            if (window.visible) {
+                window.close()
+            } else {
+                window.show()
+            }
         }
     }
 }
