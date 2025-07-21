@@ -10,6 +10,7 @@ class OCROverlayViewModel(ViewModel):
     context_id = 'ocroverlaymodel'
     textChanged = Signal(str)
     modeChanged = Signal(int)
+    textCopied = Signal()
 
     def on_load(self):
         self._text = ''
@@ -68,3 +69,4 @@ class OCROverlayViewModel(ViewModel):
     def QMLtextCopied(self, text: str):
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
+        self.textCopied.emit()

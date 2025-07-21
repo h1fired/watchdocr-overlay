@@ -16,6 +16,18 @@ Item {
         textBlock.clear();
     }
 
+    function runCopied() {
+        btnCopy.width = btnCopy.implicitWidth;
+        copyTimer.start();
+    }
+
+    Timer {
+        id: copyTimer
+        interval: 2000
+        repeat: false
+        onTriggered: btnCopy.width = 36
+    }
+
     onMaximizedChanged: {
         if (root.maximized) {
             root.width = 760
@@ -43,7 +55,10 @@ Item {
                 Button {
                     id: btnCopy
 
-                    text: "Copy"
+                    width: 36
+                    height: 36
+
+                    text: "Copied to clipboard"
                     icon.source: "../../../resources/icons/copy.svg"
                     icon.color: "#9D9D9D"
                     icon.width: 18
@@ -63,12 +78,22 @@ Item {
                         }
                     }
 
+                    Behavior on width {
+                        NumberAnimation {
+                            duration: 100
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+
                     onClicked: {
                         root.copied();
                     }
                 }
                 Button {
                     id: btnResize
+
+                    width: 36
+                    height: 36
 
                     icon.source: root.maximized ? "../../../resources/icons/minimize.svg" : "../../../resources/icons/maximize.svg"
                     icon.color: "#9D9D9D"

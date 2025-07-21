@@ -41,6 +41,14 @@ Item {
         mode = qtMode
     }
 
+    Connections {
+        target: ocroverlaymodel
+
+        function onTextCopied() {
+            textArea.runCopied();
+        }
+    }
+
     // UI
     Rectangle {
         id: rootRect
