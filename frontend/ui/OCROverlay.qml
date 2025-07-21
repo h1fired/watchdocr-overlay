@@ -19,7 +19,8 @@ Item {
 
     onModeChanged: {
         if (mode == OCROverlay.Mode.StandBy) {
-            selectionArea.clear()
+            selectionArea.clear();
+            textArea.reset();
             canvas.requestPaint();
         }
 

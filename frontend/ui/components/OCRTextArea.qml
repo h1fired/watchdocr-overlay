@@ -11,6 +11,11 @@ Item {
     signal copied()
 
     // Logic
+    function reset() {
+        root.maximized = false;
+        textBlock.clear();
+    }
+
     onMaximizedChanged: {
         if (root.maximized) {
             root.width = 760
