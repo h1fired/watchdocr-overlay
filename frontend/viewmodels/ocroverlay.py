@@ -2,6 +2,7 @@ from common.event import Event
 from frontend.common.mvvm import ViewModel
 from src.ocr.service import OCRTranslateService, OCRState
 from PySide6.QtCore import Property, Slot, Signal, QRect
+from PySide6.QtWidgets import QApplication
 from config import config
 
 
@@ -62,3 +63,8 @@ class OCROverlayViewModel(ViewModel):
         )
         s = self.get_service(OCRTranslateService)
         s.recognize(box, config.TRANSLATION_TARGET_LANG)
+
+    @Slot(str)
+    def QMLtextCopied(self, text: str):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)

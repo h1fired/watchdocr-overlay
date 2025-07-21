@@ -110,6 +110,10 @@ Item {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
             text: root.text
+
+            onCopied: {
+                ocroverlaymodel.QMLtextCopied(textArea.text);
+            }
         }
     }
 }
