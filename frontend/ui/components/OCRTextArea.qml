@@ -1,63 +1,134 @@
 import QtQuick 2.15
 import QtQuick.Controls.Basic 2.15
+import QtQuick.Layouts 2.15
 
 
 Item {
     id: root
     property string text
+    property bool maximized: false
 
-    ScrollView {
-        id: scrollView
+    signal copied()
+
+    // Logic
+    onMaximizedChanged: {
+        if (root.maximized) {
+            root.width = 760
+            root.height = 420
+        } else {
+            root.width = 560
+            root.height = 120
+        }
+    }
+
+    // UI
+    width: 560
+    height: 120
+
+    Rectangle {
         anchors.fill: parent
-        leftPadding: 8
-        rightPadding: 8
-        topPadding: 4
-        bottomPadding: 4
+        color: "#000000"
+        radius: 6
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 4
+            Row {
+                Layout.alignment: Qt.AlignRight
+                spacing: 8
+                Button {
+                    id: btnCopy
 
-        ScrollBar.horizontal: ScrollBar {
-            policy: ScrollBar.AlwaysOff
-        }
-        ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AsNeeded
-            anchors.top: scrollView.top
-            anchors.left: scrollView.right
-            anchors.bottom: scrollView.bottom
-            height: scrollView.availableHeight
-            width: 12
+                    text: "Copy"
+                    icon.source: "../../../resources/icons/copy.svg"
+                    icon.color: "#9D9D9D"
+                    icon.width: 18
+                    icon.height: 18
+                    palette.buttonText: "#9D9D9D"
 
-            background: Rectangle {
-                color: "#000000"
-                topRightRadius: 6
-                bottomRightRadius: 6
+                    background: Rectangle {
+                        color: btnCopy.hovered ? "#1B1B1B" : "transparent"
+                        radius: 3
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor 
+                        onPressed: (mouse) => {
+                            mouse.accepted = false
+                        }
+                    }
+
+                    onClicked: {
+                        root.copied();
+                    }
+                }
+                Button {
+                    id: btnResize
+
+                    icon.source: root.maximized ? "../../../resources/icons/minimize.svg" : "../../../resources/icons/maximize.svg"
+                    icon.color: "#9D9D9D"
+                    icon.width: 18
+                    icon.height: 18
+
+                    background: Rectangle {
+                        color: btnResize.hovered ? "#1B1B1B" : "transparent"
+                        radius: 3
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor 
+                        onPressed: (mouse) => {
+                            mouse.accepted = false
+                        }
+                    }
+
+                    onClicked: {
+                        root.maximized = !root.maximized
+                    }
+                }
             }
 
-            contentItem: Rectangle {
-                implicitWidth: 4
-                implicitHeight: 10
-                anchors.leftMargin: 10
+            ScrollView {
+                id: scrollView
 
-                radius: 16
-                color: "#1F1F1F"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                ScrollBar.horizontal: ScrollBar {
+                    policy: ScrollBar.AlwaysOff
+                }
+
+                TextArea {
+                    id: textBlock
+
+                    anchors.fill: scrollView
+                    textFormat: TextEdit.MarkdownText
+
+                    color: "#FFFFFF"
+                    selectionColor: "#073BA5"
+                    wrapMode: Text.WordWrap
+                    font.pointSize: 12
+                    readOnly: true
+
+                    text: root.text
+                }
             }
+
         }
-        background: Rectangle {
-            color: "#000000"
-            topLeftRadius: 6
-            bottomLeftRadius: 6
+    }
+
+    Behavior on width {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.InOutQuad
         }
+    }
 
-        TextArea {
-            id: textBlock
-            anchors.fill: scrollView
-            textFormat: TextEdit.MarkdownText
-
-            color: "#FFFFFF"
-            selectionColor: "#073BA5"
-            wrapMode: Text.WordWrap
-            font.pointSize: 12
-            readOnly: true
-
-            text: root.text
+    Behavior on height {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.InOutQuad
         }
     }
 }

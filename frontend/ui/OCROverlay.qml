@@ -108,8 +108,6 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
-            width: 560
-            height: 120
             text: root.text
         }
     }
