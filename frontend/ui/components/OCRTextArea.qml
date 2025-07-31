@@ -51,7 +51,7 @@ Item {
             anchors.margins: 4
             Row {
                 Layout.alignment: Qt.AlignRight
-                spacing: 8
+                spacing: 4
                 Button {
                     id: btnCopy
 
