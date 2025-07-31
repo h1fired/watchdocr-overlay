@@ -1,6 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import "components" as Componenets
+import QtQuick
+import QtQuick.Window
+import QtQuick.Controls.Basic
+import "components" as Components
 
 
 Item {
@@ -16,6 +17,7 @@ Item {
     property int qtMode: ocroverlaymodel.mode
     property string text: ocroverlaymodel.text
     property int mode: OCROverlay.Mode.StandBy
+    signal closeRequested()
 
     onModeChanged: {
         if (mode == OCROverlay.Mode.StandBy) {
@@ -88,6 +90,14 @@ Item {
         }
     }
 
+    Connections {
+        target: btnClose
+
+        function onClicked() {
+            Window.close();
+        }
+    }
+
     Rectangle {
         id: rootRect
         anchors.fill: parent
@@ -116,24 +126,48 @@ Item {
             }
         }
 
-        Componenets.SelectionArea {
+        Components.SelectionArea {
             id: selectionArea
             anchors.fill: parent
         }
 
-        Componenets.ControlToolBar {
+        Components.ControlToolBar {
             id: controlToolBar
             anchors.topMargin: 8
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        Componenets.OCRTextArea {
+        Components.OCRTextArea {
             id: textArea
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
             text: root.text
+        }
+
+        Button {
+            id: btnClose
+
+            width: 48
+            height: 48
+            anchors.right: parent.right
+            background: Rectangle {
+                color: "transparent"
+            }
+            icon.source: "../../resources/icons/close.svg"
+            icon.color: "#868686"
+            icon.width: 16
+            icon.height: 16
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor 
+                onPressed: (mouse) => {
+                    mouse.accepted = false;
+                    root.closeRequested();
+                }
+            }
         }
     }
 

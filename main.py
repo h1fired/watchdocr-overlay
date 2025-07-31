@@ -42,7 +42,7 @@ if __name__ == '__main__':
     core.init()
 
     app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
+    # app.setQuitOnLastWindowClosed(False)
     engine = QQmlApplicationEngine()
 
     # Load viewmodels

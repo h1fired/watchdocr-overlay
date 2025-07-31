@@ -1,6 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Window
+import QtQuick.Controls
 
 
 Window {
@@ -22,9 +22,9 @@ Window {
 
     onVisibleChanged: {
         if (window.visible) {
-            overlay.mode = OCROverlay.Mode.Selection
+            overlay.mode = OCROverlay.Mode.Selection;
         } else {
-            overlay.mode = OCROverlay.Mode.StandBy
+            overlay.mode = OCROverlay.Mode.StandBy;
         }
     }
 
@@ -33,9 +33,19 @@ Window {
 
         function onVisibilityChanged() {
             if (window.visible) {
-                window.close()
+                window.close();
             } else {
-                window.show()
+                window.show();
+            }
+        }
+    }
+
+    Connections {
+        target: overlay
+
+        function onCloseRequested() {
+            if (window.visible) {
+                window.close();
             }
         }
     }
