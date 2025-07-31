@@ -6,13 +6,13 @@ import "components" as Componenets
 Item {
     id: root
 
-    // Controls
     enum Mode {
         Selection = 0,
         Recognizing = 1,
         Result = 2,
         StandBy = 3
     }
+
     property int qtMode: ocroverlaymodel.mode
     property string text: ocroverlaymodel.text
     property int mode: OCROverlay.Mode.StandBy
@@ -49,7 +49,45 @@ Item {
         }
     }
 
-    // UI
+    Connections {
+        target: selectionArea
+
+        function onBoxReleased() {
+            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+            ocroverlaymodel.QMLareaSelected(absoluteBox);
+        }
+
+        function onBoxChanged() {
+            canvas.requestPaint();
+        }
+    }
+
+    Connections {
+        target: controlToolBar
+
+        function onFullscreenSelected() {
+            if (root.mode == OCROverlay.Mode.Recognizing || root.mode == OCROverlay.Mode.StandBy) {
+                return
+            }
+            selectionArea.selectBox(Qt.rect(
+                root.x,
+                root.y,
+                root.width,
+                root.height,
+            ))
+            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+            ocroverlaymodel.QMLareaSelected(absoluteBox);
+        }
+    }
+
+    Connections {
+        target: textArea
+
+        function onCopied() {
+            ocroverlaymodel.QMLtextCopied(textArea.text);
+        }
+    }
+
     Rectangle {
         id: rootRect
         anchors.fill: parent
@@ -81,35 +119,13 @@ Item {
         Componenets.SelectionArea {
             id: selectionArea
             anchors.fill: parent
-
-            onBoxChanged: {
-                canvas.requestPaint();
-            }
-
-            onBoxReleased: {
-                var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-                ocroverlaymodel.QMLareaSelected(absoluteBox);
-            }
         }
 
         Componenets.ControlToolBar {
+            id: controlToolBar
             anchors.topMargin: 8
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
-
-            onFullscreenSelected: {
-                if (mode == OCROverlay.Mode.Recognizing || mode == OCROverlay.Mode.StandBy) {
-                    return
-                }
-                selectionArea.selectBox(Qt.rect(
-                    root.x,
-                    root.y,
-                    root.width,
-                    root.height,
-                ))
-                var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-                ocroverlaymodel.QMLareaSelected(absoluteBox);
-            }
         }
 
         Componenets.OCRTextArea {
@@ -118,10 +134,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
             text: root.text
-
-            onCopied: {
-                ocroverlaymodel.QMLtextCopied(textArea.text);
-            }
         }
     }
+
 }
