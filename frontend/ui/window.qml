@@ -49,4 +49,10 @@ Window {
             }
         }
     }
+
+    Shortcut {
+        sequence: "Escape"
+        context: Qt.ApplicationShortcut
+        onActivated: window.close()
+    }
 }
