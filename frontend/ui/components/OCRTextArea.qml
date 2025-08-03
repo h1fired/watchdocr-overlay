@@ -5,53 +5,41 @@ import QtQuick.Layouts 2.15
 
 Item {
     id: root
+
+    implicitWidth: root.maximized ? maximizedWidth : minimizedWidth
+    implicitHeight: root.maximized ? maximizedHeight : minimizedHeight
+
     property string text
     property bool maximized: false
+    property int minimizedWidth: 560
+    property int minimizedHeight: 120
+    property int maximizedWidth: 760
+    property int maximizedHeight: 420
 
     signal copied()
 
-    // Logic
-    function reset() {
-        root.maximized = false;
-        textBlock.clear();
-    }
+    Connections {
+        target: btnCopy
 
-    function runCopied() {
-        btnCopy.width = btnCopy.implicitWidth;
-        copyTimer.start();
-    }
-
-    Timer {
-        id: copyTimer
-        interval: 2000
-        repeat: false
-        onTriggered: btnCopy.width = 36
-    }
-
-    onMaximizedChanged: {
-        if (root.maximized) {
-            root.width = 760
-            root.height = 420
-        } else {
-            root.width = 560
-            root.height = 120
+        function onClicked() {
+            root.copied();
         }
     }
 
-    // UI
-    width: 560
-    height: 120
-
     Rectangle {
         anchors.fill: parent
+
         color: "#000000"
         radius: 6
+
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 4
+
             Row {
                 Layout.alignment: Qt.AlignRight
                 spacing: 4
+
                 Button {
                     id: btnCopy
 
@@ -59,12 +47,13 @@ Item {
                     height: 36
 
                     text: "Copied to clipboard"
-                    icon.source: "../../../resources/icons/copy.svg"
-                    icon.color: "#9D9D9D"
-                    icon.width: 18
-                    icon.height: 18
+                    icon {
+                        source: "../../../resources/icons/copy.svg"
+                        color: "#9D9D9D"
+                        width: 18
+                        height: 18
+                    }
                     palette.buttonText: "#9D9D9D"
-
                     background: Rectangle {
                         color: btnCopy.hovered ? "#1B1B1B" : "transparent"
                         radius: 3
@@ -74,7 +63,7 @@ Item {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor 
                         onPressed: (mouse) => {
-                            mouse.accepted = false
+                            mouse.accepted = false;
                         }
                     }
 
@@ -84,25 +73,27 @@ Item {
                             easing.type: Easing.InOutQuad
                         }
                     }
-
-                    onClicked: {
-                        root.copied();
-                    }
                 }
+
                 Button {
                     id: btnResize
 
                     width: 36
                     height: 36
 
-                    icon.source: root.maximized ? "../../../resources/icons/minimize.svg" : "../../../resources/icons/maximize.svg"
-                    icon.color: "#9D9D9D"
-                    icon.width: 18
-                    icon.height: 18
-
+                    icon {
+                        source: root.maximized ? "../../../resources/icons/minimize.svg" : "../../../resources/icons/maximize.svg"
+                        color: "#9D9D9D"
+                        width: 18
+                        height: 18
+                    }
                     background: Rectangle {
                         color: btnResize.hovered ? "#1B1B1B" : "transparent"
                         radius: 3
+                    }
+
+                    onClicked: {
+                        root.maximized = !root.maximized
                     }
 
                     MouseArea {
@@ -113,9 +104,6 @@ Item {
                         }
                     }
 
-                    onClicked: {
-                        root.maximized = !root.maximized
-                    }
                 }
             }
 
@@ -133,32 +121,50 @@ Item {
                     id: textBlock
 
                     anchors.fill: scrollView
-                    textFormat: TextEdit.MarkdownText
 
+                    text: root.text
+                    textFormat: TextEdit.MarkdownText
                     color: "#FFFFFF"
                     selectionColor: "#073BA5"
                     wrapMode: Text.WordWrap
                     font.pointSize: 12
                     readOnly: true
-
-                    text: root.text
                 }
             }
 
         }
     }
 
-    Behavior on width {
+    Behavior on implicitWidth {
         NumberAnimation {
             duration: 200
             easing.type: Easing.InOutQuad
         }
     }
 
-    Behavior on height {
+    Behavior on implicitHeight {
         NumberAnimation {
             duration: 200
             easing.type: Easing.InOutQuad
         }
+    }
+
+    Timer {
+        id: copyTimer
+
+        interval: 2000
+        repeat: false
+
+        onTriggered: btnCopy.width = 36
+    }
+
+    function reset() {
+        root.maximized = false;
+        textBlock.clear();
+    }
+
+    function runCopied() {
+        btnCopy.width = btnCopy.implicitWidth;
+        copyTimer.start();
     }
 }
