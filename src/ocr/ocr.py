@@ -1,8 +1,8 @@
 from common.task import TaskManager
 from common.observer import Observer
 from dataclasses import dataclass
-import pytesseract
 from enum import IntEnum
+import pytesseract
 from .window import grab_window_area
 from .spell import clean_text
 from .translate.translate import Translator
