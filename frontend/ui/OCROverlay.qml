@@ -15,8 +15,9 @@ Item {
     }
 
     property int qtMode: ocroverlaymodel.mode
-    property string text: ocroverlaymodel.text
     property int mode: OCROverlay.Mode.StandBy
+    property string text: ocroverlaymodel.text
+
     signal closeRequested()
 
     onModeChanged: {
@@ -100,15 +101,19 @@ Item {
 
     Rectangle {
         id: rootRect
+
         anchors.fill: parent
         color: "transparent"
 
         Canvas {
             id: canvas
-            opacity: 0.4
+
             anchors.fill: parent
+    
+            opacity: 0.4
+
             onPaint: {
-                var ctx = getContext("2d");
+                let ctx = getContext("2d");
                 ctx.fillStyle = "black";
 
                 // Draw a rectangle with a transparent box
@@ -128,11 +133,13 @@ Item {
 
         Components.SelectionArea {
             id: selectionArea
+
             anchors.fill: parent
         }
 
         Components.ControlToolBar {
             id: controlToolBar
+
             anchors.topMargin: 8
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
@@ -140,9 +147,11 @@ Item {
 
         Components.OCRTextArea {
             id: textArea
+
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
+
             text: root.text
         }
 
@@ -152,17 +161,22 @@ Item {
             width: 48
             height: 48
             anchors.right: parent.right
+
             background: Rectangle {
                 color: "transparent"
             }
-            icon.source: "../../resources/icons/close.svg"
-            icon.color: "#868686"
-            icon.width: 16
-            icon.height: 16
+            icon {
+                source: "../../resources/icons/close.svg"
+                color: "#868686"
+                width: 16
+                height: 16
+            }
 
             MouseArea {
                 anchors.fill: parent
+
                 cursorShape: Qt.PointingHandCursor 
+
                 onPressed: (mouse) => {
                     mouse.accepted = false;
                     root.closeRequested();
