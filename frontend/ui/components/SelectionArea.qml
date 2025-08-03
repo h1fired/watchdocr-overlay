@@ -13,11 +13,13 @@ Item {
     property bool drawBorders: true
 
     signal boxReleased()
+    signal pressed()
 
     MouseArea {
         anchors.fill: parent
 
         onPressed: (event) => {
+            root.pressed();
             privates.startPoint = Qt.point(event.x, event.y);
             privates.endPoint = privates.startPoint;
         }

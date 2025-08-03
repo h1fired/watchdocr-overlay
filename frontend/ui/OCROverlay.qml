@@ -11,7 +11,8 @@ Item {
         Selection = 0,
         Recognizing = 1,
         Result = 2,
-        StandBy = 3
+        StandBy = 3,
+        Selecting = 4
     }
 
     property int qtMode: ocroverlaymodel.mode
@@ -26,10 +27,6 @@ Item {
             textArea.reset();
             canvas.requestPaint();
         }
-
-        textArea.visible = (mode == OCROverlay.Mode.Result || mode == OCROverlay.Mode.Recognizing)
-        selectionArea.animationEnabled = (mode == OCROverlay.Mode.Recognizing)
-        selectionArea.enabled = (mode == OCROverlay.Mode.Selection || mode == OCROverlay.Mode.Result)
     }
 
     onVisibleChanged: {
@@ -63,13 +60,20 @@ Item {
         function onBoxChanged() {
             canvas.requestPaint();
         }
+
+        function onPressed() {
+            root.mode = OCROverlay.Mode.Selecting
+        }
     }
 
     Connections {
         target: controlToolBar
 
         function onFullscreenSelected() {
-            if (root.mode == OCROverlay.Mode.Recognizing || root.mode == OCROverlay.Mode.StandBy) {
+            if (
+                root.mode == OCROverlay.Mode.Recognizing ||
+                root.mode == OCROverlay.Mode.StandBy
+            ) {
                 return
             }
             selectionArea.selectBox(Qt.rect(
@@ -135,6 +139,13 @@ Item {
             id: selectionArea
 
             anchors.fill: parent
+
+            enabled: (
+                mode == OCROverlay.Mode.Selection ||
+                mode == OCROverlay.Mode.Result ||
+                mode == OCROverlay.Mode.Selecting
+            )
+            animationEnabled: mode == OCROverlay.Mode.Recognizing
         }
 
         Components.ControlToolBar {
@@ -152,6 +163,10 @@ Item {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
 
+            visible: (
+                mode == OCROverlay.Mode.Result ||
+                mode == OCROverlay.Mode.Recognizing
+            )
             text: root.text
         }
 
