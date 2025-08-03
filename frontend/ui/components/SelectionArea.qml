@@ -109,7 +109,6 @@ Item {
         privates.startPoint = Qt.point(0, 0)
         privates.endPoint = Qt.point(0, 0)
         root.box = Qt.rect(0, 0, 0, 0)
-        root.animationEnabled = false
     }
 
     function selectBox(rect) {

@@ -15,9 +15,13 @@ Item {
         Selecting = 4
     }
 
+    enum DataStatus {
+        Success = 0,
+        Error = 1
+    }
+
     property int qtMode: ocroverlaymodel.mode
     property int mode: OCROverlay.Mode.StandBy
-    property string text: ocroverlaymodel.text
 
     signal closeRequested()
 
@@ -26,19 +30,21 @@ Item {
             selectionArea.clear();
             textArea.reset();
             canvas.requestPaint();
+        } else if (mode == OCROverlay.Mode.Recognizing) {
+            textArea.status = "*Recognizing...*";
         }
     }
 
     onVisibleChanged: {
         if (window.visible) {
-            overlay.mode = OCROverlay.Mode.Selection
+            root.mode = OCROverlay.Mode.Selection
         } else {
-            overlay.mode = OCROverlay.Mode.StandBy
+            root.mode = OCROverlay.Mode.StandBy
         }
     }
 
     onQtModeChanged: {
-        mode = qtMode
+        root.mode = qtMode;
     }
 
     Connections {
@@ -46,6 +52,17 @@ Item {
 
         function onTextCopied() {
             textArea.runCopied();
+        }
+
+        function onResponseReceived() {
+            let response = ocroverlaymodel.QMLgetResponse();
+            
+            if (response.state == OCROverlay.DataStatus.Success) {
+                textArea.text = response.text;
+                textArea.status = "";
+            } else if (response.state == OCROverlay.DataStatus.Error) {
+                textArea.status = response.text;
+            }
         }
     }
 
@@ -140,12 +157,14 @@ Item {
 
             anchors.fill: parent
 
-            enabled: (
-                mode == OCROverlay.Mode.Selection ||
-                mode == OCROverlay.Mode.Result ||
-                mode == OCROverlay.Mode.Selecting
-            )
-            animationEnabled: mode == OCROverlay.Mode.Recognizing
+            enabled: {
+                return (
+                    root.mode == OCROverlay.Mode.Selection ||
+                    root.mode == OCROverlay.Mode.Result ||
+                    root.mode == OCROverlay.Mode.Selecting
+                )
+            }
+            animationEnabled: root.mode == OCROverlay.Mode.Recognizing
         }
 
         Components.ControlToolBar {
@@ -164,10 +183,9 @@ Item {
             anchors.bottomMargin: 24
 
             visible: (
-                mode == OCROverlay.Mode.Result ||
-                mode == OCROverlay.Mode.Recognizing
+                root.mode == OCROverlay.Mode.Result ||
+                root.mode == OCROverlay.Mode.Recognizing
             )
-            text: root.text
         }
 
         Button {

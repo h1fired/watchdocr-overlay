@@ -8,12 +8,12 @@ from config import config
 
 class OCROverlayViewModel(ViewModel):
     context_id = 'ocroverlaymodel'
-    textChanged = Signal(str)
+    responseReceived = Signal()
     modeChanged = Signal(int)
     textCopied = Signal()
 
     def on_load(self):
-        self._text = ''
+        self._response = {}
         self._mode = ''
 
         Event.subscribe(
@@ -28,7 +28,11 @@ class OCROverlayViewModel(ViewModel):
         )
 
     def on_ocr_translate_data_receive(self, e):
-        self.QMLsetText(e.data.text)
+        self._response = {
+            'state': int(e.data.state.value),
+            'text': e.data.text
+        }
+        self.responseReceived.emit()
 
     def on_ocr_translate_state_change(self, e):
         match e.state:
@@ -38,14 +42,9 @@ class OCROverlayViewModel(ViewModel):
                 self.QMLsetMode(2)
 
     # Props
-    def QMLgetText(self):
-        return self._text
-
-    def QMLsetText(self, text: str):
-        self._text = text
-        self.textChanged.emit(text)
-
-    text = Property(str, QMLgetText, QMLsetText, notify=textChanged)
+    @Slot(result='QVariant')
+    def QMLgetResponse(self):
+        return self._response
 
     def QMLgetMode(self):
         return self._mode

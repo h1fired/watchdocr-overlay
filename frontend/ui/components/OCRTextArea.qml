@@ -10,6 +10,7 @@ Item {
     implicitHeight: root.maximized ? maximizedHeight : minimizedHeight
 
     property string text
+    property string status: ""
     property bool maximized: false
     property int minimizedWidth: 560
     property int minimizedHeight: 120
@@ -38,13 +39,13 @@ Item {
 
             Row {
                 Layout.alignment: Qt.AlignRight
-                spacing: 4
+                spacing: 0
 
                 Button {
                     id: btnCopy
 
-                    width: 36
-                    height: 36
+                    width: 32
+                    height: 32
 
                     text: "Copied to clipboard"
                     icon {
@@ -78,8 +79,8 @@ Item {
                 Button {
                     id: btnResize
 
-                    width: 36
-                    height: 36
+                    width: 32
+                    height: 32
 
                     icon {
                         source: root.maximized ? "../../../resources/icons/minimize.svg" : "../../../resources/icons/maximize.svg"
@@ -122,16 +123,29 @@ Item {
 
                     anchors.fill: scrollView
 
-                    text: root.text
+                    text: root.status == "" ? root.text : ""
                     textFormat: TextEdit.MarkdownText
                     color: "#FFFFFF"
                     selectionColor: "#073BA5"
                     wrapMode: Text.WordWrap
                     font.pointSize: 12
                     readOnly: true
+
+                    Text {
+                        id: statusText
+
+                        x: 10
+                        y: 6
+
+                        visible: root.status != ""
+
+                        text: root.status
+                        textFormat: TextEdit.MarkdownText
+                        font.pointSize: 12
+                        color: "#FFFFFF"
+                    }
                 }
             }
-
         }
     }
 

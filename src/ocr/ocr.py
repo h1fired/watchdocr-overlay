@@ -15,7 +15,11 @@ class OCRState(IntEnum):
     STAND_BY = 0
     RECOGNIZING = 1
     FINISHED = 2
-    ERROR = 3
+
+
+class OCRDataState(IntEnum):
+    SUCCESS = 0
+    ERROR = 1
 
 
 class Messages:
@@ -24,6 +28,7 @@ class Messages:
 
 @dataclass
 class OCRData:
+    state: OCRDataState
     text: str
 
 
@@ -41,9 +46,9 @@ class OCRTranslate:
         text = clean_text(text)
         if text:
             text = self._translator.translate(text, target_language)
+            data = OCRData(OCRDataState.SUCCESS, text)
         else:
-            text = Messages.EMPTY_RECOGNITION
-        data = OCRData(text)
+            data = OCRData(OCRDataState.ERROR, Messages.EMPTY_RECOGNITION)
         return data
 
 
