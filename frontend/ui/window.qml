@@ -5,20 +5,17 @@ import QtQuick.Controls
 
 Window {
     id: window
-    visible: true
+
     x: 0
     y: 0
     width: Screen.width
     height: Screen.height
+
+    visible: true
+
     title: "OCR Overlay"
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.Window
-
-    OCROverlay {
-        id: overlay
-        anchors.fill: parent
-        focus: true
-    }
 
     onVisibleChanged: {
         if (window.visible) {
@@ -54,5 +51,11 @@ Window {
         sequence: "Escape"
         context: Qt.ApplicationShortcut
         onActivated: window.close()
+    }
+
+    OCROverlay {
+        id: overlay
+        anchors.fill: parent
+        focus: true
     }
 }
