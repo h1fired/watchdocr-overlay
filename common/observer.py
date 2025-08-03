@@ -17,13 +17,24 @@ class Observer:
         with self._lock:
             self._notifiers.remove(callback)
 
-    def notify(self, *args, **kwargs):
+    def notify(self, *args):
         with self._lock:
             for notifier in self._notifiers:
                 try:
-                    notifier(*args, **kwargs)
+                    notifier(*args)
                 except Exception as e:
                     log.exception(f'[CALLBACK] {e}')
+
+
+class TypedObserver(Observer):
+    def __init__(self, *types):
+        super().__init__()
+        self._supported_types = types
+
+    def notify(self, *args):
+        if not all(type(v) is st for v, st in zip(args, self._supported_types)):
+            raise TypeError('Invalid data types')
+        return super().notify(*args)
 
 
 class MappedObserver:
@@ -35,13 +46,13 @@ class MappedObserver:
         with self._lock:
             self._notifiers[subject].append(callback)
 
-    def notify(self, subject: str, *args, **kwargs):
+    def notify(self, subject: str, *args):
         with self._lock:
             if subject not in self._notifiers.keys():
                 return
             for notifier in self._notifiers[subject]:
                 try:
-                    notifier(*args, **kwargs)
+                    notifier(*args)
                 except Exception as e:
                     log.exception(f'[CALLBACK] {e}')
 

@@ -140,8 +140,8 @@ Item {
                         visible: root.status != ""
 
                         text: root.status
-                        textFormat: TextEdit.MarkdownText
                         font.pointSize: 12
+                        font.weight: 600
                         color: "#FFFFFF"
                     }
                 }

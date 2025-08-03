@@ -1,5 +1,5 @@
 from common.task import TaskManager
-from common.observer import Observer
+from common.observer import TypedObserver
 from dataclasses import dataclass
 from enum import IntEnum
 import pytesseract
@@ -11,19 +11,15 @@ from .translate.translate import Translator
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
 
-class OCRState(IntEnum):
-    STAND_BY = 0
-    RECOGNIZING = 1
-    FINISHED = 2
-
-
 class OCRDataState(IntEnum):
     SUCCESS = 0
     ERROR = 1
+    RECOGNIZING = 2
 
 
 class Messages:
-    EMPTY_RECOGNITION = '*Error: Cannot recognize text*'
+    RECOGNIZING = 'Recognizing...'
+    EMPTY_RECOGNITION = 'Error: Cannot recognize text'
 
 
 @dataclass
@@ -35,53 +31,49 @@ class OCRData:
 class OCRTranslate:
     def __init__(self):
         self._translator = Translator()
+        self._recognizing = False
 
     def recognize(
         self,
         window_box: tuple[int, int, int, int],
         target_language: str = 'EN'
     ):
+        if self._recognizing:
+            raise RuntimeError('OCRTranslate already recognizing')
+
         image = grab_window_area(window_box)
         text = pytesseract.image_to_string(image)
         text = clean_text(text)
+
         if text:
             text = self._translator.translate(text, target_language)
             data = OCRData(OCRDataState.SUCCESS, text)
         else:
             data = OCRData(OCRDataState.ERROR, Messages.EMPTY_RECOGNITION)
+
         return data
 
 
 class OCRTranslateManager:
-    obs_data = Observer()
-    obs_state = Observer()
+    obs_data = TypedObserver(OCRData)
 
     def __init__(self):
         self._ocr = OCRTranslate()
-        self._state = OCRState.STAND_BY
 
     def recognize(
         self,
         window_box: tuple[int, int, int, int],
         target_language: str = 'EN'
     ):
-        if self._state == OCRState.RECOGNIZING:
-            raise RuntimeError('OCR translation already started')
-        self._state = OCRState.RECOGNIZING
-        self.obs_state.notify(OCRState.RECOGNIZING)
-        tasks = TaskManager()
-        f = tasks.execute(lambda t: self._ocr.recognize(
-            window_box,
-            target_language
-        ))
-        f.observe(
-            on_finish=self._on_finish,
-            on_result=self._on_result
-        )
+        data = OCRData(OCRDataState.RECOGNIZING, Messages.RECOGNIZING)
+        self.obs_data.notify(data)
 
-    def _on_finish(self):
-        self._state = OCRState.FINISHED
-        self.obs_state.notify(OCRState.FINISHED)
+        manager = TaskManager()
+        future = manager.execute(lambda _: self._ocr.recognize(
+            window_box=window_box,
+            target_language=target_language
+        ))
+        future.observe(on_result=self._on_result)
 
     def _on_result(self, data):
         self.obs_data.notify(data)

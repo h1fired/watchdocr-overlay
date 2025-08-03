@@ -11,16 +11,15 @@ Item {
         Selection = 0,
         Recognizing = 1,
         Result = 2,
-        StandBy = 3,
-        Selecting = 4
+        StandBy = 3
     }
 
-    enum DataStatus {
+    enum ResponseStatus {
         Success = 0,
-        Error = 1
+        Error = 1,
+        Recognizing = 2
     }
 
-    property int qtMode: ocroverlaymodel.mode
     property int mode: OCROverlay.Mode.StandBy
 
     signal closeRequested()
@@ -30,8 +29,6 @@ Item {
             selectionArea.clear();
             textArea.reset();
             canvas.requestPaint();
-        } else if (mode == OCROverlay.Mode.Recognizing) {
-            textArea.status = "*Recognizing...*";
         }
     }
 
@@ -41,10 +38,6 @@ Item {
         } else {
             root.mode = OCROverlay.Mode.StandBy
         }
-    }
-
-    onQtModeChanged: {
-        root.mode = qtMode;
     }
 
     Connections {
@@ -57,11 +50,17 @@ Item {
         function onResponseReceived() {
             let response = ocroverlaymodel.QMLgetResponse();
             
-            if (response.state == OCROverlay.DataStatus.Success) {
+            if (response.state == OCROverlay.ResponseStatus.Success) {
                 textArea.text = response.text;
                 textArea.status = "";
-            } else if (response.state == OCROverlay.DataStatus.Error) {
+                root.mode = OCROverlay.Mode.Result;
+            } else if (response.state == OCROverlay.ResponseStatus.Error) {
+                root.mode = OCROverlay.Mode.Result;
                 textArea.status = response.text;
+            } else if (response.state == OCROverlay.ResponseStatus.Recognizing) {
+                root.mode = OCROverlay.Mode.Recognizing;
+                textArea.status = response.text;
+                textArea.maximized = false;
             }
         }
     }
@@ -76,10 +75,6 @@ Item {
 
         function onBoxChanged() {
             canvas.requestPaint();
-        }
-
-        function onPressed() {
-            root.mode = OCROverlay.Mode.Selecting
         }
     }
 
@@ -160,8 +155,7 @@ Item {
             enabled: {
                 return (
                     root.mode == OCROverlay.Mode.Selection ||
-                    root.mode == OCROverlay.Mode.Result ||
-                    root.mode == OCROverlay.Mode.Selecting
+                    root.mode == OCROverlay.Mode.Result
                 )
             }
             animationEnabled: root.mode == OCROverlay.Mode.Recognizing
