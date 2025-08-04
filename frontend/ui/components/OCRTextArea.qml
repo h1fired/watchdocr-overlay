@@ -125,20 +125,23 @@ Item {
                 }
             }
 
-            ScrollView {
-                id: scrollView
+            Flickable {
+                id: flickable
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                contentHeight: textBlock.implicitHeight
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
 
-                ScrollBar.horizontal: ScrollBar {
-                    policy: ScrollBar.AlwaysOff
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
                 }
 
                 TextArea {
                     id: textBlock
 
-                    anchors.fill: scrollView
+                    anchors.fill: parent
 
                     visible: root.state == 'result'
 
