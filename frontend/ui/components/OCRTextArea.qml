@@ -32,6 +32,10 @@ Item {
 
         color: "#000000"
         radius: 6
+        border {
+            width: 1
+            color: "#1F1F1F"
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -63,9 +67,6 @@ Item {
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor 
-                        onPressed: (mouse) => {
-                            mouse.accepted = false;
-                        }
                     }
 
                     Behavior on width {
@@ -100,9 +101,6 @@ Item {
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor 
-                        onPressed: (mouse) => {
-                            mouse.accepted = false
-                        }
                     }
 
                 }
