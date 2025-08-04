@@ -52,15 +52,17 @@ Item {
             
             if (response.state == OCROverlay.ResponseStatus.Success) {
                 textArea.text = response.text;
-                textArea.status = "";
+                textArea.state = "result"
                 root.mode = OCROverlay.Mode.Result;
             } else if (response.state == OCROverlay.ResponseStatus.Error) {
-                root.mode = OCROverlay.Mode.Result;
                 textArea.status = response.text;
+                textArea.state = "status"
+                root.mode = OCROverlay.Mode.Result;
             } else if (response.state == OCROverlay.ResponseStatus.Recognizing) {
                 root.mode = OCROverlay.Mode.Recognizing;
                 textArea.status = response.text;
                 textArea.maximized = false;
+                textArea.state = "status"
             }
         }
     }

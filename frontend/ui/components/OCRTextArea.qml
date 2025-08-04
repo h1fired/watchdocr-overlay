@@ -19,12 +19,21 @@ Item {
 
     signal copied()
 
+    states: [
+        State { name: "result" },
+        State { name: "status" }
+    ]
+
     Connections {
         target: btnCopy
 
         function onClicked() {
             root.copied();
         }
+    }
+
+    Component.onCompleted: {
+        root.state = 'result';
     }
 
     Rectangle {
@@ -51,22 +60,28 @@ Item {
                     width: 32
                     height: 32
 
+                    enabled: root.state == "result"
+
                     text: "Copied to clipboard"
                     icon {
                         source: "../../../resources/icons/copy.svg"
-                        color: "#9D9D9D"
+                        color: btnCopy.enabled ? "#9D9D9D" : "#646464"
                         width: 18
                         height: 18
                     }
                     palette.buttonText: "#9D9D9D"
                     background: Rectangle {
-                        color: btnCopy.hovered ? "#1B1B1B" : "transparent"
+                        color: btnCopy.hovered && btnCopy.enabled ? "#1B1B1B" : "transparent"
                         radius: 3
                     }
 
                     MouseArea {
                         anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor 
+                        cursorShape: Qt.PointingHandCursor
+
+                        onPressed: (mouse) => {
+                            mouse.accepted = false;
+                        }
                     }
 
                     Behavior on width {
@@ -100,7 +115,11 @@ Item {
 
                     MouseArea {
                         anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor 
+                        cursorShape: Qt.PointingHandCursor
+
+                        onPressed: (mouse) => {
+                            mouse.accepted = false;
+                        }
                     }
 
                 }
@@ -121,27 +140,29 @@ Item {
 
                     anchors.fill: scrollView
 
-                    text: root.status == "" ? root.text : ""
+                    visible: root.state == 'result'
+
+                    text: root.text
                     textFormat: TextEdit.MarkdownText
-                    color: "#FFFFFF"
                     selectionColor: "#073BA5"
                     wrapMode: Text.WordWrap
                     font.pointSize: 12
+                    color: "#FFFFFF"
                     readOnly: true
+                }
 
-                    Text {
-                        id: statusText
+                Text {
+                    id: statusText
 
-                        x: 10
-                        y: 6
+                    x: 10
+                    y: 6
 
-                        visible: root.status != ""
+                    visible: root.state == "status"
 
-                        text: root.status
-                        font.pointSize: 12
-                        font.weight: 600
-                        color: "#FFFFFF"
-                    }
+                    text: root.status
+                    font.pointSize: 12
+                    font.weight: 600
+                    color: "#FFFFFF"
                 }
             }
         }
