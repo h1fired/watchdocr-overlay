@@ -1,79 +1,65 @@
-from common.task import TaskManager
-from common.observer import TypedObserver
-from dataclasses import dataclass
-from enum import IntEnum
 import pytesseract
-from .window import grab_window_area
-from .spell import clean_text
-from .translate.translate import Translator
+from PIL import Image, ImageFilter, ImageChops, ImageOps, ImageEnhance
 
 
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+class OCR:
+    def recognize(self, image: Image.Image):
+        adjusted_image = OCRImageAdjuster.adjust(image)
+        raw_text = pytesseract.image_to_string(adjusted_image)
+        return raw_text
 
 
-class OCRDataState(IntEnum):
-    SUCCESS = 0
-    ERROR = 1
-    RECOGNIZING = 2
+class OCRImageAdjuster:
+    @staticmethod
+    def adjust(image: Image.Image):
+        _image = image
+        _image = OCRImageAdjuster.adjust_to_grayscale(image)
+        _image = OCRImageAdjuster.adjust_shadow_remove(_image)
+        _image = OCRImageAdjuster.adjust_levels(_image, 40, 255, gamma=2.0)
+        _image = OCRImageAdjuster.adjust_borders(_image, 10)
+        return _image
 
+    @staticmethod
+    def adjust_to_grayscale(image: Image.Image):
+        return image.convert('L')
 
-class Messages:
-    RECOGNIZING = 'Recognizing...'
-    EMPTY_RECOGNITION = 'Error: Cannot recognize text'
+    @staticmethod
+    def adjust_shadow_remove(image: Image.Image):
+        median_image = image.filter(ImageFilter.MedianFilter(size=21))
+        diff_img = ImageChops.difference(image, median_image)
+        diff_img = ImageOps.invert(diff_img)
 
+        return diff_img
 
-@dataclass
-class OCRData:
-    state: OCRDataState
-    text: str
+    @staticmethod
+    def adjust_contrast(image: Image.Image):
+        enhancer = ImageEnhance.Contrast(image)
+        _image = ImageOps.autocontrast(image, cutoff=0)
+        _image = enhancer.enhance(15.0)
+        _image = _image.filter(ImageFilter.UnsharpMask(radius=1, percent=200, threshold=2))
 
+        return _image
 
-class OCRTranslate:
-    def __init__(self):
-        self._translator = Translator()
-        self._recognizing = False
+    @staticmethod
+    def adjust_levels(image: Image.Image, black: int, white: int, gamma: float):
+        # Clamp to prevent divide by zero
+        white = max(white, black + 1)
 
-    def recognize(
-        self,
-        window_box: tuple[int, int, int, int],
-        target_language: str = 'EN'
-    ):
-        if self._recognizing:
-            raise RuntimeError('OCRTranslate already recognizing')
+        # Build lookup table (LUT)
+        lut = []
+        for i in range(256):
+            if i <= black:
+                lut.append(0)
+            elif i >= white:
+                lut.append(255)
+            else:
+                # Normalize to 0–1, apply gamma, rescale to 0–255
+                norm = (i - black) / (white - black)
+                val = int((norm ** gamma) * 255)
+                lut.append(max(0, min(255, val)))
 
-        image = grab_window_area(window_box)
-        text = pytesseract.image_to_string(image)
-        text = clean_text(text)
+        return image.point(lut)
 
-        if text:
-            text = self._translator.translate(text, target_language)
-            data = OCRData(OCRDataState.SUCCESS, text)
-        else:
-            data = OCRData(OCRDataState.ERROR, Messages.EMPTY_RECOGNITION)
-
-        return data
-
-
-class OCRTranslateManager:
-    obs_data = TypedObserver(OCRData)
-
-    def __init__(self):
-        self._ocr = OCRTranslate()
-
-    def recognize(
-        self,
-        window_box: tuple[int, int, int, int],
-        target_language: str = 'EN'
-    ):
-        data = OCRData(OCRDataState.RECOGNIZING, Messages.RECOGNIZING)
-        self.obs_data.notify(data)
-
-        manager = TaskManager()
-        future = manager.execute(lambda _: self._ocr.recognize(
-            window_box=window_box,
-            target_language=target_language
-        ))
-        future.observe(on_result=self._on_result)
-
-    def _on_result(self, data):
-        self.obs_data.notify(data)
+    @staticmethod
+    def adjust_borders(image: Image.Image, size: int):
+        return ImageOps.expand(image, border=size, fill='white')

@@ -39,10 +39,10 @@ Item {
     Rectangle {
         visible: root.drawBorders
 
-        x: root.box.x
-        y: root.box.y
-        width: root.box.width
-        height: root.box.height
+        x: root.box.x-1
+        y: root.box.y-1
+        width: root.box.width+2
+        height: root.box.height+2
 
         color: "transparent"
         border.color: "#664CFF"
