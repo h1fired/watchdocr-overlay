@@ -36,6 +36,10 @@ Item {
         root.state = 'result';
     }
 
+    MouseArea {
+        anchors.fill: parent
+    }
+
     Rectangle {
         anchors.fill: parent
 
