@@ -28,7 +28,6 @@ Item {
         if (mode == OCROverlay.Mode.StandBy) {
             selectionArea.clear();
             textArea.reset();
-            canvas.requestPaint();
         }
     }
 
@@ -74,10 +73,6 @@ Item {
             var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
             ocroverlaymodel.QMLareaSelected(absoluteBox);
         }
-
-        function onBoxChanged() {
-            canvas.requestPaint();
-        }
     }
 
     Connections {
@@ -88,14 +83,9 @@ Item {
                 root.mode == OCROverlay.Mode.Recognizing ||
                 root.mode == OCROverlay.Mode.StandBy
             ) {
-                return
+                return;
             }
-            selectionArea.selectBox(Qt.rect(
-                root.x,
-                root.y,
-                root.width,
-                root.height,
-            ))
+            selectionArea.selectPrimaryScreenBox();
             var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
             ocroverlaymodel.QMLareaSelected(absoluteBox);
         }
@@ -121,35 +111,10 @@ Item {
         id: rootRect
 
         anchors.fill: parent
+
         color: "transparent"
 
-        Canvas {
-            id: canvas
-
-            anchors.fill: parent
-    
-            opacity: 0.4
-
-            onPaint: {
-                let ctx = getContext("2d");
-                ctx.fillStyle = "black";
-
-                // Draw a rectangle with a transparent box
-                ctx.beginPath();
-                ctx.fillRect(0, 0, parent.width, parent.height);
-                ctx.globalCompositeOperation = "destination-out";
-                ctx.fillStyle = "black";
-                ctx.fillRect(
-                    selectionArea.box.x,
-                    selectionArea.box.y,
-                    selectionArea.box.width,
-                    selectionArea.box.height,
-                );
-                ctx.globalCompositeOperation = "source-over";
-            }
-        }
-
-        Components.SelectionArea {
+        Components.MultiScreenSelectionArea {
             id: selectionArea
 
             anchors.fill: parent
@@ -160,7 +125,8 @@ Item {
                     root.mode == OCROverlay.Mode.Result
                 )
             }
-            animationEnabled: root.mode == OCROverlay.Mode.Recognizing
+            animationEnable: root.mode == OCROverlay.Mode.Recognizing
+            screensGeometries: ocroverlaymodel.QMLscreenManager().screensGeometries()
         }
 
         Components.ControlToolBar {
@@ -189,6 +155,7 @@ Item {
 
             width: 48
             height: 48
+
             anchors.right: parent.right
 
             background: Rectangle {

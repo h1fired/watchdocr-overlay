@@ -1,15 +1,40 @@
 from common.event import Event
 from frontend.common.mvvm import ViewModel
 from src.ocr.service import OCRTranslateService
-from PySide6.QtCore import Slot, Signal, QRect
+from PySide6.QtCore import Slot, Signal, QRect, QObject
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QApplication
 from config import config
+
+
+class ScreenManager(QObject):
+    @Slot(result=QRect)
+    def virtualScreensGeometry(self):
+        rect = QRect()
+        for i, screen in enumerate(QGuiApplication.screens()):
+            if i == 0:
+                rect = screen.geometry()
+            else:
+                rect = screen.geometry().united(rect)
+        return rect
+
+    @Slot(result=QRect)
+    def primaryScreenGeometry(self):
+        return QGuiApplication.primaryScreen().geometry()
+
+    @Slot(result=list)
+    def screensGeometries(self):
+        return [s.geometry() for s in QGuiApplication.screens()]
 
 
 class OCROverlayViewModel(ViewModel):
     context_id = 'ocroverlaymodel'
     responseReceived = Signal()
     textCopied = Signal()
+
+    def __init__(self, engine, accessor, event_system):
+        super().__init__(engine, accessor, event_system)
+        self._screen_manager = ScreenManager()
 
     def on_load(self):
         self._response = {}
@@ -46,3 +71,7 @@ class OCROverlayViewModel(ViewModel):
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
         self.textCopied.emit()
+
+    @Slot(result=QObject)
+    def QMLscreenManager(self):
+        return self._screen_manager
