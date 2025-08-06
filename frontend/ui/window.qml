@@ -30,11 +30,7 @@ Window {
         target: system
 
         function onVisibilityChanged() {
-            if (window.visible) {
-                window.close();
-            } else {
-                window.show();
-            }
+            window.visible = !window.visible;
         }
     }
 
@@ -43,7 +39,7 @@ Window {
 
         function onCloseRequested() {
             if (window.visible) {
-                window.close();
+                window.visible = false;
             }
         }
     }
@@ -51,7 +47,7 @@ Window {
     Shortcut {
         sequence: "Escape"
         context: Qt.ApplicationShortcut
-        onActivated: window.close()
+        onActivated: window.visible = false
     }
 
     OCROverlay {
