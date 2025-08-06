@@ -36,7 +36,17 @@ Item {
         id: popupComponent
 
         Window {
-            visible: root.visible
+            id: subwindow
+
+            visible: {
+                if (root.visible) {
+                    subwindow.show();
+                    return true;
+                } else {
+                    subwindow.close()
+                    return false;
+                }
+            }
             color: "transparent"
             flags: Qt.FramelessWindowHint
 

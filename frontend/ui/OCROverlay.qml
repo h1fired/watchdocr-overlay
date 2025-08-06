@@ -26,13 +26,12 @@ Item {
 
     onModeChanged: {
         if (mode == OCROverlay.Mode.StandBy) {
-            selectionArea.clear();
-            textArea.reset();
+            root.clear();
         }
     }
 
     onVisibleChanged: {
-        if (window.visible) {
+        if (root.visible) {
             root.mode = OCROverlay.Mode.Selection
         } else {
             root.mode = OCROverlay.Mode.StandBy
@@ -178,6 +177,11 @@ Item {
                 }
             }
         }
+    }
+
+    function clear() {
+        selectionArea.clear();
+        textArea.reset();
     }
 
 }
