@@ -23,6 +23,7 @@ Window {
         } else {
             overlay.mode = OCROverlay.Mode.StandBy;
         }
+        overlay.visible = window.visible;
     }
 
     Connections {

@@ -125,8 +125,7 @@ Item {
                     root.mode == OCROverlay.Mode.Result
                 )
             }
-            animationEnable: root.mode == OCROverlay.Mode.Recognizing
-            screensGeometries: ocroverlaymodel.QMLscreenManager().screensGeometries()
+            loading: root.mode == OCROverlay.Mode.Recognizing
         }
 
         Components.ControlToolBar {

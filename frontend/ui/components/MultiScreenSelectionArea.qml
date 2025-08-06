@@ -1,49 +1,42 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Window
+import App.Utils
 
 
 Item {
     id: root
 
-    property var screensGeometries: []
     property rect box: privates.activeArea.box
-    property bool animationEnable: false
+    property bool loading: false
 
     signal boxReleased()
 
-    onAnimationEnableChanged: {
-        privates.activeArea.animationEnable = root.animationEnable;
+    onLoadingChanged: {
+        privates.activeArea.animationEnable = root.loading;
     }
 
     Component.onCompleted: {
-        for (let i = 0; i < root.screensGeometries.length; i++) {
-            let rect = root.screensGeometries[i];
-            if (i == 0) {
-                let area = component.createObject(root, {});
-                area.pressed.connect(() => privates.onSelectionAreaPressed(area));
-                area.released.connect(() => root.boxReleased());
-                privates.areas.push(area);
-            } else {
-                let popup = popupComponent.createObject(root, {
-                    x: rect.x,
-                    y: rect.y,
-                    width: rect.width,
-                    height: rect.height
-                })
-                popup.area.pressed.connect(() => privates.onSelectionAreaPressed(popup.area));
-                popup.area.released.connect(() => root.boxReleased());
-                privates.areas.push(popup.area);
-            }
+        privates.updateSelectionAreas();
+    }
+
+    Connections {
+        target: ExtScreen
+
+        function onScreensChanged() {
+            privates.updateSelectionAreasDelayed();
         }
-        privates.activeArea = privates.areas[0];
+
+        function onPrimaryScreenChanged() {
+            privates.updateSelectionAreasDelayed();
+        }
     }
 
     Component {
         id: popupComponent
 
         Window {
-            visible: true
+            visible: root.visible
             color: "transparent"
             flags: Qt.FramelessWindowHint
 
@@ -67,15 +60,62 @@ Item {
         }
     }
 
+    Timer {
+        id: updateTimer
+        interval: 1000
+        running: false
+        repeat: false
+        onTriggered: privates.updateSelectionAreas()
+    }
+
     QtObject {
         id: privates
 
-        property var areas: []
         property var activeArea
+        property var areas: []
+        property var objects: []
 
         function onSelectionAreaPressed(area) {
             privates.activeArea = area;
             root.clear();
+        }
+
+        function updateSelectionAreasDelayed() {
+            updateTimer.start();
+        }
+
+        function updateSelectionAreas() {
+            // Clear previous screens
+            for (let i = 0; i < privates.objects.length; i++) {
+                privates.objects[i].destroy();
+            }
+            privates.objects = [];
+            privates.areas = [];
+
+            // Create new screens
+            for (let i = 0; i < ExtScreen.screens.length; i++) {
+                let rect = ExtScreen.screens[i].geometry;
+
+                if (ExtScreen.screens[i] == ExtScreen.primary) {
+                    let area = component.createObject(root, {});
+                    area.pressed.connect(() => privates.onSelectionAreaPressed(area));
+                    area.released.connect(() => root.boxReleased());
+                    privates.areas.push(area);
+                    privates.objects.push(area);
+                } else {
+                    let popupArea = popupComponent.createObject(root, {
+                        x: rect.x,
+                        y: rect.y,
+                        width: rect.width,
+                        height: rect.height
+                    })
+                    popupArea.area.pressed.connect(() => privates.onSelectionAreaPressed(popupArea.area));
+                    popupArea.area.released.connect(() => root.boxReleased());
+                    privates.areas.push(popupArea.area);
+                    privates.objects.push(popupArea);
+                }
+            }
+            privates.activeArea = privates.areas[0];
         }
     }
 
