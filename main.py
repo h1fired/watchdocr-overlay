@@ -77,7 +77,6 @@ if __name__ == '__main__':
 
     # Install global keyboard events hook
     ghotkey.install_keyboard_hook_proc()
-
     @invokeFunc
     def toggle_window_visibility():
         system_obj.requestVisibilityChange()

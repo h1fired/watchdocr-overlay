@@ -1,11 +1,11 @@
-from common.event import Event
-from frontend.common.mvvm import ViewModel
-from src.ocr.service import OCRTranslateService
-from PySide6.QtCore import Slot, Signal, QRect, QObject
+from PySide6.QtCore import Slot, Signal, QRect
 from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import qmlRegisterSingletonType
-from config import config
+from common.event import Event
 from frontend.utils.screen import ScreenManager
+from frontend.common.mvvm import ViewModel
+from src.tocr.service import OCRTranslateService
+from config import config
 
 
 qmlRegisterSingletonType(ScreenManager, 'App.Utils', 1, 0, 'ExtScreen')

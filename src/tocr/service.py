@@ -1,6 +1,6 @@
 from common.service import Service
 from common.event import IEvent
-from .ocrtranslate import OCRTranslateManager, OCRData
+from src.tocr.ocrtranslate import OCRTranslateManager, OCRData
 
 
 class _OCRTranslateResponseEvent(IEvent):

@@ -2,13 +2,9 @@ from common.task import TaskManager
 from common.observer import TypedObserver
 from dataclasses import dataclass
 from enum import IntEnum
-import pytesseract
-from .window import grab_window_area
-from .ocr import OCR
-from .translate.translate import Translator
-
-
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+from src.tocr.window import grab_window_area
+from src.ocr.ocr import OCR
+from src.translator.translate import Translator
 
 
 class OCRDataState(IntEnum):

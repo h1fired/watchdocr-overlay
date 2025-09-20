@@ -6,8 +6,7 @@ from common.service import (
 )
 from common.event import EventSystem
 from common.task import TaskManager
-
-from src.ocr.service import OCRTranslateService
+from src.tocr.service import OCRTranslateService
 
 
 class CoreApplication:
