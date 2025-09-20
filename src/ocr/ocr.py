@@ -1,5 +1,6 @@
-import pytesseract
 from PIL import Image, ImageFilter, ImageChops, ImageOps, ImageEnhance
+import pytesseract
+import numpy as np
 
 
 class OCR:
@@ -13,9 +14,11 @@ class OCRImageAdjuster:
     @staticmethod
     def adjust(image: Image.Image):
         _image = image
+        _image = OCRImageAdjuster.adjust_contrast(image)
         _image = OCRImageAdjuster.adjust_to_grayscale(image)
         _image = OCRImageAdjuster.adjust_shadow_remove(_image)
-        _image = OCRImageAdjuster.adjust_levels(_image, 40, 255, gamma=2.0)
+        _image = OCRImageAdjuster.adjust_sigmoid_threshold(_image, 127, 0.03)
+        _image = OCRImageAdjuster.adjust_levels(_image, 110, 255, 1.5)
         _image = OCRImageAdjuster.adjust_borders(_image, 10)
         return _image
 
@@ -25,7 +28,7 @@ class OCRImageAdjuster:
 
     @staticmethod
     def adjust_shadow_remove(image: Image.Image):
-        median_image = image.filter(ImageFilter.MedianFilter(size=21))
+        median_image = image.filter(ImageFilter.MedianFilter(size=11))
         diff_img = ImageChops.difference(image, median_image)
         diff_img = ImageOps.invert(diff_img)
 
@@ -34,9 +37,7 @@ class OCRImageAdjuster:
     @staticmethod
     def adjust_contrast(image: Image.Image):
         enhancer = ImageEnhance.Contrast(image)
-        _image = ImageOps.autocontrast(image, cutoff=0)
-        _image = enhancer.enhance(15.0)
-        _image = _image.filter(ImageFilter.UnsharpMask(radius=1, percent=200, threshold=2))
+        _image = enhancer.enhance(2)
 
         return _image
 
@@ -59,6 +60,16 @@ class OCRImageAdjuster:
                 lut.append(max(0, min(255, val)))
 
         return image.point(lut)
+
+    @staticmethod
+    def adjust_threshold(image: Image.Image, value=127):
+        return image.point(lambda p: 255 if p > value else 0)
+
+    @staticmethod
+    def adjust_sigmoid_threshold(image: Image.Image, threshold=127, steepness=0.05):
+        arr = np.array(image, dtype=np.float32)
+        soft = 255 / (1 + np.exp(-steepness * (arr - threshold)))
+        return Image.fromarray(soft.astype(np.uint8))
 
     @staticmethod
     def adjust_borders(image: Image.Image, size: int):
