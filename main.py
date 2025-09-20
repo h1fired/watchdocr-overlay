@@ -6,6 +6,7 @@ from frontend.viewmodels.ocroverlay import OCROverlayViewModel
 from frontend.utils import ghotkey
 from config import config
 import sys
+import argparse
 
 
 class SystemTray(QObject):
@@ -13,7 +14,6 @@ class SystemTray(QObject):
         super().__init__(window)
 
         self.tray = QSystemTrayIcon(QIcon("resources/icons/tray.svg"), app)
-        self.tray.show()
 
         self.menu = QMenu()
         self.show_action = QAction("Show")
@@ -27,6 +27,9 @@ class SystemTray(QObject):
 
         self.tray.setContextMenu(self.menu)
 
+    def show(self):
+        self.tray.show()
+
 
 class SystemObject(QObject):
     visibilityChanged = Signal()
@@ -36,13 +39,14 @@ class SystemObject(QObject):
 
 
 if __name__ == '__main__':
-    ghotkey.install_keyboard_hook_proc()
+    parser = argparse.ArgumentParser(prog='MD Control')
+    parser.add_argument('--notray', action='store_true', help='disable tray')
+    args = parser.parse_args()
 
     core = CoreApplication()
     core.init()
 
     app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
     engine = QQmlApplicationEngine()
 
     # Load viewmodels
@@ -63,10 +67,16 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     # Create tray
-    tray = SystemTray(engine.rootObjects()[0], app)
+    if not args.notray:
+        app.setQuitOnLastWindowClosed(False)
+        tray = SystemTray(engine.rootObjects()[0], app)
+        tray.show()
 
     # Register open/close hotkey
     window = engine.rootObjects()[0]
+
+    # Install global keyboard events hook
+    ghotkey.install_keyboard_hook_proc()
 
     @invokeFunc
     def toggle_window_visibility():
