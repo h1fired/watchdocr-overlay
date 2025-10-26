@@ -39,78 +39,6 @@ Item {
         }
     }
 
-    Connections {
-        target: ocroverlaymodel
-
-        function onTextCopied() {
-            textArea.runCopied();
-        }
-
-        function onResponseReceived() {
-            let response = ocroverlaymodel.QMLgetResponse();
-            
-            if (response.state == OCROverlay.ResponseStatus.Success) {
-                textArea.text = response.text;
-                textArea.state = "result"
-                root.mode = OCROverlay.Mode.Result;
-            } else if (response.state == OCROverlay.ResponseStatus.Error) {
-                textArea.status = response.text;
-                textArea.state = "status"
-                root.mode = OCROverlay.Mode.Result;
-            } else if (response.state == OCROverlay.ResponseStatus.Recognizing) {
-                root.mode = OCROverlay.Mode.Recognizing;
-                textArea.status = response.text;
-                textArea.maximized = false;
-                textArea.state = "status"
-            }
-        }
-    }
-
-    Connections {
-        target: selectionArea
-
-        function onBoxReleased() {
-            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            ocroverlaymodel.QMLareaSelected(absoluteBox);
-        }
-
-        function onPressed() {
-            root.mode = OCROverlay.Mode.Selecting;
-        }
-    }
-
-    Connections {
-        target: controlToolBar
-
-        function onFullscreenSelected() {
-            if (
-                root.mode == OCROverlay.Mode.Recognizing ||
-                root.mode == OCROverlay.Mode.StandBy
-            ) {
-                return;
-            }
-            selectionArea.selectPrimaryScreenBox();
-            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            ocroverlaymodel.QMLareaSelected(absoluteBox);
-        }
-    }
-
-    Connections {
-        target: textArea
-
-        function onCopied() {
-            ocroverlaymodel.QMLtextCopied(textArea.text);
-        }
-    }
-
-    Connections {
-        target: btnClose
-
-        function onClicked() {
-            Window.close();
-        }
-    }
-
     Rectangle {
         id: rootRect
 
@@ -182,6 +110,78 @@ Item {
                     root.closeRequested();
                 }
             }
+        }
+    }
+
+    Connections {
+        target: ocroverlaymodel
+
+        function onTextCopied() {
+            textArea.runCopied();
+        }
+
+        function onResponseReceived() {
+            let response = ocroverlaymodel.QMLgetResponse();
+            
+            if (response.state == OCROverlay.ResponseStatus.Success) {
+                textArea.text = response.text;
+                textArea.state = "result"
+                root.mode = OCROverlay.Mode.Result;
+            } else if (response.state == OCROverlay.ResponseStatus.Error) {
+                textArea.status = response.text;
+                textArea.state = "status"
+                root.mode = OCROverlay.Mode.Result;
+            } else if (response.state == OCROverlay.ResponseStatus.Recognizing) {
+                root.mode = OCROverlay.Mode.Recognizing;
+                textArea.status = response.text;
+                textArea.maximized = false;
+                textArea.state = "status"
+            }
+        }
+    }
+
+    Connections {
+        target: selectionArea
+
+        function onBoxReleased() {
+            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+            ocroverlaymodel.QMLareaSelected(absoluteBox);
+        }
+
+        function onPressed() {
+            root.mode = OCROverlay.Mode.Selecting;
+        }
+    }
+
+    Connections {
+        target: controlToolBar
+
+        function onFullscreenSelected() {
+            if (
+                root.mode == OCROverlay.Mode.Recognizing ||
+                root.mode == OCROverlay.Mode.StandBy
+            ) {
+                return;
+            }
+            selectionArea.selectPrimaryScreenBox();
+            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+            ocroverlaymodel.QMLareaSelected(absoluteBox);
+        }
+    }
+
+    Connections {
+        target: textArea
+
+        function onCopied() {
+            ocroverlaymodel.QMLtextCopied(textArea.text);
+        }
+    }
+
+    Connections {
+        target: btnClose
+
+        function onClicked() {
+            Window.close();
         }
     }
 
