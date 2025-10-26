@@ -11,6 +11,7 @@ Item {
     property bool loading: false
 
     signal boxReleased()
+    signal pressed()
 
     onLoadingChanged: {
         privates.activeArea.animationEnable = root.loading;
@@ -88,6 +89,7 @@ Item {
         function onSelectionAreaPressed(area) {
             privates.activeArea = area;
             root.clear();
+            root.pressed();
         }
 
         function updateSelectionAreasDelayed() {

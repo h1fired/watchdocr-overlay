@@ -11,7 +11,8 @@ Item {
         Selection = 0,
         Recognizing = 1,
         Result = 2,
-        StandBy = 3
+        StandBy = 3,
+        Selecting = 4
     }
 
     enum ResponseStatus {
@@ -72,6 +73,10 @@ Item {
             var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
             ocroverlaymodel.QMLareaSelected(absoluteBox);
         }
+
+        function onPressed() {
+            root.mode = OCROverlay.Mode.Selecting;
+        }
     }
 
     Connections {
@@ -121,7 +126,8 @@ Item {
             enabled: {
                 return (
                     root.mode == OCROverlay.Mode.Selection ||
-                    root.mode == OCROverlay.Mode.Result
+                    root.mode == OCROverlay.Mode.Result ||
+                    root.mode == OCROverlay.Mode.Selecting
                 )
             }
             loading: root.mode == OCROverlay.Mode.Recognizing
