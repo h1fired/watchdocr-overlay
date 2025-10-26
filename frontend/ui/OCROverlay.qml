@@ -8,11 +8,12 @@ Item {
     id: root
 
     enum Mode {
-        Selection = 0,
-        Recognizing = 1,
-        Result = 2,
-        StandBy = 3,
-        Selecting = 4
+        StandBy = 0,
+        Selection = 1,
+        Selecting = 2,
+        Sending = 3,
+        Recognizing = 4,
+        Result = 5
     }
 
     enum ResponseStatus {
@@ -51,13 +52,11 @@ Item {
 
             anchors.fill: parent
 
-            enabled: {
-                return (
-                    root.mode == OCROverlay.Mode.Selection ||
-                    root.mode == OCROverlay.Mode.Result ||
-                    root.mode == OCROverlay.Mode.Selecting
-                )
-            }
+            enabled: (
+                root.mode == OCROverlay.Mode.Selection ||
+                root.mode == OCROverlay.Mode.Result ||
+                root.mode == OCROverlay.Mode.Selecting
+            )
             loading: root.mode == OCROverlay.Mode.Recognizing
         }
 
