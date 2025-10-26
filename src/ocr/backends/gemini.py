@@ -1,0 +1,33 @@
+from src.ocr.backends import OCRBackend
+from google import genai
+from google.genai import types
+import io
+
+
+MODEL = 'gemini-2.5-flash'
+PROMPT = (
+    'Act like text scanner, OCR model.'
+    'Recognize text from image and give only recognized text.'
+    'Without any descriptions.'
+)
+
+
+class GeminiOCRBackend(OCRBackend):
+    def __init__(self):
+        self._client = genai.Client()
+
+    def recognize(self, image):
+        buf = io.BytesIO()
+        image.save(buf, 'JPEG')
+        
+        response = self._client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[
+                types.Part.from_bytes(
+                    data=buf.getvalue(),
+                    mime_type='image/jpeg',
+                ),
+                PROMPT
+            ]
+        )
+        return response.text
