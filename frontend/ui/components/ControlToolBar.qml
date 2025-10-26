@@ -85,6 +85,33 @@ Item {
                     }
                 }
             }
+
+            Button {
+                id: btnPreferences
+
+                width: 24
+                height: 32
+                padding: 0
+
+                background: Rectangle {
+                    color: btnPreferences.hovered ? "#242638" : "transparent"
+                    radius: 3
+                }
+                icon {
+                    source: "../../../resources/icons/preferences_dots.svg"
+                    color: "#664CFF"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    cursorShape: Qt.PointingHandCursor 
+
+                    onPressed: (mouse) => {
+                        mouse.accepted = false
+                    }
+                }
+            }
         }
     }
 }
