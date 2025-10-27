@@ -1,7 +1,7 @@
 from typing import Callable
 from enum import IntEnum
 from threading import Thread, Event, Lock
-from .observer import Observer
+from .observable import Observer
 
 
 class WorkerState(IntEnum):

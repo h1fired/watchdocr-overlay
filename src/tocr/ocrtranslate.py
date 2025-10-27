@@ -1,5 +1,5 @@
 from common.task import TaskManager
-from common.observer import TypedObserver
+from common.observable import TypedObservable
 from dataclasses import dataclass
 from enum import IntEnum
 from src.tocr.window import grab_window_area
@@ -50,7 +50,7 @@ class OCRTranslate:
 
 
 class OCRTranslateManager:
-    obs_data = TypedObserver(OCRData)
+    obs_data = TypedObservable(OCRData)
 
     def __init__(self):
         self._ocr = OCRTranslate()

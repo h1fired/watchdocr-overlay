@@ -4,7 +4,7 @@ from enum import Enum
 import queue
 import time
 import heapq
-from .observer import MappedObserver
+from .observable import MappedObservable
 from .utils.meta import Singleton
 from .utils.logger import log
 
@@ -217,7 +217,7 @@ class _TaskWrapper:
         self._token = token
         self._id = id
         self._finish_event = Event()
-        self._signal_obs = MappedObserver()
+        self._signal_obs = MappedObservable()
         self._result = None
         self._is_executing = False
         self._last_execution = False

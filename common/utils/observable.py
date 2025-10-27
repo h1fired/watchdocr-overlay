@@ -1,5 +1,5 @@
 from typing import Callable
-from ..observer import Observer
+from ..observable import Observer
 from ..event import IEvent, EventSystem
 
 
