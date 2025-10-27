@@ -2,7 +2,7 @@ from qt.qml import QQmlApplicationEngine
 from qt.core import QObject, QIcon, QAction, QApplication, QSystemTrayIcon, QMenu, Signal
 from qt.utils import invokeFunc
 from src.app import CoreApplication
-from frontend.viewmodels.ocroverlay import OCROverlayViewModel
+from frontend.viewmodels.window import qmlLinkerCore
 from frontend.utils import ghotkey
 from config import config
 import sys
@@ -49,14 +49,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     engine = QQmlApplicationEngine()
 
-    # Load viewmodels
-    viewmodels = (OCROverlayViewModel,)
-    viewmodels_objs = []
-    for vm in viewmodels:
-        obj = vm(engine, core.accessor(), core.event_system())
-        obj.load()
-        viewmodels_objs.append(obj)
-
     # Pass system object to QML
     system_obj = SystemObject(app)
     engine.rootContext().setContextProperty('system', system_obj)
@@ -72,11 +64,19 @@ if __name__ == '__main__':
         tray = SystemTray(engine.rootObjects()[0], app)
         tray.show()
 
-    # Register open/close hotkey
     window = engine.rootObjects()[0]
+    # Load viewmodels
+    qmlLinkerCore.initialize(
+        window=window,
+        accessor=core.accessor(),
+        eventsys=core.event_system()
+    )
+    qmlLinkerCore.loadContent()
+    qmlLinkerCore.loadFullyContent()
 
     # Install global keyboard events hook
     ghotkey.install_keyboard_hook_proc()
+
     @invokeFunc
     def toggle_window_visibility():
         system_obj.requestVisibilityChange()

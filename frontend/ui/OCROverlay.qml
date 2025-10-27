@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Controls.Basic
 import "components" as Components
+import App.Backend
 
 
 Item {
@@ -113,15 +114,9 @@ Item {
     }
 
     Connections {
-        target: ocroverlaymodel
+        target: Backend.OcrTranslate
 
-        function onTextCopied() {
-            textArea.runCopied();
-        }
-
-        function onResponseReceived() {
-            let response = ocroverlaymodel.QMLgetResponse();
-            
+        function onResponseReceived(response) {
             if (response.state == OCROverlay.ResponseStatus.Success) {
                 textArea.text = response.text;
                 textArea.state = "result"
@@ -140,11 +135,19 @@ Item {
     }
 
     Connections {
+        target: Backend.System
+
+        function onTextCopiedToClipboard() {
+            textArea.runCopied();
+        }
+    }
+
+    Connections {
         target: selectionArea
 
         function onBoxReleased() {
             var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            ocroverlaymodel.QMLareaSelected(absoluteBox);
+            Backend.OcrTranslate.recognizeArea(absoluteBox);
         }
 
         function onPressed() {
@@ -164,7 +167,7 @@ Item {
             }
             selectionArea.selectPrimaryScreenBox();
             var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            ocroverlaymodel.QMLareaSelected(absoluteBox);
+            Backend.OcrTranslate.recognizeArea(absoluteBox);
         }
     }
 
@@ -172,7 +175,7 @@ Item {
         target: textArea
 
         function onCopied() {
-            ocroverlaymodel.QMLtextCopied(textArea.text);
+            Backend.System.copyTextToClipboard(textArea.text);
         }
     }
 
