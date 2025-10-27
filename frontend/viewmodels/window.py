@@ -1,13 +1,15 @@
 from frontend.common.mvvm_qml import QmlLinkerCore
-from frontend.viewmodels.components.system import SystemViewModel
-from frontend.viewmodels.components.ocrtranslate import OCRTranslateViewModel
 from PySide6.QtQml import qmlRegisterSingletonInstance
+from frontend.viewmodels.components.system import SystemViewModel
+from frontend.viewmodels.components.ocrtranslate import OcrTranslateViewModel
+from frontend.viewmodels.components.ocr import OcrViewModel
 
 
 class WindowQmlLinkerCore(QmlLinkerCore):
     viewmodels = [
         SystemViewModel,
-        OCRTranslateViewModel
+        OcrTranslateViewModel,
+        OcrViewModel
     ]
 
 

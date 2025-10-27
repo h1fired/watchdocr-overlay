@@ -4,9 +4,14 @@ from typing import Iterable
 
 
 class OCRBackend:
+    name: str
+
+    def __init__(self):
+        if not hasattr(self, 'name'):
+            raise ValueError('OCR backend should have _name property')
 
     def recognize(self, image: Image.Image) -> str:
-        pass
+        raise NotImplementedError
 
 
 class OCRBackendManager:
@@ -28,6 +33,12 @@ class OCRBackendManager:
     def set(self, backend: type[OCRBackend]):
         self._current = self._objects[backend]
 
+    def get_by_name(self, backend: str):
+        for b in self._objects.keys():
+            if b.name == backend:
+                return b
+        raise KeyError('OCR backend does not exists')
+
     def current(self) -> OCRBackend:
         return self._current
 
@@ -37,5 +48,7 @@ class OCRBackendManager:
 
 
 class DummyOCRBackend(OCRBackend):
+    name = 'Dummy'
+
     def recognize(self, image):
         return "Dummy OCR text for development testing."

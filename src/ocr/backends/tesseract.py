@@ -6,5 +6,7 @@ pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesserac
 
 
 class TesseractOCRBackend(OCRBackend):
+    name = 'Tesseract'
+
     def recognize(self, image):
         return pytesseract.image_to_string(image)

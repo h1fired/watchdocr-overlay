@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
-import "components" as Components
 
 
 Window {
@@ -67,7 +66,7 @@ Window {
         focus: true
     }
 
-    Components.DebugPanel {
+    DebugPanel {
         x: 0
         y: 0
         width: 400

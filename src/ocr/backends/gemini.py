@@ -13,13 +13,15 @@ PROMPT = (
 
 
 class GeminiOCRBackend(OCRBackend):
+    name = 'Gemini'
+
     def __init__(self):
         self._client = genai.Client()
 
     def recognize(self, image):
         buf = io.BytesIO()
         image.save(buf, 'JPEG')
-        
+
         response = self._client.models.generate_content(
             model='gemini-2.5-flash',
             contents=[

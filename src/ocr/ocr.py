@@ -20,3 +20,6 @@ class OCR:
         backend = self._backends.current()
         raw_text = backend.recognize(adjusted_image)
         return raw_text
+
+    def backends(self):
+        return self._backends

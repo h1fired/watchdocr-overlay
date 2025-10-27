@@ -9,7 +9,7 @@ from src.tocr.service import OCRTranslateService
 qmlRegisterSingletonType(ScreenManager, 'App.Utils', 1, 0, 'ExtScreen')
 
 
-class OCRTranslateViewModel(QmlViewModel):
+class OcrTranslateViewModel(QmlViewModel):
     _name = 'OcrTranslate'
 
     responseReceived = Signal(dict)

@@ -47,12 +47,18 @@ class OCRTranslate:
 
         return data
 
+    def ocr(self):
+        return self._ocr
+
+    def translator(self):
+        return self._translator
+
 
 class OCRTranslateManager:
     obs_data = TypedObservable(OCRData)
 
     def __init__(self):
-        self._ocr = OCRTranslate()
+        self._tocr = OCRTranslate()
 
     def recognize(
         self,
@@ -62,8 +68,14 @@ class OCRTranslateManager:
         self.obs_data.notify(data)
 
         manager = TaskManager()
-        future = manager.execute(lambda _: self._ocr.recognize(box))
+        future = manager.execute(lambda _: self._tocr.recognize(box))
         future.observe(on_result=self._on_result)
+
+    def ocr(self):
+        return self._tocr.ocr()
+
+    def translator(self):
+        return self._tocr.translator()
 
     def _on_result(self, data):
         self.obs_data.notify(data)

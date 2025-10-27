@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import App.Backend
 
 
 Rectangle {
@@ -35,6 +36,13 @@ Rectangle {
 
         ComboBox {
             Layout.fillWidth: true
+
+            model: Backend.Ocr.backends
+            currentIndex: find(Backend.Ocr.currentBackend)
+
+            onCurrentTextChanged: {
+                Backend.Ocr.currentBackend = currentText;
+            }
         }
 
         // Translation backend
