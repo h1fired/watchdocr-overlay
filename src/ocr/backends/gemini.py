@@ -4,7 +4,7 @@ from google.genai import types
 import io
 
 
-MODEL = 'gemini-2.5-flash'
+MODEL = 'gemini-2.0-flash-lite'
 PROMPT = (
     'Act like text scanner, OCR model.'
     'Recognize text from image and give only recognized text.'
