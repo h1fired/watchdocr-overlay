@@ -1,6 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls.Basic 2.15
-import QtQuick.Layouts 2.15
+import QtQuick
+import QtQuick.Controls.Basic
+import QtQuick.Layouts
 
 
 Item {
@@ -150,7 +150,6 @@ Item {
                     visible: root.state == 'result'
 
                     text: root.text
-                    textFormat: TextEdit.MarkdownText
                     selectionColor: "#073BA5"
                     wrapMode: Text.WordWrap
                     font.pointSize: 12
