@@ -6,7 +6,7 @@ from PIL import Image
 
 
 backends = [
-    TesseractOCRBackend,
+    # TesseractOCRBackend,
     GeminiOCRBackend
 ]
 
@@ -23,3 +23,4 @@ class OCR:
 
     def backends(self):
         return self._backends
+
