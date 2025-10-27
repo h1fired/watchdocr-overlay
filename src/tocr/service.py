@@ -19,8 +19,5 @@ class OCRTranslateService(Service):
             data={'data': d}
         ))
 
-    def recognize(
-        self,
-        box: tuple[int, int, int, int]
-    ):
+    def recognize(self, box: tuple[int, int, int, int]):
         self._ocr.recognize(box)
