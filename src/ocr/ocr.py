@@ -23,4 +23,3 @@ class OCR:
 
     def backends(self):
         return self._backends
-
