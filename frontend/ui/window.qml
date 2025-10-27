@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
+import "components" as Components
 
 
 Window {
@@ -64,5 +65,11 @@ Window {
         id: overlay
         anchors.fill: parent
         focus: true
+    }
+
+    Components.DebugPanel {
+        x: 0
+        y: 0
+        width: 400
     }
 }
