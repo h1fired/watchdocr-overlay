@@ -21,7 +21,6 @@ class OCRTranslateService(Service):
 
     def recognize(
         self,
-        window_box: tuple[int, int, int, int],
-        target_language: str = 'EN'
+        box: tuple[int, int, int, int]
     ):
-        self._ocr.recognize(window_box, target_language)
+        self._ocr.recognize(box)

@@ -4,7 +4,6 @@ from common.event import Event
 from frontend.utils.screen import ScreenManager
 from frontend.common.mvvm_qml import QmlViewModel
 from src.tocr.service import OCRTranslateService
-from config import config
 
 
 qmlRegisterSingletonType(ScreenManager, 'App.Utils', 1, 0, 'ExtScreen')
@@ -36,4 +35,4 @@ class OCRTranslateViewModel(QmlViewModel):
             rect.x() + rect.width(), rect.y() + rect.height()
         )
         s = self.accessor.get(OCRTranslateService)
-        s.recognize(box, config.TRANSLATION_TARGET_LANG)
+        s.recognize(box)

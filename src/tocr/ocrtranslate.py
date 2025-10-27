@@ -32,13 +32,12 @@ class OCRTranslate:
 
     def recognize(
         self,
-        window_box: tuple[int, int, int, int],
-        target_language: str = 'EN'
+        box: tuple[int, int, int, int],
     ):
         if self._recognizing:
             raise RuntimeError('OCRTranslate already recognizing')
 
-        image = grab_window_area(window_box)
+        image = grab_window_area(box)
         text = self._ocr.recognize(image)
 
         if text:
@@ -57,17 +56,13 @@ class OCRTranslateManager:
 
     def recognize(
         self,
-        window_box: tuple[int, int, int, int],
-        target_language: str = 'EN'
+        box: tuple[int, int, int, int],
     ):
         data = OCRData(OCRDataState.RECOGNIZING, Messages.RECOGNIZING)
         self.obs_data.notify(data)
 
         manager = TaskManager()
-        future = manager.execute(lambda _: self._ocr.recognize(
-            window_box=window_box,
-            target_language=target_language
-        ))
+        future = manager.execute(lambda _: self._ocr.recognize(box))
         future.observe(on_result=self._on_result)
 
     def _on_result(self, data):
