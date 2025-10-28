@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import "common"
 
 
 Item {
@@ -23,18 +24,7 @@ Item {
         State { name: "result" },
         State { name: "status" }
     ]
-
-    Connections {
-        target: btnCopy
-
-        function onClicked() {
-            root.copied();
-        }
-    }
-
-    Component.onCompleted: {
-        root.state = 'result';
-    }
+    state: "result"
 
     MouseArea {
         anchors.fill: parent
@@ -157,10 +147,23 @@ Item {
                     readOnly: true
                 }
 
+                CAnimatedImage {
+                    x: 10
+                    y: 9
+
+                    width: 16
+                    height: 16
+
+                    visible: root.state == "status"
+
+                    source: "resources/icons/a_loading.svg"
+                    color: "#C3C3C3"
+                }
+
                 Text {
                     id: statusText
 
-                    x: 10
+                    x: 40
                     y: 6
 
                     visible: root.state == "status"
@@ -168,7 +171,7 @@ Item {
                     text: root.status
                     font.pointSize: 12
                     font.weight: 600
-                    color: "#FFFFFF"
+                    color: "#C3C3C3"
                 }
             }
         }
@@ -195,6 +198,14 @@ Item {
         repeat: false
 
         onTriggered: btnCopy.width = 36
+    }
+
+    Connections {
+        target: btnCopy
+
+        function onClicked() {
+            root.copied();
+        }
     }
 
     function reset() {
