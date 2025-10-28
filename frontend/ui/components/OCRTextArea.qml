@@ -124,7 +124,7 @@ Item {
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                contentHeight: textBlock.implicitHeight
+                contentHeight: Math.max(textBlock.implicitHeight, height)
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
 
