@@ -131,6 +131,7 @@ Item {
                 textArea.maximized = false;
                 textArea.state = "status"
             }
+            textArea.loading = response.state == OCROverlay.ResponseStatus.Recognizing;
         }
     }
 

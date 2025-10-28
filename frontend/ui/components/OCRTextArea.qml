@@ -12,6 +12,7 @@ Item {
 
     property string text
     property string status: ""
+    property bool loading: false
     property bool maximized: false
     property int minimizedWidth: 560
     property int minimizedHeight: 120
@@ -138,7 +139,9 @@ Item {
                     anchors.fill: parent
                     topPadding: 6
                     bottomPadding: 6
-                    leftPadding: root.maximized ? 20 : 10
+                    leftPadding: root.maximized
+                        ? root.loading ? 50 : 20
+                        : root.loading ? 40 : 10
                     rightPadding: root.maximized ? 20 : 10
 
                     visible: root.state == 'result'
@@ -172,7 +175,8 @@ Item {
                     width: 16
                     height: 16
 
-                    visible: root.state == "status"
+                    visible: root.state == "status" && root.loading
+                    running: root.state == "status" && root.loading
 
                     source: "resources/icons/a_loading.svg"
                     color: "#C3C3C3"
@@ -188,8 +192,14 @@ Item {
                 Text {
                     id: statusText
 
-                    x: root.maximized ? 50 : 40
+                    x: (
+                        root.maximized
+                        ? root.loading ? 50 : 20
+                        : root.loading ? 40 : 10
+                    )
                     y: 6
+
+                    width: parent.width - 12
 
                     visible: root.state == "status"
 
@@ -197,6 +207,7 @@ Item {
                     font.pointSize: 12
                     font.weight: 600
                     color: "#C3C3C3"
+                    wrapMode: Text.WordWrap
 
                     Behavior on x {
                         NumberAnimation {
