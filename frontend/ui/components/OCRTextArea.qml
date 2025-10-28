@@ -136,6 +136,10 @@ Item {
                     id: textBlock
 
                     anchors.fill: parent
+                    topPadding: 6
+                    bottomPadding: 6
+                    leftPadding: root.maximized ? 20 : 10
+                    rightPadding: root.maximized ? 20 : 10
 
                     visible: root.state == 'result'
 
@@ -145,10 +149,24 @@ Item {
                     font.pointSize: 12
                     color: "#FFFFFF"
                     readOnly: true
+
+                    Behavior on leftPadding {
+                        NumberAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+
+                    Behavior on rightPadding {
+                        NumberAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
                 }
 
                 CAnimatedImage {
-                    x: 10
+                    x: root.maximized ? 20 : 10
                     y: 9
 
                     width: 16
@@ -158,12 +176,19 @@ Item {
 
                     source: "resources/icons/a_loading.svg"
                     color: "#C3C3C3"
+
+                    Behavior on x {
+                        NumberAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
                 }
 
                 Text {
                     id: statusText
 
-                    x: 40
+                    x: root.maximized ? 50 : 40
                     y: 6
 
                     visible: root.state == "status"
@@ -172,6 +197,13 @@ Item {
                     font.pointSize: 12
                     font.weight: 600
                     color: "#C3C3C3"
+
+                    Behavior on x {
+                        NumberAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
                 }
             }
         }
