@@ -57,4 +57,4 @@ class CoreApplication:
             service.on_full_init()
 
     def _init_task_manager(self):
-        TaskManager().run()
+        TaskManager.run()

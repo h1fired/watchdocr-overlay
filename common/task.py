@@ -1,12 +1,13 @@
-from typing import Callable, Any, TypeAlias
-from threading import Thread, Event, Lock, Condition
-from enum import Enum
-import queue
 import time
+import queue
 import heapq
-from .observable import MappedObservable
-from .utils.meta import Singleton
-from .utils.logger import log
+from typing import Callable, TypeAlias, Any
+from enum import Enum
+
+from common.utils.logger import log
+from common.observable import MappedObservable
+
+from threading import Thread, Event, Condition
 
 
 class CancelationError(Exception):
@@ -31,26 +32,60 @@ class CancelationToken:
             raise CancelationError('Token was cancelled')
 
 
-class Task:
-    def __init__(self):
-        self._waiter = Event()
+# Period
+class Period:
+    def __init__(self, interval: float, repeats=-1):
+        if repeats < -1:
+            raise ValueError('Invalid repeats value (should be greater than or equals -1)')
+        if interval < 0:
+            raise ValueError('Invalid interval value (should be positive)')
 
-    def executable(self, token: CancelationToken):
-        raise NotImplementedError
+        self._interval = interval
+        self._repeats = repeats
+        self._timestamp = 0.
+        self._times = 0
+        self._finished = False
 
-    def sleep(self, seconds: float):
-        self._waiter.wait(seconds)
+    def execution_time(self):
+        return self._timestamp + self._interval
 
+    def next(self):
+        if self._times >= self._repeats and self._repeats != -1:
+            raise RuntimeError('Repetition limit reached')
+        self._times += 1
+        self._timestamp = time.monotonic()
 
-TaskType: TypeAlias = 'Task | Callable[..., Any]'
+    def is_done(self):
+        if self._finished:
+            return True
+        if self._repeats == -1:
+            return False
+        return self._times >= self._repeats
+
+    def renew_time(self):
+        self._timestamp = time.monotonic()
+
+    def finish(self):
+        self._finished = True
+
+    @property
+    def repeats(self):
+        return self._repeats
+
+    @property
+    def times(self):
+        return self._times
 
 
 # Environment
-class TaskEnvironment(str, Enum):
+NUM_WORKERS = 64
+
+
+class EnvironmentType(str, Enum):
     THREAD = 'thread'
 
 
-class _Environment:
+class Environment:
     def __init__(self):
         pass
 
@@ -64,20 +99,18 @@ class _Environment:
         raise NotImplementedError
 
 
-# Threading
-NUM_WORKERS = 64
-
-
+# Environment / threading
 class ThreadPool:
     def __init__(self):
         self._workers: list[Thread] = []
         self._stop_event = Event()
+        self._q_waiter = Condition()
         self._q = queue.Queue()
 
     def run(self):
         self._stop_event.clear()
         for _ in range(NUM_WORKERS):
-            thread = Thread(target=self._worker)
+            thread = Thread(target=self._worker, daemon=True)
             thread.daemon = True
             thread.start()
             self._workers.append(thread)
@@ -85,23 +118,29 @@ class ThreadPool:
     def stop(self):
         self._stop_event.set()
         self._q.queue.clear()
+        with self._q_waiter:
+            self._q_waiter.notify_all()
         for worker in self._workers:
             worker.join()
 
     def push(self, executable: Callable):
         self._q.put(executable)
+        with self._q_waiter:
+            self._q_waiter.notify_all()
 
     def _worker(self):
         while not self._stop_event.is_set():
             try:
-                task = self._q.get(timeout=0.1)
+                task = self._q.get_nowait()
                 task()
                 self._q.task_done()
             except queue.Empty:
                 pass
+            with self._q_waiter:
+                self._q_waiter.wait()
 
 
-class _ThreadingEnvironment(_Environment):
+class ThreadingEnvironment(Environment):
     def __init__(self):
         super().__init__()
         self._pool = ThreadPool()
@@ -116,174 +155,181 @@ class _ThreadingEnvironment(_Environment):
         self._pool.stop()
 
 
-# Scheduler
-class Period:
-    def __init__(self, interval: float, repeats=-1, async_repeat=False):
-        self._interval = interval
-        self._repeats = repeats
-        self._timestamp = 0.
-        self._times = 1
-        self._async_repeat = async_repeat
-
-    def execution_time(self):
-        return self._timestamp + self._interval
-
-    def next(self):
-        self._times += 1
-        if self._times > self._repeats and self._repeats != -1:
-            raise RuntimeError('Repetition limit reached')
-        self._timestamp = time.time()
-
-    def is_done(self):
-        if self._repeats == -1:
-            return False
-        return self._times >= self._repeats
-
-    def is_async(self):
-        return self._async_repeat
+# Task
+TaskType: TypeAlias = 'Task | Callable[..., Any]'
 
 
-class Scheduler:
-    def __init__(self, execution_callback: Callable):
-        self._cb = execution_callback
-        self._heap: list[_TaskWrapper] = []
-        self._stop_event = Event()
-        self._th = None
-        self._waiter = Condition()
-        self._lock = Lock()
+class Task:
+    def __init__(self):
+        self._e = Event()
 
-    def run(self, run_in_background=False):
-        self._stop_event.clear()
-        with self._waiter:
-            self._waiter.notify_all()
-        if run_in_background:
-            self._th = Thread(target=self._worker, daemon=True)
-            self._th.start()
+    def executable(self, token: CancelationToken):
+        raise NotImplementedError
 
-    def shutdown(self):
-        self._stop_event.set()
-        with self._waiter:
-            self._waiter.notify_all()
-        if self._th and self._th.is_alive():
-            self._th.join()
+    def sleep(self, seconds: float):
+        self._e.wait(seconds)
 
-    def schedule(self, task: '_TaskWrapper'):
-        heapq.heappush(self._heap, task)
-        with self._waiter:
-            self._waiter.notify_all()
-
-    def _worker(self):
-        while not self._stop_event.is_set():
-            next_sleep = 0.1
-            if self._heap:
-                task = self._heap[0]
-                if not task.period.is_async() and task.executing():
-                    with self._waiter:
-                        self._waiter.wait(next_sleep)
-                    continue
-                now = time.time()
-                if task.period.execution_time() <= now:
-                    heapq.heappop(self._heap)
-                    self._cb(task)
-                    if not task.period.is_done() and not task.is_cancelled():
-                        heapq.heappush(self._heap, task)
-                        task.period.next()
-                    else:
-                        task.set_last_execution()
-                    continue
-                else:
-                    next_sleep = task.period.execution_time() - now
-            with self._waiter:
-                self._waiter.wait(next_sleep)
+    def dispose(self):
+        self._e.set()
 
 
-# Manager
-class _TaskWrapper:
-    def __init__(
-        self,
-        task: TaskType,
-        period: 'Period',
-        environment=TaskEnvironment.THREAD,
-        token: CancelationToken | None = None,
-        id: str = None
-    ):
-        if isinstance(task, Task):
-            self._task = task.executable
-            self._waiter = task._waiter
-        else:
-            self._task = task
+class TaskDefinition:
+    def __init__(self, period: Period, environment: Environment):
         self._period = period
         self._env = environment
-        self._token = token
-        self._id = id
-        self._finish_event = Event()
-        self._signal_obs = MappedObservable()
-        self._result = None
-        self._is_executing = False
-        self._last_execution = False
-
-    def execute(self):
-        self._is_executing = True
-        self._finish_event.clear()
-        try:
-            result = self._task(self._token)
-            self._result = result
-            self._signal_obs.notify('RESULT', result)
-        except Exception as e:
-            self._signal_obs.notify('ERROR', e)
-            log.exception(f'[TASK] {e}')
-        self._is_executing = False
-        if self._last_execution:
-            self._finish_event.set()
-            self._signal_obs.notify('FINISH')
-
-    def executing(self):
-        return self._is_executing
-
-    def cancel(self):
-        self._token.cancel()
-        if hasattr(self, '_waiter'):
-            self._waiter.set()
-
-    def wait(self):
-        self._finish_event.wait()
-
-    def set_last_execution(self):
-        self._last_execution = True
-
-    def result(self):
-        return self._result
-
-    def is_cancelled(self):
-        return self._token.is_cancelled
-
-    @property
-    def id(self):
-        return self._id
 
     @property
     def period(self):
         return self._period
 
     @property
-    def env(self):
+    def environment(self):
         return self._env
 
-    def signal(self, type: str, handler: Callable):
-        self._signal_obs.register(type, handler)
 
-    def __lt__(self, other: '_TaskWrapper'):
-        return self._period.execution_time() < other.period.execution_time()
+class TaskCollection:
+    def __init__(self):
+        self._tasks: dict[str, _Task] = {}
+        self._anonymous_tasks: list[_Task] = []
 
-    def __gt__(self, other: '_TaskWrapper'):
-        return self._period.execution_time() > other.period.execution_time()
+    def add(self, task: '_Task'):
+        if task.id() is None:
+            self._anonymous_tasks.append(task)
+        else:
+            if task.id() in self._tasks.keys():
+                raise KeyError(f'Task with ID={task.id()} already exists')
+            self._tasks[task.id()] = task
 
-    def __eq__(self, other: '_TaskWrapper'):
-        return self._period.execution_time() == other.period.execution_time()
+    def get(self, id: str):
+        return self._tasks[id]
+
+    def remove(self, task: '_Task'):
+        if task.id() in self._tasks:
+            self._tasks.pop(task.id())
+        else:
+            self._anonymous_tasks.remove(task)
+
+    def all(self) -> list['_Task']:
+        return list(self._tasks.values()) + self._anonymous_tasks
+
+    def exists(self, id: str):
+        return id in self._tasks.keys()
+
+    def count(self):
+        return len(self._tasks) + len(self._anonymous_tasks)
+
+
+class TaskSignal(str, Enum):
+    RESULT = 'R'
+    ERROR = 'E'
+    FINISH = 'F'
+
+
+class _Task:
+    def __init__(
+        self,
+        task: TaskType,
+        definition: TaskDefinition,
+        token: CancelationToken,
+        id: str | None = None
+    ):
+        if isinstance(task, Task):
+            self._task = task.executable
+            self._waiter = task._e
+        else:
+            self._task = task
+
+        self._definition = definition
+        self._id = id
+        self._token = token
+
+        self._dsignal = Event()
+        self._psignal = None
+
+        self._observer = MappedObservable()
+
+        self._result = None
+        self._finished = False
+        self._executing = False
+
+    def id(self):
+        return self._id
+
+    def definition(self):
+        return self._definition
+
+    def execute(self):
+        if self._finished or self._executing:
+            raise RuntimeError('Task already finished or executing')
+
+        if not self._token.is_cancelled:
+            self._executing = True
+
+            self._dsignal.clear()
+
+            try:
+                result = self._task(self._token)
+                self._result = result
+                self._observer.notify(TaskSignal.RESULT.value, result)
+            except Exception as e:
+                log.error(e, extra={'title': 'TASK'})
+                self._observer.notify(TaskSignal.ERROR.value, e)
+
+            self._executing = False
+        else:
+            self._definition.period.finish()
+
+        if self._definition.period.is_done():
+            self._finished = True
+            if self._psignal:
+                self._psignal(self)
+            self._observer.notify(TaskSignal.FINISH.value)
+            self._dsignal.set()
+
+    def wait(self):
+        self._dsignal.wait()
+
+    def cancel(self):
+        self._token.cancel()
+        if hasattr(self, '_waiter'):
+            self._waiter.set()
+
+    def signal(self, signal: TaskSignal, handler: Callable):
+        self._observer.register(signal.value, handler)
+
+    def result(self):
+        return self._result
+
+    def finished(self):
+        return self._finished
+
+    def executing(self):
+        return self._executing
+
+    def cancelled(self):
+        return self._token.is_cancelled
+
+    def __lt__(self, other: '_Task'):
+        return (
+            self._definition.period.execution_time()
+            < other._definition.period.execution_time()
+        )
+
+    def __gt__(self, other: '_Task'):
+        return (
+            self._definition.period.execution_time()
+            > other._definition.period.execution_time()
+        )
+
+    def __eq__(self, other: '_Task'):
+        return (
+            self._definition.period.execution_time()
+            == other._definition.period.execution_time()
+        )
 
 
 class Future:
-    def __init__(self, task: _TaskWrapper):
+    def __init__(self, task: _Task):
         self._task = task
 
     def wait(self):
@@ -295,6 +341,9 @@ class Future:
     def result(self):
         return self._task.result()
 
+    def finished(self):
+        return self._task.finished()
+
     def observe(
         self,
         on_finish: Callable | None = None,
@@ -302,133 +351,178 @@ class Future:
         on_result: Callable | None = None
     ):
         if on_finish:
-            self._task.signal('FINISH', on_finish)
+            self._task.signal(TaskSignal.FINISH, on_finish)
         if on_error:
-            self._task.signal('ERROR', on_error)
+            self._task.signal(TaskSignal.ERROR, on_error)
         if on_result:
-            self._task.signal('RESULT', on_result)
+            self._task.signal(TaskSignal.RESULT, on_result)
         return self
 
 
-class TaskCollection:
-    def __init__(self):
-        self._tasks: dict[str, _TaskWrapper] = {}
-        self._anonymous_tasks: list[_TaskWrapper] = []
-
-    def add(self, task: _TaskWrapper):
-        if task.id is None:
-            self._anonymous_tasks.append(task)
-        else:
-            if task.id in self._tasks.keys():
-                raise KeyError(f'Task with ID={task.id} already exists')
-            self._tasks[task.id] = task
-
-    def get(self, id: str):
-        return self._tasks[id]
-
-    def remove(self, task: _TaskWrapper):
-        if task.id in self._tasks:
-            self._tasks.pop(task.id)
-        else:
-            self._anonymous_tasks.remove(task)
-
-    def all(self) -> list[_TaskWrapper]:
-        return list(self._tasks.values()) + self._anonymous_tasks
-
-    def exists(self, id: str):
-        return id in self._tasks.keys()
-
-    def count(self):
-        return len(self._tasks) + len(self._anonymous_tasks)
-
-    def clear(self):
-        self._tasks.clear()
-        self._anonymous_tasks.clear()
-
-
-class TaskManager(metaclass=Singleton):
-    def __init__(self):
-        self._environments: dict[TaskEnvironment, _Environment] = {
-            TaskEnvironment.THREAD: _ThreadingEnvironment(),
-        }
-        self._scheduler = Scheduler(self.on_scheduler_task)
-        self._is_running = False
-        self._tasks = TaskCollection()
+# Scheduler
+class Scheduler:
+    def __init__(self, callback: Callable):
+        self._heap: list[_Task] = []
+        self._th = None
+        self._cb = callback
+        self._stop_event = Event()
+        self._waiter = Condition()
 
     def run(self):
-        if self._is_running:
-            raise RuntimeError('Task manager already started')
-        self._scheduler.run(run_in_background=True)
-        for env in self._environments.values():
-            env.run()
-        self._is_running = True
+        self._stop_event.clear()
+
+        self._th = Thread(target=self._worker, daemon=True)
+        self._th.start()
 
     def shutdown(self):
-        if not self._is_running:
+        self._stop_event.set()
+
+        with self._waiter:
+            self._waiter.notify_all()
+        if self._th and self._th.is_alive():
+            self._th.join()
+
+    def push(self, task: _Task):
+        heapq.heappush(self._heap, task)
+        with self._waiter:
+            self._waiter.notify_all()
+
+    def _worker(self):
+        while not self._stop_event.is_set():
+            next_sleep_time = None
+
+            # Wait for incoming tasks if heap is empty
+            if not self._heap:
+                with self._waiter:
+                    self._waiter.wait(next_sleep_time)
+                continue
+
+            task = self._heap[0]
+
+            # Schedule task by period execution time
+            now = time.monotonic()
+            definition = task.definition()
+            if definition.period.execution_time() <= now:
+                heapq.heappop(self._heap)
+
+                if not definition.period.is_done():
+                    # Renew execution time (now time + task interval)
+                    # if task is executing, else update. Thats prevent
+                    # asyncronous tasks calling (when task execution
+                    # time bigger than period execution time)
+                    if task.executing():
+                        definition.period.renew_time()
+                    else:
+                        definition.period.next()
+                if not definition.period.is_done() and not task.cancelled():
+                    heapq.heappush(self._heap, task)
+                self._cb(task)  # Push task to callback
+                continue
+            else:
+                # Calculate next sleep time
+                next_sleep_time = definition.period.execution_time() - now
+
+            with self._waiter:
+                self._waiter.wait(next_sleep_time)
+
+
+# Manager
+class _TaskManagerModel:
+    def __init__(self):
+        self._model = TaskCollection()
+        self._environments: dict[EnvironmentType, Environment] = {
+            EnvironmentType.THREAD: ThreadingEnvironment()
+        }
+        self._scheduler = Scheduler(self.on_scheduler_task)
+        self._running = False
+
+    def run(self):
+        if self._running:
+            raise RuntimeError('Task manager already started')
+
+        for env in self._environments.values():
+            env.run()
+        self._scheduler.run()
+
+        self._running = True
+
+    def shutdown(self):
+        if not self._running:
             raise RuntimeError('Task manager already terminated')
-        for task in self._tasks.all():
-            task.cancel()
+
+        for task in self._model.all():
+            if not task.cancelled():
+                task.cancel()
+        for task in self._model.all():
+            task.wait()
         for env in self._environments.values():
             env.shutdown()
         self._scheduler.shutdown()
-        self._tasks.clear()
-        self._is_running = False
+
+        self._running = False
 
     def is_running(self):
-        return self._is_running
+        return self._running
 
     def execute(
         self,
         task: TaskType,
-        period: Period = Period(0, 1),
-        environment=TaskEnvironment.THREAD,
-        id: str = None
+        period: Period,
+        environment: EnvironmentType,
+        id: str | None = None
     ):
-        if not self._is_running:
+        if not self._running:
             raise RuntimeError('Task manager is not alive')
+
         token = CancelationToken()
-        w_task = _TaskWrapper(task, period, environment, token, id)
-        w_task.signal('FINISH', lambda: self.on_remove_task(w_task))
-        self._tasks.add(w_task)
-        self._scheduler.schedule(w_task)
-        return Future(w_task)
+        definition = TaskDefinition(period, environment)
+        wrapper = _Task(task, definition, token, id)
+        wrapper._psignal = self.on_finish_task
 
-    def cancel_task(self, id: str):
-        task = self._tasks.get(id)
-        task.cancel()
+        self._model.add(wrapper)
+        self._scheduler.push(wrapper)
 
-    def wait_for_task(self, id: str):
-        try:
-            task = self._tasks.get(id)
-            task.wait()
-        except KeyError:
-            log.warning('[TASK] Task not found - quiet waiting')
+        return Future(wrapper)
 
-    def exists(self, id: str):
-        return self._tasks.exists(id)
+    def objects(self):
+        return self._model
 
-    def count(self):
-        return self._tasks.count()
-
-    def observe(
-        self,
-        id: str,
-        on_finish: Callable | None = None,
-        on_error: Callable | None = None,
-        on_result: Callable | None = None
-    ):
-        task = self._tasks.get(id)
-        if on_finish:
-            task.signal('FINISH', on_finish)
-        if on_error:
-            task.signal('ERROR', on_error)
-        if on_result:
-            task.signal('RESULT', on_result)
-        return self
-
-    def on_scheduler_task(self, task: _TaskWrapper):
-        env = self._environments[task.env]
+    # Handlers
+    def on_scheduler_task(self, task: _Task):
+        env = self._environments[task.definition().environment]
         env.push(task.execute)
 
-    def on_remove_task(self, task: _TaskWrapper):
-        self._tasks.remove(task)
+    def on_finish_task(self, task: _Task):
+        self._model.remove(task)
+
+
+class TaskManager:
+    Signal = TaskSignal
+
+    _model = _TaskManagerModel()
+
+    @classmethod
+    def run(cls):
+        cls._model.run()
+
+    @classmethod
+    def shutdown(cls):
+        cls._model.shutdown()
+
+    @classmethod
+    def is_running(self):
+        return self._model.is_running()
+
+    @classmethod
+    def execute(
+        cls,
+        task: TaskType,
+        period: Period = Period(0, 1),
+        environment: EnvironmentType = EnvironmentType.THREAD,
+        id: str | None = None
+    ):
+        return cls._model.execute(task, period, environment, id)
+
+    @classmethod
+    def objects(cls):
+        return cls._model.objects()
