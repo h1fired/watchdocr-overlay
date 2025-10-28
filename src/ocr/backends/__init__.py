@@ -1,36 +1,42 @@
 from common.observable import ObservableDict
 from PIL import Image
 from typing import Iterable
+from enum import IntEnum
 
 
-class OCRBackend:
+class OcrStatus(IntEnum):
+    ERROR = 0
+    SUCCESS = 1
+
+
+class OcrBackend:
     name: str
 
     def __init__(self):
         if not hasattr(self, 'name'):
             raise ValueError('OCR backend should have _name property')
 
-    def recognize(self, image: Image.Image) -> str:
+    def recognize(self, image: Image.Image) -> dict[OcrStatus, str]:
         raise NotImplementedError
 
 
-class OCRBackendManager:
-    def __init__(self, backends: Iterable[type[OCRBackend]]):
+class OcrBackendManager:
+    def __init__(self, backends: Iterable[type[OcrBackend]]):
         self._objects = ObservableDict({b: b() for b in backends})
-        self._objects[DummyOCRBackend] = DummyOCRBackend()
-        self._current = self._objects[DummyOCRBackend]
+        self._objects[DummyOcrBackend] = DummyOcrBackend()
+        self._current = self._objects[DummyOcrBackend]
 
-    def register(self, backend: type[OCRBackend]):
+    def register(self, backend: type[OcrStatus]):
         if backend in self._objects.keys():
             raise KeyError('OCR backend already exists')
         self._objects[backend] = backend()
 
-    def unregister(self, backend: type[OCRBackend]):
+    def unregister(self, backend: type[OcrStatus]):
         if backend not in self._objects.keys():
             raise KeyError('OCR backend does not exists')
         self._objects.pop(backend)
 
-    def set(self, backend: type[OCRBackend]):
+    def set(self, backend: type[OcrStatus]):
         self._current = self._objects[backend]
 
     def get_by_name(self, backend: str):
@@ -39,7 +45,7 @@ class OCRBackendManager:
                 return b
         raise KeyError('OCR backend does not exists')
 
-    def current(self) -> OCRBackend:
+    def current(self) -> OcrBackend:
         return self._current
 
     @property
@@ -47,8 +53,9 @@ class OCRBackendManager:
         return self._objects
 
 
-class DummyOCRBackend(OCRBackend):
+class DummyOcrBackend(OcrBackend):
     name = 'Dummy'
 
     def recognize(self, image):
-        return "Dummy OCR text for development testing."
+        text = 'Dummy OCR text for development testing.'
+        return {'status': OcrStatus.SUCCESS, 'text': text}

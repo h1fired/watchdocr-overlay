@@ -1,4 +1,4 @@
-from src.ocr.backends import OCRBackend
+from src.ocr.backends import OcrBackend, OcrStatus
 from google import genai
 from google.genai import types
 import io
@@ -12,7 +12,7 @@ PROMPT = (
 )
 
 
-class GeminiOCRBackend(OCRBackend):
+class GeminiOCRBackend(OcrBackend):
     name = 'Gemini'
 
     def __init__(self):
@@ -23,7 +23,7 @@ class GeminiOCRBackend(OCRBackend):
         image.save(buf, 'JPEG')
 
         response = self._client.models.generate_content(
-            model='gemini-2.5-flash',
+            model=MODEL,
             contents=[
                 types.Part.from_bytes(
                     data=buf.getvalue(),
@@ -32,4 +32,5 @@ class GeminiOCRBackend(OCRBackend):
                 PROMPT
             ]
         )
-        return response.text
+        buf.close()
+        return {'status': OcrStatus.SUCCESS, 'text': response.text}

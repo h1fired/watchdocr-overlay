@@ -1,29 +1,29 @@
 from common.service import Service
 from common.event import IEvent
-from src.tocr.ocrtranslate import OCRTranslateManager, OCRData
+from src.tocr.window import grab_window_area
+from src.ocr.service import OcrService
 
 
-class _OCRTranslateResponseEvent(IEvent):
-    data: OCRData
+class _OcrTranslateTextReceiveEvent(IEvent):
+    status: int
+    text: str
 
 
-class OCRTranslateService(Service):
+class OcrTranslateService(Service):
 
     class Events:
-        RESPONSE_RECEIVED = _OCRTranslateResponseEvent
-
-    def on_init(self):
-        self._tocr = OCRTranslateManager()
-        self._tocr.obs_data.register(lambda d: self.event.dispatch(
-            event=self.Events.RESPONSE_RECEIVED,
-            data={'data': d}
-        ))
+        TEXT_RECEIVED = _OcrTranslateTextReceiveEvent
 
     def recognize(self, box: tuple[int, int, int, int]):
-        self._tocr.recognize(box)
+        image = grab_window_area(box)
 
-    def ocr(self):
-        return self._tocr.ocr()
+        ocr_s = self.get_related(OcrService)
+        response = ocr_s.recognize(image)
 
-    def translator(self):
-        return self._tocr.translator()
+        self.event.dispatch(
+            event=self.Events.TEXT_RECEIVED,
+            data={
+                'status': int(response['status'].value),
+                'text': response['text']
+            }
+        )

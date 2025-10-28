@@ -1,5 +1,5 @@
 from frontend.common.mvvm_qml import QmlViewModel
-from src.tocr.service import OCRTranslateService
+from src.ocr.service import OcrService
 from qt.core import Signal, Property
 
 
@@ -10,9 +10,8 @@ class OcrViewModel(QmlViewModel):
     currentBackendUpdated = Signal()
 
     def onLoaded(self):
-        ocr_translate_s = self.accessor.get(OCRTranslateService)
-        ocr = ocr_translate_s.ocr()
-        backends = ocr.backends()
+        ocr_s = self.accessor.get(OcrService)
+        backends = ocr_s.backends()
         backends.objects.register(lambda _: self.backendsUpdated.emit())
 
     def onFullyLoaded(self):
@@ -22,9 +21,8 @@ class OcrViewModel(QmlViewModel):
     def getBackends(self):
         if not self.accessor:
             return list()
-        ocr_translate_s = self.accessor.get(OCRTranslateService)
-        ocr = ocr_translate_s.ocr()
-        backends = ocr.backends()
+        ocr_s = self.accessor.get(OcrService)
+        backends = ocr_s.backends()
         return [n.name for n in backends.objects.keys()]
 
     backends = Property(list, getBackends, notify=backendsUpdated)
@@ -32,15 +30,13 @@ class OcrViewModel(QmlViewModel):
     def getCurrentBackend(self):
         if not self.accessor:
             return ''
-        ocr_translate_s = self.accessor.get(OCRTranslateService)
-        ocr = ocr_translate_s.ocr()
-        backends = ocr.backends()
+        ocr_s = self.accessor.get(OcrService)
+        backends = ocr_s.backends()
         return backends.current().name
 
     def setCurrentBackend(self, backend: str):
-        ocr_translate_s = self.accessor.get(OCRTranslateService)
-        ocr = ocr_translate_s.ocr()
-        backends = ocr.backends()
+        ocr_s = self.accessor.get(OcrService)
+        backends = ocr_s.backends()
         cls = backends.get_by_name(backend)
         backends.set(cls)
 

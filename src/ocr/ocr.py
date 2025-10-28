@@ -1,19 +1,17 @@
-from .backends import OCRBackendManager
-from .backends.tesseract import TesseractOCRBackend
-from .backends.gemini import GeminiOCRBackend
-from .filtering import OCRImageFilter
+from src.ocr.backends import OcrBackendManager
+from src.ocr.backends.gemini import GeminiOCRBackend
+from src.ocr.filtering import OCRImageFilter
 from PIL import Image
 
 
 backends = [
-    # TesseractOCRBackend,
     GeminiOCRBackend
 ]
 
 
 class OCR:
     def __init__(self):
-        self._backends = OCRBackendManager(backends)
+        self._backends = OcrBackendManager(backends)
 
     def recognize(self, image: Image.Image):
         adjusted_image = OCRImageFilter.adjust(image)
