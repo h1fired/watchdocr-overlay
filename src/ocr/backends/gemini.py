@@ -22,15 +22,20 @@ class GeminiOCRBackend(OcrBackend):
         buf = io.BytesIO()
         image.save(buf, 'JPEG')
 
-        response = self._client.models.generate_content(
-            model=MODEL,
-            contents=[
-                types.Part.from_bytes(
-                    data=buf.getvalue(),
-                    mime_type='image/jpeg',
-                ),
-                PROMPT
-            ]
-        )
-        buf.close()
+        try:
+            response = self._client.models.generate_content(
+                model=MODEL,
+                contents=[
+                    types.Part.from_bytes(
+                        data=buf.getvalue(),
+                        mime_type='image/jpeg',
+                    ),
+                    PROMPT
+                ]
+            )
+        except Exception as e:
+            return {'status': OcrStatus.ERROR, 'text': str(e)}
+        finally:
+            buf.close()
+
         return {'status': OcrStatus.SUCCESS, 'text': response.text}
