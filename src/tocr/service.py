@@ -3,19 +3,34 @@ from common.event import IEvent
 from common.task import TaskManager, Task
 from src.tocr.window import grab_window_area
 from src.ocr.service import OcrService
+from enum import IntEnum
 
 
-class _OcrTranslateTextReceiveEvent(IEvent):
-    status: int
+class OcrTranslateStatus(IntEnum):
+    ERROR = 0
+    SUCCESS = 1
+    RECOGNIZING = 2
+
+
+class _OcrTranslateResponceReceiveEvent(IEvent):
+    status: OcrTranslateStatus
     text: str
 
 
 class OcrTranslateService(Service):
 
     class Events:
-        TEXT_RECEIVED = _OcrTranslateTextReceiveEvent
+        RESPONSE_RECEIVED = _OcrTranslateResponceReceiveEvent
 
     def recognize(self, box: tuple[int, int, int, int]):
+        self.event.dispatch(
+            event=self.Events.RESPONSE_RECEIVED,
+            data={
+                'status': OcrTranslateStatus.RECOGNIZING,
+                'text': 'Recognizing...'
+            }
+        )
+
         ocr_s = self.get_related(OcrService)
         task = OcrTranslateRecognizeTask(box, ocr_s)
         future = TaskManager.execute(task)
@@ -23,9 +38,9 @@ class OcrTranslateService(Service):
 
     def on_task_result(self, result):
         self.event.dispatch(
-            event=self.Events.TEXT_RECEIVED,
+            event=self.Events.RESPONSE_RECEIVED,
             data={
-                'status': int(result['status'].value),
+                'status': OcrTranslateStatus(result['status'].value),
                 'text': result['text']
             }
         )

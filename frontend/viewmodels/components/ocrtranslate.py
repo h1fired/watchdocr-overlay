@@ -17,13 +17,13 @@ class OcrTranslateViewModel(QmlViewModel):
     def onLoaded(self):
         Event.subscribe(
             system=self.events,
-            event=OcrTranslateService.Events.TEXT_RECEIVED,
+            event=OcrTranslateService.Events.RESPONSE_RECEIVED,
             handler=self.onOcrTranslateResponseReceive
         )
 
     def onOcrTranslateResponseReceive(self, e):
         data = {
-            'state': e.status,
+            'state': e.status.value,
             'text': e.text
         }
         self.responseReceived.emit(data)
