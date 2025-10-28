@@ -11,7 +11,6 @@ Item {
     implicitHeight: root.maximized ? maximizedHeight : minimizedHeight
 
     property string text
-    property string status: ""
     property bool loading: false
     property bool maximized: false
     property int minimizedWidth: 560
@@ -144,11 +143,10 @@ Item {
                         : root.loading ? 40 : 10
                     rightPadding: root.maximized ? 20 : 10
 
-                    visible: root.state == 'result'
-
                     text: root.text
                     selectionColor: "#073BA5"
                     wrapMode: Text.WordWrap
+                    textFormat: TextEdit.MarkdownText
                     font.pointSize: 12
                     color: "#FFFFFF"
                     readOnly: true
@@ -180,34 +178,6 @@ Item {
 
                     source: "resources/icons/a_loading.svg"
                     color: "#C3C3C3"
-
-                    Behavior on x {
-                        NumberAnimation {
-                            duration: 200
-                            easing.type: Easing.InOutQuad
-                        }
-                    }
-                }
-
-                Text {
-                    id: statusText
-
-                    x: (
-                        root.maximized
-                        ? root.loading ? 50 : 20
-                        : root.loading ? 40 : 10
-                    )
-                    y: 6
-
-                    width: parent.width - 12
-
-                    visible: root.state == "status"
-
-                    text: root.status
-                    font.pointSize: 12
-                    font.weight: 600
-                    color: "#C3C3C3"
-                    wrapMode: Text.WordWrap
 
                     Behavior on x {
                         NumberAnimation {

@@ -117,20 +117,21 @@ Item {
         target: Backend.OcrTranslate
 
         function onResponseReceived(response) {
+            let text = response.text;
+
             if (response.state == OCROverlay.ResponseStatus.Success) {
-                textArea.text = response.text;
                 textArea.state = "result"
                 root.mode = OCROverlay.Mode.Result;
             } else if (response.state == OCROverlay.ResponseStatus.Error) {
-                textArea.status = response.text;
                 textArea.state = "status"
                 root.mode = OCROverlay.Mode.Result;
+                text = "<span style=\"color:red\">" + response.text + "</span>";
             } else if (response.state == OCROverlay.ResponseStatus.Recognizing) {
                 root.mode = OCROverlay.Mode.Recognizing;
-                textArea.status = response.text;
                 textArea.maximized = false;
                 textArea.state = "status"
             }
+            textArea.text = text;
             textArea.loading = response.state == OCROverlay.ResponseStatus.Recognizing;
         }
     }

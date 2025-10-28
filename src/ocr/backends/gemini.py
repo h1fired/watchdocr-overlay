@@ -34,7 +34,7 @@ class GeminiOCRBackend(OcrBackend):
                 ]
             )
         except Exception as e:
-            return {'status': OcrStatus.ERROR, 'text': str(e)}
+            return {'status': OcrStatus.ERROR, 'text': repr(e)}
         finally:
             buf.close()
 
