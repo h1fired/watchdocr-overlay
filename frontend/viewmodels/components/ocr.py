@@ -23,7 +23,7 @@ class OcrViewModel(QmlViewModel):
             return list()
         ocr_s = self.accessor.get(OcrService)
         backends = ocr_s.backends()
-        return [n.name for n in backends.objects.keys()]
+        return sorted([n.name for n in backends.objects.keys()])
 
     backends = Property(list, getBackends, notify=backendsUpdated)
 
