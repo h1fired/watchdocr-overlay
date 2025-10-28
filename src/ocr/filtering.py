@@ -66,3 +66,11 @@ class OCRImageFilter:
     @staticmethod
     def adjust_borders(image: Image.Image, size: int):
         return ImageOps.expand(image, border=size, fill='white')
+
+
+class OCRImageOptimizer:
+    @staticmethod
+    def optimize_size(image: Image.Image, maxsize: tuple):
+        p_width, p_height = maxsize
+        if image.width > p_width or image.height > p_height:
+            image.thumbnail(maxsize)

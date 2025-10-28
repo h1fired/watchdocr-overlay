@@ -1,7 +1,8 @@
 from src.ocr.backends import OcrBackendManager
 from src.ocr.backends.gemini import GeminiOCRBackend
-from src.ocr.filtering import OCRImageFilter
+from src.ocr.filtering import OCRImageFilter, OCRImageOptimizer
 from PIL import Image
+from config import config
 
 
 backends = [
@@ -14,6 +15,7 @@ class OCR:
         self._backends = OcrBackendManager(backends)
 
     def recognize(self, image: Image.Image):
+        OCRImageOptimizer.optimize_size(image, config.MAX_IMAGE_RESOLUTION)
         adjusted_image = OCRImageFilter.adjust(image)
         backend = self._backends.current()
         raw_text = backend.recognize(adjusted_image)
