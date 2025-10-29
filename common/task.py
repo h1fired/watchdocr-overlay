@@ -5,7 +5,7 @@ from typing import Callable, TypeAlias, Any
 from enum import Enum
 
 from common.utils.logger import log
-from common.observable import MappedObservable
+from common.observable import MappedObservable, ObservableVar
 
 from threading import Thread, Event, Condition
 
@@ -426,6 +426,40 @@ class Scheduler:
                 self._waiter.wait(next_sleep_time)
 
 
+# Pipeline
+class Stage:
+    def __init__(self):
+        pass
+
+    def process(self, *data):
+        raise NotImplementedError
+
+
+class Pipeline:
+    def __init__(self, *stages: Stage | Callable):
+        self._stages = stages
+        self._current_stage = ObservableVar(int, 0)
+        self._future: Future = None
+
+    def start(self, token: CancelationToken, data=None):
+        for i, stage in enumerate(self._stages):
+            if token.is_cancelled:
+                return data
+            if type(stage) is Stage:
+                data = stage.process(token, data)
+            else:
+                data = stage(token, data)
+            self._current_stage.value = i
+        return data
+
+    @property
+    def current_stage(self):
+        return self._current_stage
+
+    def future(self):
+        return self._future
+
+
 # Manager
 class _TaskManagerModel:
     def __init__(self):
@@ -484,6 +518,22 @@ class _TaskManagerModel:
 
         return Future(wrapper)
 
+    def execute_pipeline(
+        self,
+        *stages: Stage | Callable,
+        environment: EnvironmentType = EnvironmentType.THREAD,
+        id: str | None = None
+    ):
+        pipeline = Pipeline(*stages)
+        future = self.execute(
+            task=pipeline.start,
+            period=Period(0, 1),
+            environment=environment,
+            id=id
+        )
+        pipeline._future = future
+        return pipeline
+
     def objects(self):
         return self._model
 
@@ -522,6 +572,19 @@ class TaskManager:
         id: str | None = None
     ):
         return cls._model.execute(task, period, environment, id)
+
+    @classmethod
+    def execute_pipeline(
+        cls,
+        *stages: Stage | Callable,
+        environment: EnvironmentType = EnvironmentType.THREAD,
+        id: str | None = None
+    ):
+        return cls._model.execute_pipeline(
+            *stages,
+            environment=environment,
+            id=id
+        )
 
     @classmethod
     def objects(cls):
