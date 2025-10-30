@@ -5,7 +5,7 @@ from typing import Callable, TypeAlias, Any
 from enum import Enum
 
 from common.utils.logger import log
-from common.observable import MappedObservable, ObservableVar
+from common.observable import MappedObservable
 
 from threading import Thread, Event, Condition
 
@@ -189,10 +189,10 @@ class TaskDefinition:
 
 class TaskCollection:
     def __init__(self):
-        self._tasks: dict[str, _Task] = {}
-        self._anonymous_tasks: list[_Task] = []
+        self._tasks: dict[str, _TaskWrapper] = {}
+        self._anonymous_tasks: list[_TaskWrapper] = []
 
-    def add(self, task: '_Task'):
+    def add(self, task: '_TaskWrapper'):
         if task.id() is None:
             self._anonymous_tasks.append(task)
         else:
@@ -203,13 +203,13 @@ class TaskCollection:
     def get(self, id: str):
         return self._tasks[id]
 
-    def remove(self, task: '_Task'):
+    def remove(self, task: '_TaskWrapper'):
         if task.id() in self._tasks:
             self._tasks.pop(task.id())
         else:
             self._anonymous_tasks.remove(task)
 
-    def all(self) -> list['_Task']:
+    def all(self) -> list['_TaskWrapper']:
         return list(self._tasks.values()) + self._anonymous_tasks
 
     def exists(self, id: str):
@@ -273,7 +273,12 @@ class _TaskWrapper:
             self._observer.notify(_TaskWrapperSignal.FINISH.value)
             self._dsignal.set()
 
-    def executable(self, task: TaskType, token: CancelationToken, signal: MappedObservable):
+    def executable(
+        self,
+        task: TaskType,
+        token: CancelationToken,
+        signal: MappedObservable
+    ):
         raise NotImplementedError
 
     def id(self):
