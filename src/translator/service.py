@@ -8,3 +8,6 @@ class TranslationService(Service):
 
     def translate(self, text: str, to: str = 'EN-US'):
         return self._translator.translate(text, to)
+
+    def backends(self):
+        return self._translator.backends()

@@ -7,8 +7,10 @@ API_KEY = config.DEEPL_API_KEY
 
 
 class DeeplTranslationBackend(TranslationBackend):
+    name = 'Deepl'
 
-    def load(self):
+    def __init__(self):
+        super().__init__()
         self.client = deepl.DeepLClient(API_KEY)
 
     def translate(self, text, translate_to: str):

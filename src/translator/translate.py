@@ -1,10 +1,19 @@
+from .backend import TranslationBackendManager
 from .backend.deepl import DeeplTranslationBackend
 
 
+backends = [
+    DeeplTranslationBackend
+]
+
+
 class Translator:
-    def __init__(self, backend=DeeplTranslationBackend):
-        self._backend = backend()
-        self._backend.load()
+    def __init__(self):
+        self._backends = TranslationBackendManager(backends)
 
     def translate(self, text: str, translate_to: str):
-        return self._backend.translate(text, translate_to)
+        backend = self._backends.current()
+        return backend.translate(text, translate_to)
+
+    def backends(self):
+        return self._backends

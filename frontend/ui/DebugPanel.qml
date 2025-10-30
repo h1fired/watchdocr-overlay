@@ -57,6 +57,13 @@ Rectangle {
 
         ComboBox {
             Layout.fillWidth: true
+
+            model: Backend.Translate.backends
+            currentIndex: find(Backend.Translate.currentBackend)
+
+            onCurrentTextChanged: {
+                Backend.Translate.currentBackend = currentText;
+            }
         }
     }
 }
