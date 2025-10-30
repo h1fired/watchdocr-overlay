@@ -1,6 +1,6 @@
 from common.service import Service
 from common.event import IEvent
-from common.task import TaskManager, Task
+from common.task import TaskManager, Pipeline
 from src.tocr.window import grab_window_area
 from src.ocr.service import OcrService
 from enum import IntEnum
@@ -10,6 +10,19 @@ class OcrTranslateStatus(IntEnum):
     ERROR = 0
     SUCCESS = 1
     RECOGNIZING = 2
+
+
+class OcrTranslateRecognitionPipeline(Pipeline):
+    def __init__(self, box, ocr_s):
+        super().__init__()
+        self._box = box
+        self._ocr_s = ocr_s
+
+    def stage1(self, data):
+        return grab_window_area(self._box)
+
+    def stage2(self, image):
+        return self._ocr_s.recognize(image)
 
 
 class _OcrTranslateResponceReceiveEvent(IEvent):
@@ -32,27 +45,16 @@ class OcrTranslateService(Service):
         )
 
         ocr_s = self.get_related(OcrService)
-        task = OcrTranslateRecognizeTask(box, ocr_s)
-        future = TaskManager.execute(task)
+        pipeline = OcrTranslateRecognitionPipeline(box, ocr_s)
+        future = TaskManager.execute(pipeline)
         future.observe(on_result=self.on_task_result)
 
-    def on_task_result(self, result):
-        self.event.dispatch(
-            event=self.Events.RESPONSE_RECEIVED,
-            data={
-                'status': OcrTranslateStatus(result['status'].value),
-                'text': result['text']
-            }
-        )
-
-
-class OcrTranslateRecognizeTask(Task):
-    def __init__(self, box, ocr):
-        super().__init__()
-        self._box = box
-        self._ocr = ocr
-
-    def executable(self, token):
-        image = grab_window_area(self._box)
-        response = self._ocr.recognize(image)
-        return response
+    def on_task_result(self, stage, result):
+        if stage == 2:
+            self.event.dispatch(
+                event=self.Events.RESPONSE_RECEIVED,
+                data={
+                    'status': OcrTranslateStatus(result['status']),
+                    'text': result['text']
+                }
+            )

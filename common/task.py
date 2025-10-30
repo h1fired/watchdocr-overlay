@@ -1,6 +1,7 @@
 import time
 import queue
 import heapq
+import inspect
 from typing import Callable, TypeAlias, Any
 from enum import Enum
 
@@ -348,25 +349,31 @@ class _SimpleTaskWrapper(_TaskWrapper):
 
 
 # Pipeline
-class Stage:
-    def process(self, *data):
-        raise NotImplementedError
-
-
 class Pipeline:
-    def __init__(self, *stages: Stage):
+    def __init__(self):
+        stages = {}
+        for name, func in inspect.getmembers(self, predicate=inspect.ismethod):
+            if name.startswith('stage'):
+                index = int(name[-1])
+                if index in stages:
+                    raise ValueError('Bad stages names')
+                stages[index] = func
+
+        indexes = sorted(stages.keys())
+        if len(indexes) > 1 and all(indexes[i] + 1 != indexes[i + 1] for i in range(len(indexes) - 1)):
+            raise ValueError('Bad stages names')
         self._stages = stages
 
     def process(self, data=None):
-        for stage in self._stages:
-            data = stage.process(data)
+        for stage in self._stages.values():
+            data = stage(data)
             yield data
 
 
 class _PipelineTaskWrapper(_TaskWrapper):
     def executable(self, task, token, signal):
-        for data in task.process():
-            signal.notify(_TaskWrapperSignal.RESULT, data)
+        for i, data in enumerate(task.process()):
+            signal.notify(_TaskWrapperSignal.RESULT, i+1, data)
 
 
 # Future
