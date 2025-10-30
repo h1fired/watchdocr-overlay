@@ -156,7 +156,7 @@ class ThreadingEnvironment(Environment):
 
 
 # Task
-TaskType: TypeAlias = 'Task | Callable[..., Any]'
+TaskType: TypeAlias = 'Task | Callable[..., Any] | Pipeline'
 
 
 class Task:
@@ -347,6 +347,29 @@ class _SimpleTaskWrapper(_TaskWrapper):
             self._waiter.set()
 
 
+# Pipeline
+class Stage:
+    def process(self, *data):
+        raise NotImplementedError
+
+
+class Pipeline:
+    def __init__(self, *stages: Stage):
+        self._stages = stages
+
+    def process(self, data=None):
+        for stage in self._stages:
+            data = stage.process(data)
+            yield data
+
+
+class _PipelineTaskWrapper(_TaskWrapper):
+    def executable(self, task, token, signal):
+        for data in task.process():
+            signal.notify(_TaskWrapperSignal.RESULT, data)
+
+
+# Future
 class Future:
     def __init__(self, task: _TaskWrapper):
         self._task = task
@@ -495,7 +518,12 @@ class _TaskManagerModel:
 
         token = CancelationToken()
         definition = TaskDefinition(period, environment)
-        wrapper = _SimpleTaskWrapper(task, definition, token, id)
+
+        if isinstance(task, (Task, Callable)):
+            wrapper = _SimpleTaskWrapper(task, definition, token, id)
+        else:
+            wrapper = _PipelineTaskWrapper(task, definition, token, id)
+
         wrapper._psignal = self.on_finish_task
 
         self._model.add(wrapper)
