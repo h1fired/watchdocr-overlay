@@ -47,14 +47,13 @@ class OcrTranslateService(Service):
         ocr_s = self.get_related(OcrService)
         pipeline = OcrTranslateRecognitionPipeline(box, ocr_s)
         future = TaskManager.execute(pipeline)
-        future.observe(on_result=self.on_task_result)
+        future.observe(on_finish=lambda: self.on_task_finish(future.result()))
 
-    def on_task_result(self, stage, result):
-        if stage == 2:
-            self.event.dispatch(
-                event=self.Events.RESPONSE_RECEIVED,
-                data={
-                    'status': OcrTranslateStatus(result['status']),
-                    'text': result['text']
-                }
-            )
+    def on_task_finish(self, result):
+        self.event.dispatch(
+            event=self.Events.RESPONSE_RECEIVED,
+            data={
+                'status': OcrTranslateStatus(result['status']),
+                'text': result['text']
+            }
+        )

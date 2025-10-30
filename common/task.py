@@ -258,7 +258,7 @@ class _TaskWrapper:
             self._dsignal.clear()
 
             try:
-                self.executable(self._task, self._token, self._observer)
+                self._result = self.executable(self._task, self._token, self._observer)
             except Exception as e:
                 log.error(e, extra={'title': 'TASK'})
                 self._observer.notify(_TaskWrapperSignal.ERROR.value, e)
@@ -269,9 +269,9 @@ class _TaskWrapper:
 
         if self._definition.period.is_done():
             self._finished = True
+            self._observer.notify(_TaskWrapperSignal.FINISH.value)
             if self._psignal:
                 self._psignal(self)
-            self._observer.notify(_TaskWrapperSignal.FINISH.value)
             self._dsignal.set()
 
     def executable(
@@ -308,6 +308,9 @@ class _TaskWrapper:
 
     def cancelled(self):
         return self._token.is_cancelled
+
+    def cleanup(self):
+        self._observer.clear()
 
     def __lt__(self, other: '_TaskWrapper'):
         return (
@@ -372,8 +375,11 @@ class Pipeline:
 
 class _PipelineTaskWrapper(_TaskWrapper):
     def executable(self, task, token, signal):
+        fdata = None
         for i, data in enumerate(task.process()):
             signal.notify(_TaskWrapperSignal.RESULT, i+1, data)
+            fdata = data
+        return fdata
 
 
 # Future
@@ -547,6 +553,7 @@ class _TaskManagerModel:
         env.push(task.execute)
 
     def on_finish_task(self, task: _TaskWrapper):
+        task.cleanup()
         self._model.remove(task)
 
 
