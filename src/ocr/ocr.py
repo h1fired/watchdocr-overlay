@@ -1,12 +1,12 @@
 from src.ocr.backends import OcrBackendManager
-from src.ocr.backends.gemini import GeminiOCRBackend
+from src.ocr.backends.gemini import GeminiOcrBackend
 from src.ocr.filtering import OCRImageFilter, OCRImageOptimizer
 from PIL import Image
 from config import config
 
 
 backends = [
-    GeminiOCRBackend
+    GeminiOcrBackend,
 ]
 
 

@@ -12,7 +12,7 @@ PROMPT = (
 )
 
 
-class GeminiOCRBackend(OcrBackend):
+class GeminiOcrBackend(OcrBackend):
     name = 'Gemini'
 
     def __init__(self):
