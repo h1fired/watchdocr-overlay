@@ -146,7 +146,7 @@ Item {
                     text: root.text
                     selectionColor: "#073BA5"
                     wrapMode: Text.WordWrap
-                    textFormat: TextEdit.MarkdownText
+                    // textFormat: TextEdit.MarkdownText
                     font.pointSize: 12
                     color: "#FFFFFF"
                     readOnly: true

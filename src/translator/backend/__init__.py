@@ -1,3 +1,9 @@
+from enum import IntEnum
+
+
+class TranslationStatus(IntEnum):
+    ERROR = 0
+    SUCCESS = 1
 
 
 class TranslationBackend:
@@ -5,5 +11,5 @@ class TranslationBackend:
     def load(self):
         pass
 
-    def translate(self, text: str, translate_to: str = 'EN'):
+    def translate(self, text: str, translate_to: str):
         raise NotImplementedError

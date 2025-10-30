@@ -8,6 +8,7 @@ from common.event import EventSystem
 from common.task import TaskManager
 from src.tocr.service import OcrTranslateService
 from src.ocr.service import OcrService
+from src.translator.service import TranslationService
 
 
 class CoreApplication:
@@ -33,8 +34,12 @@ class CoreApplication:
         ocr_s = OcrService()
         collector.register(ocr_s)
 
+        translation_s = TranslationService()
+        collector.register(translation_s)
+
         ocr_translate_s = OcrTranslateService(related_services=[
-            ocr_s
+            ocr_s,
+            translation_s
         ])
         collector.register(ocr_translate_s)
 

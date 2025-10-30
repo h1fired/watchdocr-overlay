@@ -6,5 +6,5 @@ class Translator:
         self._backend = backend()
         self._backend.load()
 
-    def translate(self, text: str, translate_to: str = 'EN'):
+    def translate(self, text: str, translate_to: str):
         return self._backend.translate(text, translate_to)
