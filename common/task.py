@@ -219,13 +219,14 @@ class TaskCollection:
         return len(self._tasks) + len(self._anonymous_tasks)
 
 
-class TaskSignal(str, Enum):
+# Wrapper
+class _TaskWrapperSignal(str, Enum):
     RESULT = 'R'
     ERROR = 'E'
     FINISH = 'F'
 
 
-class _Task:
+class _TaskWrapper:
     def __init__(
         self,
         task: TaskType,
@@ -233,30 +234,18 @@ class _Task:
         token: CancelationToken,
         id: str | None = None
     ):
-        if isinstance(task, Task):
-            self._task = task.executable
-            self._waiter = task._e
-        else:
-            self._task = task
-
+        self._task = task
         self._definition = definition
-        self._id = id
         self._token = token
-
-        self._dsignal = Event()
-        self._psignal = None
+        self._id = id
 
         self._observer = MappedObservable()
+        self._dsignal = Event()
+        self._psignal = None
 
         self._result = None
         self._finished = False
         self._executing = False
-
-    def id(self):
-        return self._id
-
-    def definition(self):
-        return self._definition
 
     def execute(self):
         if self._finished or self._executing:
@@ -268,12 +257,10 @@ class _Task:
             self._dsignal.clear()
 
             try:
-                result = self._task(self._token)
-                self._result = result
-                self._observer.notify(TaskSignal.RESULT.value, result)
+                self.executable(self._task, self._token, self._observer)
             except Exception as e:
                 log.error(e, extra={'title': 'TASK'})
-                self._observer.notify(TaskSignal.ERROR.value, e)
+                self._observer.notify(_TaskWrapperSignal.ERROR.value, e)
 
             self._executing = False
         else:
@@ -283,18 +270,25 @@ class _Task:
             self._finished = True
             if self._psignal:
                 self._psignal(self)
-            self._observer.notify(TaskSignal.FINISH.value)
+            self._observer.notify(_TaskWrapperSignal.FINISH.value)
             self._dsignal.set()
+
+    def executable(self, task: TaskType, token: CancelationToken, signal: MappedObservable):
+        raise NotImplementedError
+
+    def id(self):
+        return self._id
+
+    def definition(self):
+        return self._definition
 
     def wait(self):
         self._dsignal.wait()
 
     def cancel(self):
         self._token.cancel()
-        if hasattr(self, '_waiter'):
-            self._waiter.set()
 
-    def signal(self, signal: TaskSignal, handler: Callable):
+    def signal(self, signal: _TaskWrapperSignal, handler: Callable):
         self._observer.register(signal.value, handler)
 
     def result(self):
@@ -309,27 +303,47 @@ class _Task:
     def cancelled(self):
         return self._token.is_cancelled
 
-    def __lt__(self, other: '_Task'):
+    def __lt__(self, other: '_TaskWrapper'):
         return (
             self._definition.period.execution_time()
             < other._definition.period.execution_time()
         )
 
-    def __gt__(self, other: '_Task'):
+    def __gt__(self, other: '_TaskWrapper'):
         return (
             self._definition.period.execution_time()
             > other._definition.period.execution_time()
         )
 
-    def __eq__(self, other: '_Task'):
+    def __eq__(self, other: '_TaskWrapper'):
         return (
             self._definition.period.execution_time()
             == other._definition.period.execution_time()
         )
 
 
+class _SimpleTaskWrapper(_TaskWrapper):
+    def __init__(self, task, definition, token, id=None):
+        super().__init__(task, definition, token, id)
+        self._waiter = None
+
+    def executable(self, task, token, signal):
+        if isinstance(task, Task):
+            self._waiter = task._e
+            task_func = task.executable
+        else:
+            task_func = task
+        result = task_func(token)
+        signal.notify(_TaskWrapperSignal.RESULT, result)
+
+    def cancel(self):
+        super().cancel()
+        if self._waiter:
+            self._waiter.set()
+
+
 class Future:
-    def __init__(self, task: _Task):
+    def __init__(self, task: _TaskWrapper):
         self._task = task
 
     def wait(self):
@@ -351,18 +365,18 @@ class Future:
         on_result: Callable | None = None
     ):
         if on_finish:
-            self._task.signal(TaskSignal.FINISH, on_finish)
+            self._task.signal(_TaskWrapperSignal.FINISH, on_finish)
         if on_error:
-            self._task.signal(TaskSignal.ERROR, on_error)
+            self._task.signal(_TaskWrapperSignal.ERROR, on_error)
         if on_result:
-            self._task.signal(TaskSignal.RESULT, on_result)
+            self._task.signal(_TaskWrapperSignal.RESULT, on_result)
         return self
 
 
 # Scheduler
 class Scheduler:
     def __init__(self, callback: Callable):
-        self._heap: list[_Task] = []
+        self._heap: list[_TaskWrapper] = []
         self._th = None
         self._cb = callback
         self._stop_event = Event()
@@ -382,7 +396,7 @@ class Scheduler:
         if self._th and self._th.is_alive():
             self._th.join()
 
-    def push(self, task: _Task):
+    def push(self, task: _TaskWrapper):
         heapq.heappush(self._heap, task)
         with self._waiter:
             self._waiter.notify_all()
@@ -476,7 +490,7 @@ class _TaskManagerModel:
 
         token = CancelationToken()
         definition = TaskDefinition(period, environment)
-        wrapper = _Task(task, definition, token, id)
+        wrapper = _SimpleTaskWrapper(task, definition, token, id)
         wrapper._psignal = self.on_finish_task
 
         self._model.add(wrapper)
@@ -488,16 +502,16 @@ class _TaskManagerModel:
         return self._model
 
     # Handlers
-    def on_scheduler_task(self, task: _Task):
+    def on_scheduler_task(self, task: _TaskWrapper):
         env = self._environments[task.definition().environment]
         env.push(task.execute)
 
-    def on_finish_task(self, task: _Task):
+    def on_finish_task(self, task: _TaskWrapper):
         self._model.remove(task)
 
 
 class TaskManager:
-    Signal = TaskSignal
+    Signal = _TaskWrapperSignal
 
     _model = _TaskManagerModel()
 
