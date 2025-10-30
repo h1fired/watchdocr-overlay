@@ -426,40 +426,6 @@ class Scheduler:
                 self._waiter.wait(next_sleep_time)
 
 
-# Pipeline
-class Stage:
-    def __init__(self):
-        pass
-
-    def process(self, *data):
-        raise NotImplementedError
-
-
-class Pipeline:
-    def __init__(self, *stages: Stage | Callable):
-        self._stages = stages
-        self._current_stage = ObservableVar(int, 0)
-        self._future: Future = None
-
-    def start(self, token: CancelationToken, data=None):
-        for i, stage in enumerate(self._stages):
-            if token.is_cancelled:
-                return data
-            if type(stage) is Stage:
-                data = stage.process(token, data)
-            else:
-                data = stage(token, data)
-            self._current_stage.value = i
-        return data
-
-    @property
-    def current_stage(self):
-        return self._current_stage
-
-    def future(self):
-        return self._future
-
-
 # Manager
 class _TaskManagerModel:
     def __init__(self):
