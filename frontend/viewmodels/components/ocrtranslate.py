@@ -36,3 +36,8 @@ class OcrTranslateViewModel(QmlViewModel):
         )
         s = self.accessor.get(OcrTranslateService)
         s.recognize(box)
+
+    @Slot()
+    def terminateTask(self):
+        ocr_translate_s = self.accessor.get(OcrTranslateService)
+        ocr_translate_s.terminate()

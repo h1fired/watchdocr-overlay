@@ -6,6 +6,9 @@ from src.ocr.service import OcrService
 from enum import IntEnum
 
 
+TASK_NAME = 'task.ocrtranslate.recognition'
+
+
 class OcrTranslateStatus(IntEnum):
     ERROR = 0
     SUCCESS = 1
@@ -46,8 +49,14 @@ class OcrTranslateService(Service):
 
         ocr_s = self.get_related(OcrService)
         pipeline = OcrTranslateRecognitionPipeline(box, ocr_s)
-        future = TaskManager.execute(pipeline)
+        future = TaskManager.execute(pipeline, id=TASK_NAME)
         future.observe(on_finish=lambda: self.on_task_finish(future.result()))
+
+    def terminate(self):
+        if TaskManager.objects().exists(TASK_NAME):
+            task = TaskManager.objects().get(TASK_NAME)
+            task.cancel()
+            task.wait()
 
     def on_task_finish(self, result):
         self.event.dispatch(

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
+import App.Backend
 
 
 Window {
@@ -31,6 +32,7 @@ Window {
 
         function onVisibilityChanged() {
             if (window.visible) {
+                Backend.OcrTranslate.terminateTask();
                 window.close();
                 window.visible = false;
             } else {
@@ -45,6 +47,7 @@ Window {
 
         function onCloseRequested() {
             if (window.visible) {
+                Backend.OcrTranslate.terminateTask();
                 window.close();
                 window.visible = false;
             }
