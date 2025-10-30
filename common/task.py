@@ -484,22 +484,6 @@ class _TaskManagerModel:
 
         return Future(wrapper)
 
-    def execute_pipeline(
-        self,
-        *stages: Stage | Callable,
-        environment: EnvironmentType = EnvironmentType.THREAD,
-        id: str | None = None
-    ):
-        pipeline = Pipeline(*stages)
-        future = self.execute(
-            task=pipeline.start,
-            period=Period(0, 1),
-            environment=environment,
-            id=id
-        )
-        pipeline._future = future
-        return pipeline
-
     def objects(self):
         return self._model
 
@@ -538,19 +522,6 @@ class TaskManager:
         id: str | None = None
     ):
         return cls._model.execute(task, period, environment, id)
-
-    @classmethod
-    def execute_pipeline(
-        cls,
-        *stages: Stage | Callable,
-        environment: EnvironmentType = EnvironmentType.THREAD,
-        id: str | None = None
-    ):
-        return cls._model.execute_pipeline(
-            *stages,
-            environment=environment,
-            id=id
-        )
 
     @classmethod
     def objects(cls):
