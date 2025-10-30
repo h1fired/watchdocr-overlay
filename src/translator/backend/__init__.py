@@ -10,13 +10,11 @@ class TranslationStatus(IntEnum):
 
 class TranslationBackend:
     name: str
+    languages_repr: dict
 
     def __init__(self):
         if not hasattr(self, 'name'):
             raise ValueError('OCR backend should have name property')
-
-    def load(self):
-        pass
 
     def translate(self, text: str, translate_to: str):
         raise NotImplementedError

@@ -1,9 +1,11 @@
 from .backend import TranslationBackendManager
 from .backend.deepl import DeeplTranslationBackend
+from .backend.google import GoogleTranslationBackend
 
 
 backends = [
-    DeeplTranslationBackend
+    DeeplTranslationBackend,
+    GoogleTranslationBackend
 ]
 
 
