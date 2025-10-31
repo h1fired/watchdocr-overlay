@@ -54,6 +54,7 @@ Item {
                     width: 32
                     height: 32
 
+                    visible: !translationPanel.maximized
                     enabled: root.state == "result"
 
                     text: "Copied to clipboard"
@@ -188,6 +189,13 @@ Item {
                 }
             }
         }
+    }
+
+    TranslationPanel {
+        id: translationPanel
+
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
     }
 
     Behavior on implicitWidth {

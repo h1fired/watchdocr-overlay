@@ -1,11 +1,27 @@
 from common.observable import ObservableDict
+from src.translator.types import LANGUAGES_VERBOSE
 from enum import IntEnum
-from typing import Iterable
+from typing import Iterable, Sequence
 
 
 class TranslationStatus(IntEnum):
     ERROR = 0
     SUCCESS = 1
+
+
+class TranslationDictionary:
+    def __init__(self, languages: dict[str, str]):
+        self._languages = languages
+        self._verbose = {lang: LANGUAGES_VERBOSE[lang] for lang in languages.keys()}
+
+    def verbose(self):
+        return tuple(self._verbose.keys())
+
+    def all(self):
+        return self._verbose
+
+    def convert(self, language: str):
+        return self._languages[language]
 
 
 class TranslationBackend:
@@ -15,9 +31,13 @@ class TranslationBackend:
     def __init__(self):
         if not hasattr(self, 'name'):
             raise ValueError('OCR backend should have name property')
+        self._languages = TranslationDictionary(self.languages_repr)
 
-    def translate(self, text: str, translate_to: str):
+    def translate(self, text: str, to: str):
         raise NotImplementedError
+
+    def languages(self):
+        return self._languages
 
 
 class TranslationBackendManager:
@@ -55,6 +75,7 @@ class TranslationBackendManager:
 
 class DummyTranslationBackend(TranslationBackend):
     name = '1_Dummy'
+    languages_repr = {}
 
     def translate(self, text, translate_to):
         text = f'DUMMY TRANSLATED TO {translate_to}: {text}'

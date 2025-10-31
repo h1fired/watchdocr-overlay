@@ -12,8 +12,9 @@ class GoogleTranslationBackend(TranslationBackend):
         'UK': 'uk'
     }
 
-    def translate(self, text, translate_to: str):
-        language = self.languages_repr.get(translate_to, translate_to)
+    def translate(self, text, to: str):
+        language = self.languages().convert(to)
+
         try:
             params = {
                 'client': 'gtx',
@@ -24,6 +25,7 @@ class GoogleTranslationBackend(TranslationBackend):
             }
             response = requests.get(URL, params=params)
             text = ''.join(t[0] for t in response.json()[0])
+
             if not text:
                 raise ValueError('No translation')
         except Exception as e:
