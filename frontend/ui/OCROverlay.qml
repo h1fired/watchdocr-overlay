@@ -150,8 +150,10 @@ Item {
         target: selectionArea
 
         function onBoxReleased() {
-            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            Backend.OcrTranslate.recognizeArea(absoluteBox);
+            let absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+            let originalLanguage = textArea.originalLanguage;
+            let translationLanguage = textArea.translationLanguage;
+            Backend.OcrTranslate.translateArea(absoluteBox, originalLanguage, translationLanguage);
         }
 
         function onPressed() {
@@ -170,8 +172,10 @@ Item {
                 return;
             }
             selectionArea.selectPrimaryScreenBox();
-            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            Backend.OcrTranslate.recognizeArea(absoluteBox);
+            let absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+            let originalLanguage = textArea.originalLanguage;
+            let translationLanguage = textArea.translationLanguage;
+            Backend.OcrTranslate.translateArea(absoluteBox, originalLanguage, translationLanguage);
         }
     }
 

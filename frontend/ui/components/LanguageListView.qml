@@ -5,8 +5,9 @@ import QtQuick.Controls.Basic
 Item {
     id: root
 
-    property int selectedIndex: -1
+    property int selectedIndex: 0
     property list<string> languages: ([])
+    property string current: languages[selectedIndex] || 'empty'
 
     ListView {
         id: listView

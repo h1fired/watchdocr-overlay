@@ -14,8 +14,8 @@ Item {
     clip: true
 
     property bool maximized: false
-    property string originalLanguage
-    property string translationLanguage
+    property alias originalLanguage: translationSelector.originalLanguage
+    property alias translationLanguage: translationSelector.translationLanguage
     property list<string> languages: ([])
 
     Button {
@@ -27,7 +27,7 @@ Item {
 
         anchors.horizontalCenter: parent.horizontalCenter
 
-        text: "English -> Ukrainian"
+        text: root.originalLanguage + " -> " + root.translationLanguage
         font.weight: 600
         font.pixelSize: 12
         palette.buttonText: "#FFFFFF"

@@ -18,6 +18,8 @@ Item {
     property int maximizedWidth: 760
     property int maximizedHeight: 420
     property list<string> languages: ([])
+    property alias originalLanguage: translationPanel.originalLanguage
+    property alias translationLanguage: translationPanel.translationLanguage
 
     signal copied()
 

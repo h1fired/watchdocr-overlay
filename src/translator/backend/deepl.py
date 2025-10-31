@@ -17,11 +17,16 @@ class DeeplTranslationBackend(TranslationBackend):
         super().__init__()
         self.client = deepl.DeepLClient(API_KEY)
 
-    def translate(self, text, to: str):
-        language = self.languages().convert(to)
+    def translate(self, text, _from: str, to: str):
+        from_language = self.languages().convert(_from)
+        to_language = self.languages().convert(to)
 
         try:
-            result = self.client.translate_text(text, target_lang=language)
+            result = self.client.translate_text(
+                text,
+                source_lang=from_language,
+                target_lang=to_language
+            )
             if not result.text:
                 raise ValueError('No translation')
         except Exception as e:

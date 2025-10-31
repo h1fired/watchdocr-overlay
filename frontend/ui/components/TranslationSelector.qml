@@ -6,6 +6,8 @@ Rectangle {
     color: "#000000"
 
     property list<string> languages: ([])
+    property alias originalLanguage: original.current
+    property alias translationLanguage: translation.current
 
     RowLayout {
         anchors.fill: parent
@@ -13,6 +15,8 @@ Rectangle {
         spacing: 8
 
         LanguageListView {
+            id: original
+
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -29,6 +33,8 @@ Rectangle {
         }
 
         LanguageListView {
+            id: translation
+
             Layout.fillWidth: true
             Layout.fillHeight: true
          

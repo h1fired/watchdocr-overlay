@@ -12,14 +12,15 @@ class GoogleTranslationBackend(TranslationBackend):
         'UK': 'uk'
     }
 
-    def translate(self, text, to: str):
-        language = self.languages().convert(to)
+    def translate(self, text, _from: str, to: str):
+        from_language = self.languages().convert(_from)
+        to_language = self.languages().convert(to)
 
         try:
             params = {
                 'client': 'gtx',
-                'sl': 'en',
-                'tl': language,
+                'sl': from_language,
+                'tl': to_language,
                 'dt': 't',
                 'q': text
             }

@@ -1,4 +1,5 @@
 from common.observable import ObservableDict, ObservableVar
+from common.utils import key_by_value
 from src.translator.types import LANGUAGES_VERBOSE
 from enum import IntEnum
 from typing import Iterable
@@ -23,6 +24,9 @@ class TranslationDictionary:
     def convert(self, language: str):
         return self._languages[language]
 
+    def verbose_to_id(self, verbose: str):
+        return key_by_value(self._verbose, verbose)
+
 
 class TranslationBackend:
     name: str
@@ -33,7 +37,7 @@ class TranslationBackend:
             raise ValueError('OCR backend should have name property')
         self._languages = TranslationDictionary(self.languages_repr)
 
-    def translate(self, text: str, to: str):
+    def translate(self, text: str, _from: str, to: str):
         raise NotImplementedError
 
     def languages(self):
