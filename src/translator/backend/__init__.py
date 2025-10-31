@@ -30,18 +30,23 @@ class TranslationDictionary:
 
 class TranslationBackend:
     name: str
-    languages_repr: dict
+    source_langs: dict
+    target_langs: dict
 
     def __init__(self):
         if not hasattr(self, 'name'):
             raise ValueError('OCR backend should have name property')
-        self._languages = TranslationDictionary(self.languages_repr)
+        self._source_languages = TranslationDictionary(self.source_langs)
+        self._target_languages = TranslationDictionary(self.target_langs)
 
     def translate(self, text: str, _from: str, to: str):
         raise NotImplementedError
 
-    def languages(self):
-        return self._languages
+    def source_languages(self):
+        return self._source_languages
+
+    def target_languages(self):
+        return self._target_languages
 
 
 class TranslationBackendManager:
@@ -79,9 +84,8 @@ class TranslationBackendManager:
 
 class DummyTranslationBackend(TranslationBackend):
     name = '1_Dummy'
-    languages_repr = {
-        'AUTO': 'AUTO'
-    }
+    source_langs = {'AUTO': 'AUTO'}
+    target_langs = {'AUTO': 'AUTO'}
 
     def translate(self, text, _from, to):
         text = f'DUMMY TRANSLATED FROM {_from} TO {to}\n{text}'

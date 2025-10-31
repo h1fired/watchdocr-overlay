@@ -14,9 +14,10 @@ Item {
     clip: true
 
     property bool maximized: false
-    property alias originalLanguage: translationSelector.originalLanguage
-    property alias translationLanguage: translationSelector.translationLanguage
-    property list<string> languages: ([])
+    property alias sourceLanguage: translationSelector.sourceLanguage
+    property alias targetLanguage: translationSelector.targetLanguage
+    property list<string> sourceLanguages: ([])
+    property list<string> targetLanguages: ([])
 
     Button {
         id: btnTranslate
@@ -27,7 +28,7 @@ Item {
 
         anchors.horizontalCenter: parent.horizontalCenter
 
-        text: root.originalLanguage + " -> " + root.translationLanguage
+        text: root.sourceLanguage + " -> " + root.targetLanguage
         font.weight: 600
         font.pixelSize: 12
         palette.buttonText: "#FFFFFF"
@@ -51,6 +52,7 @@ Item {
 
         anchors.horizontalCenter: parent.horizontalCenter
 
-        languages: root.languages
+        sourceLanguages: root.sourceLanguages
+        targetLanguages: root.targetLanguages
     }
 }

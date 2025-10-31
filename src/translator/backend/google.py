@@ -3,19 +3,25 @@ import requests
 
 
 URL = 'https://translate.googleapis.com/translate_a/single'
+SOURCE_LANGUAGES = {
+    'AUTO': 'auto',
+    'EN': 'en',
+    'UK': 'uk'
+}
+TARGET_LANGUAGES = {
+    'EN': 'en',
+    'UK': 'uk'
+}
 
 
 class GoogleTranslationBackend(TranslationBackend):
     name = 'Google'
-    languages_repr = {
-        'AUTO': 'auto',
-        'EN': 'en',
-        'UK': 'uk'
-    }
+    source_langs = SOURCE_LANGUAGES
+    target_langs = TARGET_LANGUAGES
 
     def translate(self, text, _from: str, to: str):
-        from_language = self.languages().convert(_from)
-        to_language = self.languages().convert(to)
+        from_language = self.source_languages().convert(_from)
+        to_language = self.target_languages().convert(to)
 
         try:
             params = {

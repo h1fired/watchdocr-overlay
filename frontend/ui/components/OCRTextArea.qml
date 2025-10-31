@@ -17,9 +17,10 @@ Item {
     property int minimizedHeight: 120
     property int maximizedWidth: 760
     property int maximizedHeight: 420
-    property list<string> languages: ([])
-    property alias originalLanguage: translationPanel.originalLanguage
-    property alias translationLanguage: translationPanel.translationLanguage
+    property list<string> sourceLanguages: ([])
+    property list<string> targetLanguages: ([])
+    property alias sourceLanguage: translationPanel.sourceLanguage
+    property alias targetLanguage: translationPanel.targetLanguage
 
     signal copied()
 
@@ -200,7 +201,8 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
 
-        languages: root.languages
+        sourceLanguages: root.sourceLanguages
+        targetLanguages: root.targetLanguages
     }
 
     Behavior on implicitWidth {

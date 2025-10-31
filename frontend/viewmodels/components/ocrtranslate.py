@@ -38,10 +38,10 @@ class OcrTranslateViewModel(QmlViewModel):
 
         translation_s = self.accessor.get(TranslationService)
         backend = translation_s.backends().current().value
-        languages = backend.languages()
-
-        id_from = languages.verbose_to_id(_from)
-        id_to = languages.verbose_to_id(to)
+        source_languages = backend.source_languages()
+        id_from = source_languages.verbose_to_id(_from)
+        target_languages = backend.target_languages()
+        id_to = target_languages.verbose_to_id(to)
 
         s = self.accessor.get(OcrTranslateService)
         s.recognize(box, id_from, id_to)

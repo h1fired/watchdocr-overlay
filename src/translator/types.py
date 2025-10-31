@@ -9,7 +9,10 @@ LANGUAGES_VERBOSE = {
     'DE': 'German',
     'EL': 'Greek',
     'EN': 'English',
+    'EN-GB': 'English (British)',
+    'EN-US': 'English (American)',
     'ES': 'Spanish',
+    'ES-419': 'Spanish (Latin American)',
     'ET': 'Estonian',
     'FI': 'Finnish',
     'FR': 'French',
@@ -25,7 +28,10 @@ LANGUAGES_VERBOSE = {
     'NL': 'Dutch',
     'PL': 'Polish',
     'PT': 'Portuguese',
+    'PT-BR': 'Portuguese (Brazilian)',
+    'PT-PT': 'Portuguese',
     'RO': 'Romanian',
+    'RU': 'Russian',
     'SK': 'Slovak',
     'SL': 'Slovenian',
     'SV': 'Swedish',
@@ -33,5 +39,7 @@ LANGUAGES_VERBOSE = {
     'TR': 'Turkish',
     'UK': 'Ukrainian',
     'VI': 'Vietnamese',
-    'ZH': 'Chinese'
+    'ZH': 'Chinese',
+    'ZH-HANS': 'Chinese (simplified)',
+    'ZH-HANT': 'Chinese (traditional)'
 }

@@ -81,7 +81,8 @@ Item {
                 root.mode == OCROverlay.Mode.Recognizing
             )
 
-            languages: Backend.Translate.verboseLanguages
+            sourceLanguages: Backend.Translate.sourceLanguages
+            targetLanguages: Backend.Translate.targetLanguages
         }
 
         Button {
@@ -151,9 +152,9 @@ Item {
 
         function onBoxReleased() {
             let absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            let originalLanguage = textArea.originalLanguage;
-            let translationLanguage = textArea.translationLanguage;
-            Backend.OcrTranslate.translateArea(absoluteBox, originalLanguage, translationLanguage);
+            let sourceLanguage = textArea.sourceLanguage;
+            let targetLanguage = textArea.targetLanguage;
+            Backend.OcrTranslate.translateArea(absoluteBox, sourceLanguage, targetLanguage);
         }
 
         function onPressed() {
@@ -173,9 +174,9 @@ Item {
             }
             selectionArea.selectPrimaryScreenBox();
             let absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            let originalLanguage = textArea.originalLanguage;
-            let translationLanguage = textArea.translationLanguage;
-            Backend.OcrTranslate.translateArea(absoluteBox, originalLanguage, translationLanguage);
+            let sourceLanguage = textArea.sourceLanguage;
+            let targetLanguage = textArea.targetLanguage;
+            Backend.OcrTranslate.translateArea(absoluteBox, sourceLanguage, targetLanguage);
         }
     }
 

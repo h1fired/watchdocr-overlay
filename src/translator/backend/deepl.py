@@ -4,53 +4,94 @@ import deepl
 
 
 API_KEY = config.DEEPL_API_KEY
+SOURCE_LANGUAGES = {
+    'AUTO': None,
+    'AR': 'AR',
+    'BG': 'BG',
+    'CS': 'CS',
+    'DA': 'DA',
+    'DE': 'DE',
+    'EL': 'EL',
+    'EN': 'EN',
+    'ES': 'ES',
+    'ET': 'ET',
+    'FI': 'FI',
+    'FR': 'FR',
+    'HE': 'HE',
+    'HU': 'HU',
+    'ID': 'ID',
+    'IT': 'IT',
+    'JA': 'JA',
+    'KO': 'KO',
+    'LT': 'LT',
+    'LV': 'LV',
+    'NB': 'NB',
+    'NL': 'NL',
+    'PL': 'PL',
+    'PT': 'PT',
+    'RO': 'RO',
+    'SK': 'SK',
+    'SL': 'SL',
+    'SV': 'SV',
+    'TH': 'TH',
+    'TR': 'TR',
+    'UK': 'UK',
+    'VI': 'VI',
+    'ZH': 'ZH'
+}
+TARGET_LANGUAGES = {
+    "AR": "AR",
+    "BG": "BG",
+    "CS": "CS",
+    "DA": "DA",
+    "DE": "DE",
+    "EL": "EL",
+    "EN-GB": "EN-GB",
+    "EN-US": "EN-US",
+    "ES": "ES",
+    "ES-419": "ES-419",
+    "ET": "ET",
+    "FI": "FI",
+    "FR": "FR",
+    "HE": "HE",
+    "HU": "HU",
+    "ID": "ID",
+    "IT": "IT",
+    "JA": "JA",
+    "KO": "KO",
+    "LT": "LT",
+    "LV": "LV",
+    "NB": "NB",
+    "NL": "NL",
+    "PL": "PL",
+    "PT-BR": "PT-BR",
+    "PT-PT": "PT-PT",
+    "RO": "RO",
+    "RU": "RU",
+    "SK": "SK",
+    "SL": "SL",
+    "SV": "SV",
+    "TH": "TH",
+    "TR": "TR",
+    "UK": "UK",
+    "VI": "VI",
+    "ZH-HANS": "ZH-HANS",
+    "ZH-HANT": "ZH-HANT"
+}
 
 
 class DeeplTranslationBackend(TranslationBackend):
     name = 'Deepl'
-    languages_repr = {
-        'AUTO': None,
-        'AR': 'AR',
-        'BG': 'BG',
-        'CS': 'CS',
-        'DA': 'DA',
-        'DE': 'DE',
-        'EL': 'EL',
-        'EN': 'EN',
-        'ES': 'ES',
-        'ET': 'ET',
-        'FI': 'FI',
-        'FR': 'FR',
-        'HE': 'HE',
-        'HU': 'HU',
-        'ID': 'ID',
-        'IT': 'IT',
-        'JA': 'JA',
-        'KO': 'KO',
-        'LT': 'LT',
-        'LV': 'LV',
-        'NB': 'NB',
-        'NL': 'NL',
-        'PL': 'PL',
-        'PT': 'PT',
-        'RO': 'RO',
-        'SK': 'SK',
-        'SL': 'SL',
-        'SV': 'SV',
-        'TH': 'TH',
-        'TR': 'TR',
-        'UK': 'UK',
-        'VI': 'VI',
-        'ZH': 'ZH'
-    }
+    source_langs = SOURCE_LANGUAGES
+    target_langs = TARGET_LANGUAGES
 
     def __init__(self):
         super().__init__()
         self.client = deepl.DeepLClient(API_KEY)
 
     def translate(self, text, _from: str, to: str):
-        from_language = self.languages().convert(_from)
-        to_language = self.languages().convert(to)
+        from_language = self.source_languages().convert(_from)
+        to_language = self.target_languages().convert(to)
 
         try:
             result = self.client.translate_text(

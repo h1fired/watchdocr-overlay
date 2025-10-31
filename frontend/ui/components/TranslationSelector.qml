@@ -5,9 +5,10 @@ import QtQuick.Layouts
 Rectangle {
     color: "#000000"
 
-    property list<string> languages: ([])
-    property alias originalLanguage: original.current
-    property alias translationLanguage: translation.current
+    property list<string> sourceLanguages: ([])
+    property list<string> targetLanguages: ([])
+    property alias sourceLanguage: source.current
+    property alias targetLanguage: target.current
 
     RowLayout {
         anchors.fill: parent
@@ -15,12 +16,12 @@ Rectangle {
         spacing: 8
 
         LanguageListView {
-            id: original
+            id: source
 
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            languages: root.languages
+            languages: root.sourceLanguages
         }
 
         Rectangle {
@@ -33,12 +34,12 @@ Rectangle {
         }
 
         LanguageListView {
-            id: translation
+            id: target
 
             Layout.fillWidth: true
             Layout.fillHeight: true
          
-            languages: root.languages
+            languages: root.targetLanguages
         }
     }
 }
