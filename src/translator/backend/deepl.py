@@ -9,8 +9,39 @@ API_KEY = config.DEEPL_API_KEY
 class DeeplTranslationBackend(TranslationBackend):
     name = 'Deepl'
     languages_repr = {
-        'EN': 'EN-US',
-        'UK': 'UK'
+        'AUTO': None,
+        'AR': 'AR',
+        'BG': 'BG',
+        'CS': 'CS',
+        'DA': 'DA',
+        'DE': 'DE',
+        'EL': 'EL',
+        'EN': 'EN',
+        'ES': 'ES',
+        'ET': 'ET',
+        'FI': 'FI',
+        'FR': 'FR',
+        'HE': 'HE',
+        'HU': 'HU',
+        'ID': 'ID',
+        'IT': 'IT',
+        'JA': 'JA',
+        'KO': 'KO',
+        'LT': 'LT',
+        'LV': 'LV',
+        'NB': 'NB',
+        'NL': 'NL',
+        'PL': 'PL',
+        'PT': 'PT',
+        'RO': 'RO',
+        'SK': 'SK',
+        'SL': 'SL',
+        'SV': 'SV',
+        'TH': 'TH',
+        'TR': 'TR',
+        'UK': 'UK',
+        'VI': 'VI',
+        'ZH': 'ZH'
     }
 
     def __init__(self):

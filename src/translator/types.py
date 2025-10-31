@@ -1,6 +1,37 @@
 
 
 LANGUAGES_VERBOSE = {
+    'AUTO': 'Auto',
+    'AR': 'Arabic',
+    'BG': 'Bulgarian',
+    'CS': 'Czech',
+    'DA': 'Danish',
+    'DE': 'German',
+    'EL': 'Greek',
     'EN': 'English',
-    'UK': 'Ukrainian'
+    'ES': 'Spanish',
+    'ET': 'Estonian',
+    'FI': 'Finnish',
+    'FR': 'French',
+    'HE': 'Hebrew',
+    'HU': 'Hungarian',
+    'ID': 'Indonesian',
+    'IT': 'Italian',
+    'JA': 'Japanese',
+    'KO': 'Korean',
+    'LT': 'Lithuanian',
+    'LV': 'Latvian',
+    'NB': 'Norwegian Bokmål',
+    'NL': 'Dutch',
+    'PL': 'Polish',
+    'PT': 'Portuguese',
+    'RO': 'Romanian',
+    'SK': 'Slovak',
+    'SL': 'Slovenian',
+    'SV': 'Swedish',
+    'TH': 'Thai',
+    'TR': 'Turkish',
+    'UK': 'Ukrainian',
+    'VI': 'Vietnamese',
+    'ZH': 'Chinese'
 }

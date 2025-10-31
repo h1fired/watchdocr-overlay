@@ -79,8 +79,10 @@ class TranslationBackendManager:
 
 class DummyTranslationBackend(TranslationBackend):
     name = '1_Dummy'
-    languages_repr = {}
+    languages_repr = {
+        'AUTO': 'AUTO'
+    }
 
-    def translate(self, text, translate_to):
-        text = f'DUMMY TRANSLATED TO {translate_to}: {text}'
+    def translate(self, text, _from, to):
+        text = f'DUMMY TRANSLATED FROM {_from} TO {to}\n{text}'
         return {'success': TranslationBackend, 'text': text}

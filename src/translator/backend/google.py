@@ -8,6 +8,7 @@ URL = 'https://translate.googleapis.com/translate_a/single'
 class GoogleTranslationBackend(TranslationBackend):
     name = 'Google'
     languages_repr = {
+        'AUTO': 'auto',
         'EN': 'en',
         'UK': 'uk'
     }
