@@ -69,8 +69,8 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        Components.OCRTextArea {
-            id: textArea
+        Components.TextControlPanel {
+            id: textControlPanel
 
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
@@ -80,6 +80,9 @@ Item {
                 root.mode == OCROverlay.Mode.Result ||
                 root.mode == OCROverlay.Mode.Recognizing
             )
+
+            sourceLanguages: Backend.Translate.sourceLanguages
+            targetLanguages: Backend.Translate.targetLanguages
         }
 
         Button {
@@ -120,19 +123,19 @@ Item {
             let text = response.text;
 
             if (response.state == OCROverlay.ResponseStatus.Success) {
-                textArea.state = "result"
+                textControlPanel.state = "result"
                 root.mode = OCROverlay.Mode.Result;
             } else if (response.state == OCROverlay.ResponseStatus.Error) {
-                textArea.state = "status"
+                textControlPanel.state = "status"
                 root.mode = OCROverlay.Mode.Result;
                 text = "<span style=\"color:red\">" + response.text + "</span>";
             } else if (response.state == OCROverlay.ResponseStatus.Recognizing) {
                 root.mode = OCROverlay.Mode.Recognizing;
-                textArea.maximized = false;
-                textArea.state = "status"
+                textControlPanel.maximized = false;
+                textControlPanel.state = "status"
             }
-            textArea.text = text;
-            textArea.loading = response.state == OCROverlay.ResponseStatus.Recognizing;
+            textControlPanel.text = text;
+            textControlPanel.loading = response.state == OCROverlay.ResponseStatus.Recognizing;
         }
     }
 
@@ -140,7 +143,7 @@ Item {
         target: Backend.System
 
         function onTextCopiedToClipboard() {
-            textArea.runCopied();
+            textControlPanel.runCopied();
         }
     }
 
@@ -148,8 +151,10 @@ Item {
         target: selectionArea
 
         function onBoxReleased() {
-            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            Backend.OcrTranslate.recognizeArea(absoluteBox);
+            let absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+            let sourceLanguage = textControlPanel.sourceLanguage;
+            let targetLanguage = textControlPanel.targetLanguage;
+            Backend.OcrTranslate.translateArea(absoluteBox, sourceLanguage, targetLanguage);
         }
 
         function onPressed() {
@@ -168,16 +173,18 @@ Item {
                 return;
             }
             selectionArea.selectPrimaryScreenBox();
-            var absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
-            Backend.OcrTranslate.recognizeArea(absoluteBox);
+            let absoluteBox = selectionArea.relativeToAbsoluteBox(selectionArea.box);
+            let sourceLanguage = textControlPanel.sourceLanguage;
+            let targetLanguage = textControlPanel.targetLanguage;
+            Backend.OcrTranslate.translateArea(absoluteBox, sourceLanguage, targetLanguage);
         }
     }
 
     Connections {
-        target: textArea
+        target: textControlPanel
 
         function onCopied() {
-            Backend.System.copyTextToClipboard(textArea.text);
+            Backend.System.copyTextToClipboard(textControlPanel.text);
         }
     }
 
@@ -191,7 +198,7 @@ Item {
 
     function clear() {
         selectionArea.clear();
-        textArea.reset();
+        textControlPanel.reset();
     }
 
 }

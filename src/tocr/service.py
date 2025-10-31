@@ -17,9 +17,11 @@ class OcrTranslateStatus(IntEnum):
 
 
 class OcrTranslateRecognitionPipeline(Pipeline):
-    def __init__(self, box, ocr_s, translation_s):
+    def __init__(self, box, _from, to, ocr_s, translation_s):
         super().__init__()
         self._box = box
+        self._from = _from
+        self._to = to
         self._ocr_s = ocr_s
         self._translation_s = translation_s
 
@@ -30,7 +32,7 @@ class OcrTranslateRecognitionPipeline(Pipeline):
         return self._ocr_s.recognize(image)
 
     def stage3(self, result):
-        result = self._translation_s.translate(result['text'], 'UK')
+        result = self._translation_s.translate(result['text'], self._from, self._to)
         return {'status': OcrTranslateStatus.SUCCESS, 'text': result['text']}
 
 
@@ -44,7 +46,7 @@ class OcrTranslateService(Service):
     class Events:
         RESPONSE_RECEIVED = _OcrTranslateResponceReceiveEvent
 
-    def recognize(self, box: tuple[int, int, int, int]):
+    def recognize(self, box: tuple[int, int, int, int], _from: str, to: str):
         self.event.dispatch(
             event=self.Events.RESPONSE_RECEIVED,
             data={
@@ -55,7 +57,7 @@ class OcrTranslateService(Service):
 
         ocr_s = self.get_related(OcrService)
         translation_s = self.get_related(TranslationService)
-        pipeline = OcrTranslateRecognitionPipeline(box, ocr_s, translation_s)
+        pipeline = OcrTranslateRecognitionPipeline(box, _from, to, ocr_s, translation_s)
         future = TaskManager.execute(pipeline, id=TASK_NAME)
         future.observe(on_finish=lambda: self.on_task_finish(future.result()))
 

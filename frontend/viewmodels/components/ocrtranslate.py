@@ -2,6 +2,7 @@ from common.event import Event
 from frontend.utils.screen import ScreenManager
 from frontend.common.mvvm_qml import QmlViewModel
 from src.tocr.service import OcrTranslateService
+from src.translator.service import TranslationService
 from PySide6.QtCore import Slot, Signal, QRect
 from PySide6.QtQml import qmlRegisterSingletonType
 
@@ -28,14 +29,22 @@ class OcrTranslateViewModel(QmlViewModel):
         }
         self.responseReceived.emit(data)
 
-    @Slot(QRect)
-    def recognizeArea(self, rect: QRect):
+    @Slot(QRect, str, str)
+    def translateArea(self, rect: QRect, _from: str, to: str):
         box = (
             rect.x(), rect.y(),
             rect.x() + rect.width(), rect.y() + rect.height()
         )
+
+        translation_s = self.accessor.get(TranslationService)
+        backend = translation_s.backends().current().value
+        source_languages = backend.source_languages()
+        id_from = source_languages.verbose_to_id(_from)
+        target_languages = backend.target_languages()
+        id_to = target_languages.verbose_to_id(to)
+
         s = self.accessor.get(OcrTranslateService)
-        s.recognize(box)
+        s.recognize(box, id_from, id_to)
 
     @Slot()
     def terminateTask(self):

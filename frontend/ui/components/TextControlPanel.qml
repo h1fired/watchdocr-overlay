@@ -10,13 +10,20 @@ Item {
     implicitWidth: root.maximized ? maximizedWidth : minimizedWidth
     implicitHeight: root.maximized ? maximizedHeight : minimizedHeight
 
-    property string text
-    property bool loading: false
-    property bool maximized: false
     property int minimizedWidth: 560
     property int minimizedHeight: 120
     property int maximizedWidth: 760
     property int maximizedHeight: 420
+
+    property bool loading: false
+    property bool maximized: false
+
+    property string text
+
+    property list<string> sourceLanguages: ([])
+    property list<string> targetLanguages: ([])
+    property alias sourceLanguage: translationPanel.sourceLanguage
+    property alias targetLanguage: translationPanel.targetLanguage
 
     signal copied()
 
@@ -25,6 +32,11 @@ Item {
         State { name: "status" }
     ]
     state: "result"
+
+    onVisibleChanged: {
+        if (!visible)
+            translationPanel.maximized = false;
+    }
 
     MouseArea {
         anchors.fill: parent
@@ -54,6 +66,7 @@ Item {
                     width: 32
                     height: 32
 
+                    visible: !translationPanel.maximized
                     enabled: root.state == "result"
 
                     text: "Copied to clipboard"
@@ -188,6 +201,16 @@ Item {
                 }
             }
         }
+    }
+
+    TranslationPanel {
+        id: translationPanel
+
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        sourceLanguages: root.sourceLanguages
+        targetLanguages: root.targetLanguages
     }
 
     Behavior on implicitWidth {
