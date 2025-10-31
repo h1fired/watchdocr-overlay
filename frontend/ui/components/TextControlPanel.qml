@@ -10,13 +10,16 @@ Item {
     implicitWidth: root.maximized ? maximizedWidth : minimizedWidth
     implicitHeight: root.maximized ? maximizedHeight : minimizedHeight
 
-    property string text
-    property bool loading: false
-    property bool maximized: false
     property int minimizedWidth: 560
     property int minimizedHeight: 120
     property int maximizedWidth: 760
     property int maximizedHeight: 420
+
+    property bool loading: false
+    property bool maximized: false
+
+    property string text
+
     property list<string> sourceLanguages: ([])
     property list<string> targetLanguages: ([])
     property alias sourceLanguage: translationPanel.sourceLanguage
