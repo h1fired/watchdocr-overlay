@@ -7,7 +7,7 @@ Item {
 
     property int selectedIndex: 0
     property list<string> languages: ([])
-    property string current: languages[selectedIndex] || 'empty'
+    property string current: languages[selectedIndex] || languages[0] || "empty"
 
     ListView {
         id: listView
