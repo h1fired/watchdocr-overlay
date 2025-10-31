@@ -5,6 +5,8 @@ import QtQuick.Layouts
 Rectangle {
     color: "#000000"
 
+    property list<string> languages: ([])
+
     RowLayout {
         anchors.fill: parent
 
@@ -13,6 +15,8 @@ Rectangle {
         LanguageListView {
             Layout.fillWidth: true
             Layout.fillHeight: true
+
+            languages: root.languages
         }
 
         Rectangle {
@@ -27,6 +31,8 @@ Rectangle {
         LanguageListView {
             Layout.fillWidth: true
             Layout.fillHeight: true
+         
+            languages: root.languages
         }
     }
 }

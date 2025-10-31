@@ -3,22 +3,17 @@ import QtQuick.Controls.Basic
 
 
 Item {
-    property int selectedIndex: -1
+    id: root
 
-    ListModel {
-        id: listModel
-        ListElement { name: "Option 1" }
-        ListElement { name: "Option 2" }
-        ListElement { name: "Option 3" }
-        ListElement { name: "Option 4" }
-    }
+    property int selectedIndex: -1
+    property list<string> languages: ([])
 
     ListView {
         id: listView
 
         anchors.fill: parent
 
-        model: listModel
+        model: root.languages
         spacing: 0
         clip: true
 
@@ -34,7 +29,7 @@ Item {
                 anchors.left: parent.left
                 anchors.leftMargin: 12
 
-                text: name
+                text: modelData
                 color: "white"
             }
 

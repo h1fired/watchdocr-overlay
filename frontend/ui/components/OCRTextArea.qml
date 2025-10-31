@@ -17,6 +17,7 @@ Item {
     property int minimizedHeight: 120
     property int maximizedWidth: 760
     property int maximizedHeight: 420
+    property list<string> languages: ([])
 
     signal copied()
 
@@ -196,6 +197,8 @@ Item {
 
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
+
+        languages: root.languages
     }
 
     Behavior on implicitWidth {

@@ -8,15 +8,18 @@ class TranslationViewModel(QmlViewModel):
 
     backendsUpdated = Signal()
     currentBackendUpdated = Signal()
+    languagesVerboseUpdated = Signal()
 
     def onLoaded(self):
         ocr_s = self.accessor.get(TranslationService)
         backends = ocr_s.backends()
         backends.objects.register(lambda _: self.backendsUpdated.emit())
+        backends.current().register(lambda _: self.languagesVerboseUpdated.emit())
 
     def onFullyLoaded(self):
         self.backendsUpdated.emit()
         self.currentBackendUpdated.emit()
+        self.languagesVerboseUpdated.emit()
 
     def getBackends(self):
         if not self.accessor:
@@ -32,7 +35,7 @@ class TranslationViewModel(QmlViewModel):
             return ''
         ocr_s = self.accessor.get(TranslationService)
         backends = ocr_s.backends()
-        return backends.current().name
+        return backends.current().value.name
 
     def setCurrentBackend(self, backend: str):
         ocr_s = self.accessor.get(TranslationService)
@@ -41,3 +44,12 @@ class TranslationViewModel(QmlViewModel):
         backends.set(cls)
 
     currentBackend = Property(str, getCurrentBackend, setCurrentBackend, notify=currentBackendUpdated)
+
+    def getLanguagesVerboseList(self):
+        if not self.accessor:
+            return []
+        ocr_s = self.accessor.get(TranslationService)
+        backend = ocr_s.backends().current().value
+        return backend.languages().verbose()
+
+    verboseLanguages = Property('QVariantList', getLanguagesVerboseList, notify=languagesVerboseUpdated)

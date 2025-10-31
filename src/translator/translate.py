@@ -14,7 +14,7 @@ class Translator:
         self._backends = TranslationBackendManager(backends)
 
     def translate(self, text: str, translate_to: str):
-        backend = self._backends.current()
+        backend = self._backends.current().value
         return backend.translate(text, translate_to)
 
     def backends(self):

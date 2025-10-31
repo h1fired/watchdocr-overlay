@@ -125,7 +125,7 @@ class ObservableVar(ObservableType, Generic[T]):
     def __init__(self, _type: type[T], value: Any, notify_unique=False):
         super().__init__()
 
-        if type(value) is not _type:
+        if not isinstance(value, _type):
             raise TypeError('Invalid value type')
         self._type = _type
         self._value = value
@@ -139,7 +139,7 @@ class ObservableVar(ObservableType, Generic[T]):
     def value(self, value: T):
         if self._unique and value == self._value:
             return
-        if type(value) is not self._type:
+        if not isinstance(value, self._type):
             raise TypeError('Invalid value type')
         self._value = value
         self.observable.notify(value)

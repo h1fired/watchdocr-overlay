@@ -80,6 +80,8 @@ Item {
                 root.mode == OCROverlay.Mode.Result ||
                 root.mode == OCROverlay.Mode.Recognizing
             )
+
+            languages: Backend.Translate.verboseLanguages
         }
 
         Button {

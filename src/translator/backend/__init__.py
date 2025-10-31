@@ -1,7 +1,7 @@
-from common.observable import ObservableDict
+from common.observable import ObservableDict, ObservableVar
 from src.translator.types import LANGUAGES_VERBOSE
 from enum import IntEnum
-from typing import Iterable, Sequence
+from typing import Iterable
 
 
 class TranslationStatus(IntEnum):
@@ -15,7 +15,7 @@ class TranslationDictionary:
         self._verbose = {lang: LANGUAGES_VERBOSE[lang] for lang in languages.keys()}
 
     def verbose(self):
-        return tuple(self._verbose.keys())
+        return tuple(self._verbose.values())
 
     def all(self):
         return self._verbose
@@ -44,7 +44,7 @@ class TranslationBackendManager:
     def __init__(self, backends: Iterable[type[TranslationBackend]]):
         self._objects = ObservableDict({b: b() for b in backends})
         self._objects[DummyTranslationBackend] = DummyTranslationBackend()
-        self._current = self._objects[DummyTranslationBackend]
+        self._current = ObservableVar(TranslationBackend, self._objects[DummyTranslationBackend])
 
     def register(self, backend: type[TranslationStatus]):
         if backend in self._objects.keys():
@@ -57,7 +57,7 @@ class TranslationBackendManager:
         self._objects.pop(backend)
 
     def set(self, backend: type[TranslationStatus]):
-        self._current = self._objects[backend]
+        self._current.value = self._objects[backend]
 
     def get_by_name(self, backend: str):
         for b in self._objects.keys():
@@ -65,7 +65,7 @@ class TranslationBackendManager:
                 return b
         raise KeyError('OCR backend does not exists')
 
-    def current(self) -> TranslationBackend:
+    def current(self):
         return self._current
 
     @property

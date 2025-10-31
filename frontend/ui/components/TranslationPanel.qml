@@ -16,7 +16,7 @@ Item {
     property bool maximized: false
     property string originalLanguage
     property string translationLanguage
-    property list<string> languages
+    property list<string> languages: ([])
 
     Button {
         id: btnTranslate
@@ -50,5 +50,7 @@ Item {
         height: parent.height - 36
 
         anchors.horizontalCenter: parent.horizontalCenter
+
+        languages: root.languages
     }
 }
