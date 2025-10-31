@@ -9,6 +9,7 @@ from common.task import TaskManager
 from src.tocr.service import OcrTranslateService
 from src.ocr.service import OcrService
 from src.translator.service import TranslationService
+from src.grabber.service import ImageGrabberService
 
 
 class CoreApplication:
@@ -37,9 +38,13 @@ class CoreApplication:
         translation_s = TranslationService()
         collector.register(translation_s)
 
+        image_grabber_s = ImageGrabberService()
+        collector.register(image_grabber_s)
+
         ocr_translate_s = OcrTranslateService(related_services=[
             ocr_s,
-            translation_s
+            translation_s,
+            image_grabber_s
         ])
         collector.register(ocr_translate_s)
 
