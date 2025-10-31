@@ -30,6 +30,11 @@ Item {
     ]
     state: "result"
 
+    onVisibleChanged: {
+        if (!visible)
+            translationPanel.maximized = false;
+    }
+
     MouseArea {
         anchors.fill: parent
     }
