@@ -11,6 +11,8 @@ Rectangle {
 
     color: "black"
 
+    signal previewToggled(bool value)
+
     MouseArea {
         anchors.fill: parent
     }
@@ -63,6 +65,26 @@ Rectangle {
 
             onCurrentTextChanged: {
                 Backend.Translate.currentBackend = currentText;
+            }
+        }
+
+        // Screens preview
+        Text {
+            Layout.fillWidth: true
+
+            text: "Preview"
+            color: "white"
+            font.pixelSize: 14
+            font.weight: 600
+        }
+
+        Switch {
+            Layout.alignment: Qt.AlignRight
+
+            checked: true
+
+            onCheckedChanged: {
+                root.previewToggled(checked);
             }
         }
     }

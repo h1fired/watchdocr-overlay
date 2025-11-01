@@ -35,10 +35,19 @@ Item {
 
     onVisibleChanged: {
         if (root.visible) {
+            Backend.Preview.QmlRequestScreensPreviewImage();
             root.mode = OCROverlay.Mode.Selection
         } else {
             root.mode = OCROverlay.Mode.StandBy
         }
+    }
+
+    Components.ScreenPreview {
+        id: screensPreview
+
+        anchors.fill: parent
+
+        providerId: "preview_screens"
     }
 
     Components.SelectionArea {
@@ -123,6 +132,19 @@ Item {
             x: 0
             y: 0
             width: 400
+
+            onPreviewToggled: (value) => {
+                Backend.Preview.QmlRequestScreensPreviewImage();
+                screensPreview.visible = value;
+            }
+        }
+    }
+
+    Connections {
+        target: Backend.Preview
+
+        function onPreviewUpdated() {
+            screensPreview.update();
         }
     }
 

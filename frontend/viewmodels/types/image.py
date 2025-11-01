@@ -1,7 +1,8 @@
 from PySide6.QtCore import QRectF, Property, Signal
-from PySide6.QtGui import QPainter
-from PySide6.QtQuick import QQuickPaintedItem
+from PySide6.QtGui import QPainter, QImage
+from PySide6.QtQuick import QQuickPaintedItem, QQuickImageProvider
 from PySide6.QtSvg import QSvgRenderer
+from PIL import ImageQt, Image
 
 
 class AnimatedImage(QQuickPaintedItem):
@@ -39,3 +40,17 @@ class AnimatedImage(QQuickPaintedItem):
         self.renderer.setAnimationEnabled(value)
 
     running = Property(bool, getRunning, setRunning, notify=runningChanged)
+
+
+class ImageProvider(QQuickImageProvider):
+    def __init__(self):
+        super().__init__(QQuickImageProvider.Image)
+        self._image = None
+
+    def setImage(self, image: Image.Image):
+        self._image = ImageQt.ImageQt(image.convert('RGBA'))
+
+    def requestImage(self, id, size, requestedSize):
+        if self._image is None:
+            return QImage()
+        return self._image

@@ -14,3 +14,10 @@ def grab_window_area(box: tuple[int, int, int, int]):
         sct_img = sct.grab(box)
         img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
         return img
+
+
+def grab_all_screens():
+    with mss() as sct:
+        sct_img = sct.grab(sct.monitors[0])
+        img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+        return img
