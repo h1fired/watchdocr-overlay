@@ -1,9 +1,8 @@
-from qt.qml import QQmlApplicationEngine
-from qt.core import QObject, QIcon, QAction, QApplication, QSystemTrayIcon, QMenu, Signal
+from qt.core import QObject, QIcon, QAction, QSystemTrayIcon, QMenu, Signal
 from qt.utils import invokeFunc
-from src.app import CoreApplication
-from frontend.viewmodels.window import qmlLinkerCore
+from frontend.core import GuiCoreApplication
 from frontend.utils import ghotkey
+from src.app import CoreApplication
 from config import config
 import sys
 import argparse
@@ -46,41 +45,18 @@ if __name__ == '__main__':
     core = CoreApplication()
     core.init()
 
-    app = QApplication(sys.argv)
-    engine = QQmlApplicationEngine()
-
-    # Pass system object to QML
-    system_obj = SystemObject(app)
-    engine.rootContext().setContextProperty('system', system_obj)
-
-    # Load QML window
-    engine.load(config.QML_WINDOW_FILE)
-    if not engine.rootObjects():
-        sys.exit(-1)
-
-    # Create tray
-    if not args.notray:
-        app.setQuitOnLastWindowClosed(False)
-        tray = SystemTray(engine.rootObjects()[0], app)
-        tray.show()
-
-    window = engine.rootObjects()[0]
-    # Load viewmodels
-    qmlLinkerCore.initialize(
-        window=window,
-        accessor=core.accessor(),
-        eventsys=core.event_system()
-    )
-    qmlLinkerCore.loadContent()
-    qmlLinkerCore.loadFullyContent()
+    gui_core = GuiCoreApplication()
+    gui_core.init(core.accessor(), core.event_system(), args.notray)
 
     # Install global keyboard events hook
     ghotkey.install_keyboard_hook_proc()
 
     @invokeFunc
     def toggle_window_visibility():
+        system_obj = gui_core.system_object()
         system_obj.requestVisibilityChange()
+
     ghotkey.bind(config.WINDOW_TOGGLE_HOTKEY, toggle_window_visibility)
 
-    # Run GUI
-    sys.exit(app.exec())
+    # Run application
+    sys.exit(gui_core.exec())
