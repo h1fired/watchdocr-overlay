@@ -18,7 +18,7 @@ Window {
 
     title: "OCR Overlay"
     color: "transparent"
-    flags: Qt.FramelessWindowHint
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
 
     onVisibleChanged: {
         if (window.visible) {
