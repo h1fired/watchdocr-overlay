@@ -11,7 +11,7 @@ Rectangle {
 
     color: "black"
 
-    signal previewToggled(bool value)
+    property bool previewEnabled: switchPreview.checked
 
     MouseArea {
         anchors.fill: parent
@@ -79,13 +79,9 @@ Rectangle {
         }
 
         Switch {
+            id: switchPreview
+
             Layout.alignment: Qt.AlignRight
-
-            checked: true
-
-            onCheckedChanged: {
-                root.previewToggled(checked);
-            }
         }
     }
 }

@@ -35,7 +35,9 @@ Item {
 
     onVisibleChanged: {
         if (root.visible) {
-            Backend.Preview.QmlRequestScreensPreviewImage();
+            if (debugPanel.previewEnabled) {
+                Backend.Preview.QmlRequestScreensPreviewImage();
+            }
             root.mode = OCROverlay.Mode.Selection
         } else {
             root.mode = OCROverlay.Mode.StandBy
@@ -129,13 +131,14 @@ Item {
         }
 
         DebugPanel {
+            id: debugPanel
+
             x: 0
             y: 0
             width: 400
 
-            onPreviewToggled: (value) => {
-                Backend.Preview.QmlRequestScreensPreviewImage();
-                screensPreview.visible = value;
+            onPreviewEnabledChanged: {
+                screensPreview.visible = previewEnabled;
             }
         }
     }
