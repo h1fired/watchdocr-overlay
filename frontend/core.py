@@ -1,6 +1,6 @@
 from qt.qml import QQmlApplicationEngine
 from qt.core import QApplication, QObject, Signal
-from frontend.tray import SystemTray
+from frontend.ui.tray import SystemTray
 from frontend.viewmodels.core import qmlLinkerCore
 from config import config
 import sys
