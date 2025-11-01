@@ -1,4 +1,3 @@
-from qt.core import QObject, QIcon, QAction, QSystemTrayIcon, QMenu, Signal
 from qt.utils import invokeFunc
 from frontend.core import GuiCoreApplication
 from frontend.utils import ghotkey
@@ -6,35 +5,6 @@ from src.app import CoreApplication
 from config import config
 import sys
 import argparse
-
-
-class SystemTray(QObject):
-    def __init__(self, window, app):
-        super().__init__(window)
-
-        self.tray = QSystemTrayIcon(QIcon("resources/icons/tray.svg"), app)
-
-        self.menu = QMenu()
-        self.show_action = QAction("Show")
-        self.quit_action = QAction("Quit")
-
-        self.show_action.triggered.connect(window.show)
-        self.quit_action.triggered.connect(app.quit)
-
-        self.menu.addAction(self.show_action)
-        self.menu.addAction(self.quit_action)
-
-        self.tray.setContextMenu(self.menu)
-
-    def show(self):
-        self.tray.show()
-
-
-class SystemObject(QObject):
-    visibilityChanged = Signal()
-
-    def requestVisibilityChange(self):
-        self.visibilityChanged.emit()
 
 
 if __name__ == '__main__':
