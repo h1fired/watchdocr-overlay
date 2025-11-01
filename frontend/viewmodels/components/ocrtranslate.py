@@ -1,13 +1,8 @@
 from common.event import Event
-from frontend.utils.screen import ScreenManager
 from frontend.common.mvvm_qml import QmlViewModel
 from src.tocr.service import OcrTranslateService
 from src.translator.service import TranslationService
 from PySide6.QtCore import Slot, Signal, QRect
-from PySide6.QtQml import qmlRegisterSingletonType
-
-
-qmlRegisterSingletonType(ScreenManager, 'App.Utils', 1, 0, 'ExtScreen')
 
 
 class OcrTranslateViewModel(QmlViewModel):

@@ -2,21 +2,23 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
 import App.Backend
+import App.Utils
+import "components"
 
 
 Window {
     id: window
 
-    x: 0
-    y: 0
-    width: Screen.width
-    height: Screen.height
+    x: EScreen.globalX
+    y: EScreen.globalY
+    width: EScreen.globalWidth
+    height: EScreen.globalHeight
 
     visible: true
 
     title: "OCR Overlay"
     color: "transparent"
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    flags: Qt.FramelessWindowHint
 
     onVisibleChanged: {
         if (window.visible) {
@@ -65,13 +67,15 @@ Window {
 
     OCROverlay {
         id: overlay
+
         anchors.fill: parent
+
         focus: true
     }
 
-    DebugPanel {
-        x: 0
-        y: 0
-        width: 400
-    }
+    // DebugPanel {
+    //     x: 0
+    //     y: 0
+    //     width: 400
+    // }
 }
