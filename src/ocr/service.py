@@ -12,3 +12,6 @@ class OcrService(Service):
 
     def backends(self):
         return self._ocr.backends()
+
+    def propagate_shared_objects(self):
+        return {'ocr': self._ocr}

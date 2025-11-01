@@ -11,3 +11,6 @@ class TranslationService(Service):
 
     def backends(self):
         return self._translator.backends()
+
+    def propagate_shared_objects(self):
+        return {'translator': self._translator}

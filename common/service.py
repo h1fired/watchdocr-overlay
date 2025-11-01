@@ -1,4 +1,5 @@
 from typing import Type, TypeVar
+from types import SimpleNamespace
 from .event import EventSystem, IEvent, _Event
 
 
@@ -25,6 +26,7 @@ class Service:
     def init(self, eventsys: EventSystem):
         self._eventsys = ServiceEventSystem(eventsys, self)
         self.on_init()
+        self._shared_objects = SimpleNamespace(**self.propagate_shared_objects())
 
     def on_init(self):
         pass
@@ -46,6 +48,13 @@ class Service:
 
     def relations(self):
         return self._relations
+
+    def propagate_shared_objects(self):
+        return {}
+
+    @property
+    def shared(self):
+        return self._shared_objects
 
     class Events:
         pass
