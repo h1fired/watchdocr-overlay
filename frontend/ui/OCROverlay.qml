@@ -132,6 +132,11 @@ Item {
             x: 0
             y: 0
             width: 400
+
+            onPreviewToggled: (value) => {
+                Backend.Preview.QmlRequestScreensPreviewImage();
+                screensPreview.visible = value;
+            }
         }
     }
 
