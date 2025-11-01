@@ -41,6 +41,19 @@ Item {
         }
     }
 
+    Components.SelectionArea {
+        id: selectionArea
+
+        anchors.fill: parent
+
+        enabled: (
+            root.mode == OCROverlay.Mode.Selection ||
+            root.mode == OCROverlay.Mode.Result ||
+            root.mode == OCROverlay.Mode.Selecting
+        )
+        loading: root.mode == OCROverlay.Mode.Recognizing
+    }
+
     Components.ScreenArea {
         monitor: 0
 
@@ -50,19 +63,6 @@ Item {
             anchors.fill: parent
 
             color: "transparent"
-
-            Components.SelectionArea {
-                id: selectionArea
-
-                anchors.fill: parent
-
-                enabled: (
-                    root.mode == OCROverlay.Mode.Selection ||
-                    root.mode == OCROverlay.Mode.Result ||
-                    root.mode == OCROverlay.Mode.Selecting
-                )
-                loading: root.mode == OCROverlay.Mode.Recognizing
-            }
 
             Components.ControlToolBar {
                 id: controlToolBar
@@ -117,6 +117,12 @@ Item {
                     }
                 }
             }
+        }
+
+        DebugPanel {
+            x: 0
+            y: 0
+            width: 400
         }
     }
 
