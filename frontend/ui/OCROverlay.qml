@@ -41,6 +41,12 @@ Item {
         }
     }
 
+    Image {
+        id: screensPreview
+
+        anchors.fill: parent
+    }
+
     Components.SelectionArea {
         id: selectionArea
 
@@ -123,6 +129,14 @@ Item {
             x: 0
             y: 0
             width: 400
+        }
+    }
+
+    Connections {
+        target: Backend.Preview
+
+        function onPreviewUpdated() {
+            screensPreview.source = "image://preview_screens/current?v=" + Date.now();
         }
     }
 

@@ -1,7 +1,9 @@
 from qt.qml import QQmlApplicationEngine
 from qt.core import QApplication, QObject, Signal
+from common.utils.meta import Singleton
 from frontend.ui.tray import SystemTray
 from frontend.viewmodels.core import qmlLinkerCore
+from frontend.viewmodels.types import registerQmlImageProviders
 from config import config
 import sys
 
@@ -13,7 +15,7 @@ class SystemObject(QObject):
         self.visibilityChanged.emit()
 
 
-class GuiCoreApplication:
+class GuiCoreApplication(metaclass=Singleton):
     def __init__(self):
         self._tray = None
 
@@ -26,11 +28,13 @@ class GuiCoreApplication:
         if not notray:
             self._tray = self._init_tray(app, window)
         self._init_viewmodels(window, accessor, eventsys)
+        image_providers = self._init_image_providers(engine)
 
         self._app = app
         self._engine = engine
         self._window = window
         self._sysobj = sysobj
+        self._image_providers = image_providers
 
     def exec(self):
         if self._tray:
@@ -45,6 +49,9 @@ class GuiCoreApplication:
 
     def system_object(self):
         return self._sysobj
+
+    def image_providers(self):
+        return self._image_providers
 
     def _init_system_object(self, app, engine):
         system_obj = SystemObject(app)
@@ -69,3 +76,6 @@ class GuiCoreApplication:
         )
         qmlLinkerCore.loadContent()
         qmlLinkerCore.loadFullyContent()
+
+    def _init_image_providers(self, engine):
+        return registerQmlImageProviders(engine)

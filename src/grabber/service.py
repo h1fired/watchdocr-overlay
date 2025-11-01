@@ -1,16 +1,21 @@
 from common.service import Service
 from common.event import IEvent
 from PIL import Image
-from src.grabber.window import grab_window, grab_window_area
+from src.grabber.window import grab_window, grab_window_area, grab_all_screens
 
 
 class _ImageGrabberWindowAreaCaptureEvent(IEvent):
     image: Image.Image
 
 
+class _ImageGrabberAllScreensCaptureEvent(IEvent):
+    image: Image.Image
+
+
 class ImageGrabberService(Service):
     class Events:
         IMAGE_CAPTURE = _ImageGrabberWindowAreaCaptureEvent
+        IMAGE_ALL_SCREENS_CAPTURE = _ImageGrabberAllScreensCaptureEvent
 
     def on_init(self):
         return super().on_init()
@@ -21,4 +26,9 @@ class ImageGrabberService(Service):
     def grab_window_area(self, box: tuple[int, int, int, int]):
         image = grab_window_area(box)
         self.event.dispatch(self.Events.IMAGE_CAPTURE, {'image': image})
+        return image
+
+    def grab_all_screens(self):
+        image = grab_all_screens()
+        self.event.dispatch(self.Events.IMAGE_ALL_SCREENS_CAPTURE, {'image': image})
         return image

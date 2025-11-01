@@ -22,6 +22,7 @@ Window {
 
     onVisibleChanged: {
         if (window.visible) {
+            Backend.Preview.QmlRequestScreensPreviewImage();
             overlay.mode = OCROverlay.Mode.Selection;
         } else {
             overlay.mode = OCROverlay.Mode.StandBy;
