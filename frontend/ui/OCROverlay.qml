@@ -35,16 +35,19 @@ Item {
 
     onVisibleChanged: {
         if (root.visible) {
+            Backend.Preview.QmlRequestScreensPreviewImage();
             root.mode = OCROverlay.Mode.Selection
         } else {
             root.mode = OCROverlay.Mode.StandBy
         }
     }
 
-    Image {
+    Components.ScreenPreview {
         id: screensPreview
 
         anchors.fill: parent
+
+        providerId: "preview_screens"
     }
 
     Components.SelectionArea {
@@ -136,7 +139,7 @@ Item {
         target: Backend.Preview
 
         function onPreviewUpdated() {
-            screensPreview.source = "image://preview_screens/current?v=" + Date.now();
+            screensPreview.update();
         }
     }
 

@@ -62,7 +62,9 @@ class GuiCoreApplication(metaclass=Singleton):
         engine.load(config.QML_WINDOW_FILE)
         if not engine.rootObjects():
             raise RuntimeError('Failed to load QML window')
-        return engine.rootObjects()[0]
+        window = engine.rootObjects()[0]
+        window.hide()
+        return window
 
     def _init_tray(self, app, window):
         app.setQuitOnLastWindowClosed(False)
