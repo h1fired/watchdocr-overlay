@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls.Basic
-import "components" as Components
 import App.Backend
+import "components" as Components
 
 
 Item {
@@ -41,78 +41,88 @@ Item {
         }
     }
 
-    Rectangle {
-        id: rootRect
+    Components.SelectionArea {
+        id: selectionArea
 
         anchors.fill: parent
 
-        color: "transparent"
+        enabled: (
+            root.mode == OCROverlay.Mode.Selection ||
+            root.mode == OCROverlay.Mode.Result ||
+            root.mode == OCROverlay.Mode.Selecting
+        )
+        loading: root.mode == OCROverlay.Mode.Recognizing
+    }
 
-        Components.MultiScreenSelectionArea {
-            id: selectionArea
+    Components.ScreenArea {
+        monitor: 0
+
+        Rectangle {
+            id: rootRect
 
             anchors.fill: parent
 
-            enabled: (
-                root.mode == OCROverlay.Mode.Selection ||
-                root.mode == OCROverlay.Mode.Result ||
-                root.mode == OCROverlay.Mode.Selecting
-            )
-            loading: root.mode == OCROverlay.Mode.Recognizing
-        }
+            color: "transparent"
 
-        Components.ControlToolBar {
-            id: controlToolBar
+            Components.ControlToolBar {
+                id: controlToolBar
 
-            anchors.topMargin: 8
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        Components.TextControlPanel {
-            id: textControlPanel
-
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 24
-
-            visible: (
-                root.mode == OCROverlay.Mode.Result ||
-                root.mode == OCROverlay.Mode.Recognizing
-            )
-
-            sourceLanguages: Backend.Translate.sourceLanguages
-            targetLanguages: Backend.Translate.targetLanguages
-        }
-
-        Button {
-            id: btnClose
-
-            width: 48
-            height: 48
-
-            anchors.right: parent.right
-
-            background: Rectangle {
-                color: "transparent"
-            }
-            icon {
-                source: "../../resources/icons/close.svg"
-                color: "#868686"
-                width: 16
-                height: 16
+                anchors.topMargin: 8
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
             }
 
-            MouseArea {
-                anchors.fill: parent
+            Components.TextControlPanel {
+                id: textControlPanel
 
-                cursorShape: Qt.PointingHandCursor 
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 24
 
-                onPressed: (mouse) => {
-                    mouse.accepted = false;
-                    root.closeRequested();
+                visible: (
+                    root.mode == OCROverlay.Mode.Result ||
+                    root.mode == OCROverlay.Mode.Recognizing
+                )
+
+                sourceLanguages: Backend.Translate.sourceLanguages
+                targetLanguages: Backend.Translate.targetLanguages
+            }
+
+            Button {
+                id: btnClose
+
+                width: 48
+                height: 48
+
+                anchors.right: parent.right
+
+                background: Rectangle {
+                    color: "transparent"
+                }
+                icon {
+                    source: "../../resources/icons/close.svg"
+                    color: "#868686"
+                    width: 16
+                    height: 16
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    cursorShape: Qt.PointingHandCursor 
+
+                    onPressed: (mouse) => {
+                        mouse.accepted = false;
+                        root.closeRequested();
+                    }
                 }
             }
+        }
+
+        DebugPanel {
+            x: 0
+            y: 0
+            width: 400
         }
     }
 

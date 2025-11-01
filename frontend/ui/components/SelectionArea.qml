@@ -9,10 +9,10 @@ Item {
     height: 600
 
     property rect box: Qt.rect(0, 0, 0, 0)
-    property bool animationEnable: false
+    property bool loading: false
     property bool drawBorders: true
 
-    signal released()
+    signal boxReleased()
     signal pressed()
 
     onBoxChanged: {
@@ -36,7 +36,7 @@ Item {
         onReleased: (event) => {
             privates.endPoint = Qt.point(event.x, event.y);
             root.box = privates.reformatRect(privates.rectFromPoints(privates.startPoint, privates.endPoint));
-            root.released();
+            root.boxReleased();
         }
     }
 
@@ -83,7 +83,7 @@ Item {
 
             anchors.fill: parent
 
-            visible: root.animationEnable
+            visible: root.loading
 
             property var gradientPos: 0.0
 
@@ -110,7 +110,7 @@ Item {
                 duration: 1500
                 loops: Animation.Infinite
                 easing.type: Easing.InOutQuad
-                running: root.animationEnable
+                running: root.loading
             }
         }
     }
