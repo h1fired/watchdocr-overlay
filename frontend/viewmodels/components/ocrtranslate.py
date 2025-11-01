@@ -1,6 +1,6 @@
 from common.event import Event
 from frontend.common.mvvm_qml import QmlViewModel
-from src.tocr.service import OcrTranslateService
+from src.ocrtranslate.service import OcrTranslateService
 from src.translator.service import TranslationService
 from PySide6.QtCore import Slot, Signal, QRect
 

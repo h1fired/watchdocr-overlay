@@ -6,7 +6,7 @@ from common.service import (
 )
 from common.event import EventSystem
 from common.task import TaskManager
-from src.tocr.service import OcrTranslateService
+from src.ocrtranslate.service import OcrTranslateService
 from src.ocr.service import OcrService
 from src.translator.service import TranslationService
 from src.grabber.service import ImageGrabberService
