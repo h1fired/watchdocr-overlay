@@ -1,5 +1,6 @@
 from src.ocr.backends import OcrBackendManager
 from src.ocr.backends.gemini import GeminiOcrBackend
+from src.ocr.backends.tesseract import TesseractOcrBackend
 from src.ocr.filtering import OCRImageFilter, OCRImageOptimizer
 from PIL import Image
 from config import config
@@ -7,6 +8,7 @@ from config import config
 
 backends = [
     GeminiOcrBackend,
+    TesseractOcrBackend
 ]
 
 
