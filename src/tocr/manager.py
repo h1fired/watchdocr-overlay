@@ -1,8 +1,10 @@
-from enum import IntEnum
-from src.ocr.ocr import OCR
-from src.grabber import window as grabber
 from common.task import TaskManager, Period
 from common.observable import TypedObservable
+from common.pipeline import ServicePipeline
+from src.ocr.ocr import OCR
+from src.translator.service import TranslationService
+from src.grabber import window as grabber
+from enum import IntEnum
 
 
 class TOcrMode(IntEnum):
@@ -102,9 +104,9 @@ class TOcrStreamWorker(TOcrWorker):
 
 
 class TOcr:
-    obs_output = TypedObservable(TOcrMode, dict)
+    obs_output = TypedObservable(dict)
 
-    def __init__(self, ocr: OCR):
+    def __init__(self, ocr: OCR, eventsys, accessor):
         self._ocr = ocr
         self._mode = TOcrMode.SINGLE
         self._workers = TOcrWorkerManager(
@@ -112,27 +114,74 @@ class TOcr:
                 TOcrMode.SINGLE: TOcrSingleWorker(ocr)
             }
         )
-        self._workers.obs_data.register(self.on_worker_data)
+        self._pipeline = TOcrPipeline(eventsys, accessor, self._workers.obs_data, self.obs_output)
+        self._pipeline.activate()
 
     def change_mode(self, mode: TOcrMode):
         self._mode = mode
 
-    def process_area(self, box: tuple[int, int, int, int]):
+    def process_area(self, box: tuple[int, int, int, int], _from: str, to: str):
         if self._workers.is_busy():
             raise RuntimeError('Some worker already in process')
 
+        self._pipeline.inject_data(1, {'from': _from, 'to': to})
+        self._pipeline.inject_data(2, {'mode': self._mode})
         current_worker = self._workers.get(self._mode)
         current_worker.process_area(box)
-        self.obs_output.notify(
-            self._mode,
-            {'status': TOcrStatus.RECOGNIZING, 'text': 'Recognizing...'}
-        )
+        self.obs_output.notify({
+            'mode': self._mode,
+            'status': TOcrStatus.RECOGNIZING,
+            'text': 'Recognizing...'
+        })
 
     def terminate(self):
         current_worker = self._workers.get(self._mode)
         current_worker.terminate()
 
-    def on_worker_data(self, mode: TOcrMode, output):
-        status = TOcrStatus(output['status'].value)
-        text = output['text']
-        self.obs_output.notify(mode, {'status': status, 'text': text})
+
+class TOcrPipeline(ServicePipeline):
+    services = (TranslationService,)
+    tasks = ('task.tocr.translate',)
+
+    def __init__(self, eventsys, accessor, obs_data, obs_output):
+        self._obs_data = obs_data
+        self._obs_output = obs_output
+        super().__init__(eventsys, accessor)
+
+    def create_pipeline(self):
+        return (
+            (self._obs_data, self.handle_ocr_output_receive),
+            (TranslationService.Events.OUTPUT_RECEIVE, self.handle_translation_output_receive)
+        )
+
+    def process(self):
+        pass
+
+    def terminate(self):
+        for id in self.tasks:
+            if TaskManager.objects().exists(id):
+                task = TaskManager.objects().get(id)
+                task.cancel()
+                task.wait()
+
+    def handle_ocr_output_receive(self, mode, output):
+        inj_data = self.get_injected_data()
+        s = self.get_service(TranslationService)
+        TaskManager.execute(
+            task=lambda _: s.translate(
+                output['text'],
+                inj_data['from'],
+                inj_data['to']
+            ),
+            id=self.tasks[0]
+        )
+
+    def handle_translation_output_receive(self, e):
+        self.redirect_to_observer(
+            observable=self._obs_output,
+            data={
+                'mode': self.get_injected_data()['mode'],
+                'status': TOcrStatus.SUCCESS,
+                'text': e.output['text']
+            }
+        )
