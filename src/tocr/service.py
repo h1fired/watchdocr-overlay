@@ -2,16 +2,10 @@ from common.service import Service
 from common.event import IEvent
 from common.task import TaskManager
 from common.pipeline import Pipeline
+from src.tocr.manager import TOcr, TOcrStatus
 from src.ocr.service import OcrService
 from src.translator.service import TranslationService
 from src.grabber.service import ImageGrabberService
-from enum import IntEnum
-
-
-class TOcrStatus(IntEnum):
-    ERROR = 0
-    SUCCESS = 1
-    RECOGNIZING = 2
 
 
 class _TOcrResponceReceiveEvent(IEvent):
@@ -24,30 +18,23 @@ class TOcrService(Service):
     class Events:
         RESPONSE_RECEIVED = _TOcrResponceReceiveEvent
 
-    def on_full_init(self):
-        self._p = OcrTranslatePipeline(self.get_related, self.event)
-        self._p.activate()
+    def on_init(self):
+        ocr_s = self.get_related(OcrService)
+        self._tocr = TOcr(ocr_s.shared.ocr)
+        self._tocr.obs_output.register(self.on_ocr_output)
 
     def recognize(self, box: tuple[int, int, int, int], _from: str, to: str):
-        self.event.dispatch(
-            event=self.Events.RESPONSE_RECEIVED,
-            data={
-                'status': TOcrStatus.RECOGNIZING,
-                'text': 'Recognizing...'
-            }
-        )
-        self._p.inject_data(1, {'from': _from, 'to': to})
-        self._p.process(box)
+        self._tocr.process_area(box)
 
     def terminate(self):
-        self._p.terminate()
+        pass
 
-    def on_task_finish(self, result):
+    def on_ocr_output(self, mode, output):
         self.event.dispatch(
             event=self.Events.RESPONSE_RECEIVED,
             data={
-                'status': result['status'],
-                'text': result['text']
+                'status': output['status'],
+                'text': output['text']
             }
         )
 
