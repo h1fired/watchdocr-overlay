@@ -8,24 +8,21 @@ from src.grabber.service import ImageGrabberService
 from enum import IntEnum
 
 
-TASK_NAME = 'task.ocrtranslate.recognition'
-
-
-class OcrTranslateStatus(IntEnum):
+class TOcrStatus(IntEnum):
     ERROR = 0
     SUCCESS = 1
     RECOGNIZING = 2
 
 
-class _OcrTranslateResponceReceiveEvent(IEvent):
-    status: OcrTranslateStatus
+class _TOcrResponceReceiveEvent(IEvent):
+    status: TOcrStatus
     text: str
 
 
-class OcrTranslateService(Service):
+class TOcrService(Service):
 
     class Events:
-        RESPONSE_RECEIVED = _OcrTranslateResponceReceiveEvent
+        RESPONSE_RECEIVED = _TOcrResponceReceiveEvent
 
     def on_full_init(self):
         self._p = OcrTranslatePipeline(self.get_related, self.event)
@@ -35,7 +32,7 @@ class OcrTranslateService(Service):
         self.event.dispatch(
             event=self.Events.RESPONSE_RECEIVED,
             data={
-                'status': OcrTranslateStatus.RECOGNIZING,
+                'status': TOcrStatus.RECOGNIZING,
                 'text': 'Recognizing...'
             }
         )
@@ -99,6 +96,6 @@ class OcrTranslatePipeline(Pipeline):
 
     def handle_translation_output_receive(self, e):
         self.redirect_to(
-            event=OcrTranslateService.Events.RESPONSE_RECEIVED,
-            data={'status': OcrTranslateStatus.SUCCESS, 'text': e.output['text']}
+            event=TOcrService.Events.RESPONSE_RECEIVED,
+            data={'status': TOcrStatus.SUCCESS, 'text': e.output['text']}
         )

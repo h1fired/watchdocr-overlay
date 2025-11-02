@@ -6,7 +6,7 @@ from common.service import (
 )
 from common.event import EventSystem
 from common.task import TaskManager
-from src.ocrtranslate.service import OcrTranslateService
+from src.tocr.service import TOcrService
 from src.ocr.service import OcrService
 from src.translator.service import TranslationService
 from src.grabber.service import ImageGrabberService
@@ -41,7 +41,7 @@ class CoreApplication:
         image_grabber_s = ImageGrabberService()
         collector.register(image_grabber_s)
 
-        ocr_translate_s = OcrTranslateService(related_services=[
+        ocr_translate_s = TOcrService(related_services=[
             ocr_s,
             translation_s,
             image_grabber_s

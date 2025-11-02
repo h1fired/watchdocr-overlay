@@ -1,6 +1,6 @@
 from common.event import Event
 from frontend.common.mvvm_qml import QmlViewModel
-from src.ocrtranslate.service import OcrTranslateService
+from src.tocr.service import TOcrService
 from src.translator.service import TranslationService
 from PySide6.QtCore import Slot, Signal, QRect
 
@@ -13,7 +13,7 @@ class OcrTranslateViewModel(QmlViewModel):
     def onLoaded(self):
         Event.subscribe(
             system=self.events,
-            event=OcrTranslateService.Events.RESPONSE_RECEIVED,
+            event=TOcrService.Events.RESPONSE_RECEIVED,
             handler=self.onOcrTranslateResponseReceive
         )
 
@@ -38,10 +38,10 @@ class OcrTranslateViewModel(QmlViewModel):
         target_languages = backend.target_languages()
         id_to = target_languages.verbose_to_id(to)
 
-        s = self.accessor.get(OcrTranslateService)
+        s = self.accessor.get(TOcrService)
         s.recognize(box, id_from, id_to)
 
     @Slot()
     def terminateTask(self):
-        ocr_translate_s = self.accessor.get(OcrTranslateService)
+        ocr_translate_s = self.accessor.get(TOcrService)
         ocr_translate_s.terminate()
