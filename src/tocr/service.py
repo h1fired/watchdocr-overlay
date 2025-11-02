@@ -27,7 +27,7 @@ class TOcrService(Service):
         self._tocr.process_area(box)
 
     def terminate(self):
-        pass
+        self._tocr.terminate()
 
     def on_ocr_output(self, mode, output):
         self.event.dispatch(

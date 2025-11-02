@@ -1,7 +1,7 @@
 from enum import IntEnum
 from src.ocr.ocr import OCR
 from src.grabber import window as grabber
-from common.task import TaskManager
+from common.task import TaskManager, Period
 from common.observable import TypedObservable
 
 
@@ -24,6 +24,9 @@ class TOcrWorker:
         self._is_busy = False
 
     def process_area(self, box: tuple[int, int, int, int]):
+        raise NotImplementedError
+
+    def terminate(self):
         raise NotImplementedError
 
     def is_busy(self):
@@ -55,12 +58,47 @@ class TOcrSingleWorker(TOcrWorker):
         future = TaskManager.execute(self.worker, id=self._task_id)
         future.observe(on_result=self.obs_data.notify)
 
+    def terminate(self):
+        if TaskManager.objects().exists(self._task_id):
+            task = TaskManager.objects().get(self._task_id)
+            task.cancel()
+            task.wait()
+
     def worker(self, token):
         self._is_busy = True
         image = grabber.grab_window_area(self._box)
         output = self._ocr.recognize(image)
         self._is_busy = False
         return output
+
+
+class TOcrStreamWorker(TOcrWorker):
+    def __init__(self, ocr):
+        super().__init__(ocr)
+        self._task_id = 'task.tocrworker.stream'
+
+    def process_area(self, box: tuple[int, int, int, int]):
+        self._box = box
+        future = TaskManager.execute(
+            task=self.worker,
+            period=Period(1),
+            id=self._task_id
+        )
+        future.observe(on_result=self.obs_data.notify)
+
+    def terminate(self):
+        if TaskManager.objects().exists(self._task_id):
+            task = TaskManager.objects().get(self._task_id)
+            task.cancel()
+            task.wait()
+
+    def worker(self, token):
+        while True:
+            self._is_busy = True
+            image = grabber.grab_window_area(self._box)
+            output = self._ocr.recognize(image)
+            self._is_busy = False
+            return output
 
 
 class TOcr:
@@ -89,6 +127,10 @@ class TOcr:
             self._mode,
             {'status': TOcrStatus.RECOGNIZING, 'text': 'Recognizing...'}
         )
+
+    def terminate(self):
+        current_worker = self._workers.get(self._mode)
+        current_worker.terminate()
 
     def on_worker_data(self, mode: TOcrMode, output):
         status = TOcrStatus(output['status'].value)
