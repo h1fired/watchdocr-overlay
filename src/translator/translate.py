@@ -1,4 +1,4 @@
-from .backend import TranslationBackendManager
+from .backend import TranslationBackendManager, TranslationStatus
 from .backend.deepl import DeeplTranslationBackend
 from .backend.google import GoogleTranslationBackend
 
