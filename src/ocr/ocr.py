@@ -21,6 +21,7 @@ class OCR:
         adjusted_image = OCRImageFilter.adjust(image)
         backend = self._backends.current()
         response = backend.recognize(adjusted_image)
+
         return response
 
     def backends(self):
