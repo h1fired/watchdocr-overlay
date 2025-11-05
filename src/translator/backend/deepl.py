@@ -102,5 +102,5 @@ class DeeplTranslationBackend(TranslationBackend):
             if not result.text:
                 raise ValueError('No translation')
         except Exception as e:
-            return {'success': TranslationStatus.ERROR, 'text': repr(e)}
-        return {'success': TranslationStatus.SUCCESS, 'text': result.text}
+            return {'status': TranslationStatus.ERROR, 'text': repr(e)}
+        return {'status': TranslationStatus.SUCCESS, 'text': result.text}

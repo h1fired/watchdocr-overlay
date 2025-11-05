@@ -17,7 +17,7 @@ class TOcrService(Service):
     def on_init(self):
         ocr_s = self.get_related(OcrService)
         self._tocr = TOcr(ocr_s.shared.ocr, self.event, self.get_related)
-        self._tocr.observable().register(self.on_ocr_output)
+        self._tocr.observable().register(self._on_ocr_output)
 
     def recognize(self, box: tuple[int, int, int, int], _from: str, to: str):
         self._tocr.recognize(box, _from, to)
@@ -32,7 +32,7 @@ class TOcrService(Service):
     def terminate(self):
         self._tocr.terminate()
 
-    def on_ocr_output(self, output: dict):
+    def _on_ocr_output(self, output: dict):
         self.event.dispatch(
             event=self.Events.RESPONSE_RECEIVED,
             data=output
