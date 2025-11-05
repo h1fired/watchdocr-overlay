@@ -16,20 +16,24 @@ class TOcrService(Service):
 
     def on_init(self):
         ocr_s = self.get_related(OcrService)
-        self._tocr = TOcr(ocr_s, self.event, self.get_related)
-        self._tocr.obs_output.register(self.on_ocr_output)
+        self._tocr = TOcr(ocr_s.shared.ocr, self.event, self.get_related)
+        self._tocr.observable().register(self.on_ocr_output)
 
     def recognize(self, box: tuple[int, int, int, int], _from: str, to: str):
-        self._tocr.process_area(box, _from, to)
+        self._tocr.recognize(box, _from, to)
+        self.event.dispatch(
+            event=self.Events.RESPONSE_RECEIVED,
+            data={
+                'status': TOcrStatus.RECOGNIZING,
+                'text': 'Recognizing...'
+            }
+        )
 
     def terminate(self):
         self._tocr.terminate()
 
-    def on_ocr_output(self, output):
+    def on_ocr_output(self, output: dict):
         self.event.dispatch(
             event=self.Events.RESPONSE_RECEIVED,
-            data={
-                'status': output['status'],
-                'text': output['text']
-            }
+            data=output
         )

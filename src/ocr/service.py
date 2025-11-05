@@ -1,6 +1,6 @@
 from common.service import Service
 from common.event import IEvent
-from src.ocr.ocr import OCR
+from src.ocr.ocr import Ocr
 from PIL import Image
 
 
@@ -14,12 +14,15 @@ class OcrService(Service):
         OUTPUT_RECEIVE = _OcrOutputReceiveEvent
 
     def on_init(self):
-        self._ocr = OCR()
+        self._ocr = Ocr()
+        self.event.from_observable(
+            observable=self._ocr.observable(),
+            event=self.Events.OUTPUT_RECEIVE,
+            fields=('output',)
+        )
 
     def recognize(self, image: Image.Image):
-        output = self._ocr.recognize(image)
-        self.event.dispatch(self.Events.OUTPUT_RECEIVE, {'output': output})
-        return output
+        self._ocr.process_area(image)
 
     def backends(self):
         return self._ocr.backends()
