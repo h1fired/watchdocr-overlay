@@ -9,6 +9,7 @@ class OcrTranslateViewModel(QmlViewModel):
     _name = 'OcrTranslate'
 
     responseReceived = Signal(dict)
+    detailsReceived = Signal(tuple)
 
     def onLoaded(self):
         Event.subscribe(
@@ -23,6 +24,7 @@ class OcrTranslateViewModel(QmlViewModel):
             'text': e.text
         }
         self.responseReceived.emit(data)
+        self.detailsReceived.emit(e.details.values())
 
     @Slot(QRect, str, str)
     def translateArea(self, rect: QRect, _from: str, to: str):
