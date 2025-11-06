@@ -30,7 +30,6 @@ Item {
                 text: modelData[0]
                 color: "white"
 
-
                 font.family: "Roboto"
                 font.weight: 600
                 fontSizeMode: Text.Fit
