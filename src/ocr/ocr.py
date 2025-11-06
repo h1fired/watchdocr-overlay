@@ -1,7 +1,7 @@
 from common.observable import TypedObservable
 from common.task import TaskManager, Period
 from src.ocr.backends import OcrBackendManager, OcrStatus as _BOcrStatus
-from src.ocr.backends.gemini import GeminiOcrBackend
+# from src.ocr.backends.gemini import GeminiOcrBackend
 from src.ocr.backends.tesseract import TesseractOcrBackend
 from src.ocr.filtering import OCRImageFilter, OCRImageOptimizer
 from src.grabber.window import ScreenGrabber
@@ -12,7 +12,7 @@ from typing import Callable
 
 
 backends = [
-    GeminiOcrBackend,
+    # GeminiOcrBackend,
     TesseractOcrBackend
 ]
 
