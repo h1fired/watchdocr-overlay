@@ -163,3 +163,6 @@ class Ocr:
 
     def backends(self):
         return self._core.backends()
+
+    def modes(self):
+        return tuple(OcrMode)
