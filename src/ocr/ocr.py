@@ -8,7 +8,6 @@ from src.grabber.window import ScreenGrabber
 from config import config
 from enum import IntEnum
 from PIL import Image
-from typing import Callable
 
 
 backends = [

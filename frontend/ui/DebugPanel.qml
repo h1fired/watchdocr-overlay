@@ -12,6 +12,7 @@ Rectangle {
     color: "black"
 
     property bool previewEnabled: switchPreview.checked
+    property bool osbEnabled: osdPreview.checked
 
     MouseArea {
         anchors.fill: parent
@@ -84,7 +85,7 @@ Rectangle {
             Layout.alignment: Qt.AlignRight
         }
 
-        // 
+        // Recongnizing mode
         Text {
             Layout.fillWidth: true
 
@@ -103,6 +104,22 @@ Rectangle {
             onCurrentTextChanged: {
                 Backend.Ocr.mode = currentText;
             }
+        }
+
+        // Screens preview
+        Text {
+            Layout.fillWidth: true
+
+            text: "OSD"
+            color: "white"
+            font.pixelSize: 14
+            font.weight: 600
+        }
+
+        Switch {
+            id: osdPreview
+
+            Layout.alignment: Qt.AlignRight
         }
     }
 }

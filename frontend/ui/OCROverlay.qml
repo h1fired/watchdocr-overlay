@@ -52,6 +52,16 @@ Item {
         providerId: "preview_screens"
     }
 
+    Components.OsdViewer {
+        id: osdViewer
+
+        anchors.fill: parent
+
+        visible: root.mode === OCROverlay.Mode.Result && debugPanel.osbEnabled
+
+        contentRect: selectionArea.box
+    }
+
     Components.SelectionArea {
         id: selectionArea
 
@@ -171,6 +181,10 @@ Item {
             }
             textControlPanel.text = text;
             textControlPanel.loading = response.state == OCROverlay.ResponseStatus.Recognizing;
+        }
+
+        function onDetailsReceived(details) {
+            osdViewer.objects = JSON.parse(details);
         }
     }
 
