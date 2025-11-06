@@ -43,7 +43,7 @@ class TesseractOcrBackend(OcrBackend):
             # Get components parameters (words, boxes, confidences)
             details = OcrData()
             ri = self._api.GetIterator()
-            level = RIL.WORD
+            level = RIL.BLOCK
             for r in iterate_level(ri, level):
                 word = r.GetUTF8Text(level)
                 box = r.BoundingBox(level)
