@@ -83,5 +83,26 @@ Rectangle {
 
             Layout.alignment: Qt.AlignRight
         }
+
+        // 
+        Text {
+            Layout.fillWidth: true
+
+            text: "Recognizing mode"
+            color: "white"
+            font.pixelSize: 14
+            font.weight: 600
+        }
+
+        ComboBox {
+            Layout.fillWidth: true
+
+            model: Backend.Ocr.modes
+            currentIndex: find(Backend.Ocr.mode)
+
+            onCurrentTextChanged: {
+                Backend.Ocr.mode = currentText;
+            }
+        }
     }
 }

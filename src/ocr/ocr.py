@@ -166,3 +166,24 @@ class Ocr:
 
     def modes(self):
         return tuple(OcrMode)
+
+    def current_mode(self):
+        return self._mode
+
+
+def mode_to_str(mode: OcrMode):
+    match mode:
+        case OcrMode.SINGLE:
+            return 'single'
+        case OcrMode.STREAM:
+            return 'stream'
+    raise ValueError('Mode does not exists')
+
+
+def str_to_mode(mode: str):
+    match mode:
+        case 'single':
+            return OcrMode.SINGLE
+        case 'stream':
+            return OcrMode.STREAM
+    raise ValueError('Mode does not exists')
