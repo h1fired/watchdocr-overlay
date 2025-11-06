@@ -14,14 +14,19 @@ class TranslationService(Service):
 
     def on_init(self):
         self._translator = Translator()
+        self._translator.observable().register(self._on_data)
 
     def translate(self, text: str, _from: str, to: str):
-        text = self._translator.translate(text, _from, to)
-        self.event.dispatch(self.Events.OUTPUT_RECEIVE, {'output': text})
-        return text
+        self._translator.translate(text, _from, to)
 
     def backends(self):
         return self._translator.backends()
 
     def propagate_shared_objects(self):
         return {'translator': self._translator}
+
+    def _on_data(self, output: dict):
+        self.event.dispatch(
+            event=self.Events.OUTPUT_RECEIVE,
+            data={'output': output}
+        )

@@ -1,5 +1,6 @@
 from common.utils.logger import log
 from common.utils.schedule import RepeatedTimer
+from common.observable import Observable
 from typing import Protocol, runtime_checkable, Callable, Any
 from types import SimpleNamespace
 from collections import defaultdict
@@ -124,6 +125,24 @@ class EventSystem:
         for handler in entities:
             if handler == event:
                 entities.remove(event)
+
+    def from_observable(
+        self,
+        observable: Observable,
+        event: IEvent,
+        fields: tuple,
+        format: Callable | None = None
+    ):
+        def handler(*args):
+            if format:
+                args = format(*args)
+            data = {k: v for k, v in zip(fields, args)}
+            self.dispatch(event, data)
+
+        if isinstance(observable, Observable):
+            observable.register(handler)
+        else:
+            observable(handler)
 
 
 class Emitter:

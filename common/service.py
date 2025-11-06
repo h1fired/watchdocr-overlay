@@ -1,6 +1,7 @@
-from typing import Type, TypeVar
+from typing import Type, TypeVar, Callable
 from types import SimpleNamespace
 from .event import EventSystem, IEvent, _Event
+from .observable import Observable
 
 
 T = TypeVar('T')
@@ -129,6 +130,15 @@ class ServiceEventSystem:
 
     def dispose(self, event: _Event):
         self._es.dispatch(event)
+
+    def from_observable(
+        self,
+        observable: Observable,
+        event: IEvent,
+        fields: tuple,
+        format: Callable | None = None
+    ):
+        self._es.from_observable(observable, event, fields, format)
 
     def _check_member(self, event):
         if event in self._service.events():

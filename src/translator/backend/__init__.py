@@ -89,4 +89,4 @@ class DummyTranslationBackend(TranslationBackend):
 
     def translate(self, text, _from, to):
         text = f'DUMMY TRANSLATED FROM {_from} TO {to}\n{text}'
-        return {'success': TranslationStatus.SUCCESS, 'text': text}
+        return {'status': TranslationStatus.SUCCESS, 'text': text}

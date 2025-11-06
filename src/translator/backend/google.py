@@ -131,5 +131,5 @@ class GoogleTranslationBackend(TranslationBackend):
             if not text:
                 raise ValueError('No translation')
         except Exception as e:
-            return {'success': TranslationStatus.ERROR, 'text': repr(e)}
-        return {'success': TranslationStatus.SUCCESS, 'text': text}
+            return {'status': TranslationStatus.ERROR, 'text': repr(e)}
+        return {'status': TranslationStatus.SUCCESS, 'text': text}
