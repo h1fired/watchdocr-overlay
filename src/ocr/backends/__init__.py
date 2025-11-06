@@ -4,6 +4,9 @@ from typing import Iterable
 from enum import IntEnum
 
 
+NO_IMAGE_RESIZE = -1
+
+
 class OcrStatus(IntEnum):
     ERROR = 0
     SUCCESS = 1

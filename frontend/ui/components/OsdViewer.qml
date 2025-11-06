@@ -34,7 +34,7 @@ Item {
                 font.weight: 600
                 fontSizeMode: Text.Fit
                 font.pixelSize: 1200
-                minimumPixelSize: 12
+                minimumPixelSize: 10
             }
         }
     }

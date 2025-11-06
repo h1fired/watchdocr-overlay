@@ -1,6 +1,6 @@
 from common.observable import TypedObservable
 from common.task import TaskManager, Period
-from src.ocr.backends import OcrBackendManager, OcrStatus as _BOcrStatus
+from src.ocr.backends import OcrBackendManager, OcrStatus as _BOcrStatus, NO_IMAGE_RESIZE
 # from src.ocr.backends.gemini import GeminiOcrBackend
 from src.ocr.backends.tesseract import TesseractOcrBackend
 from src.ocr.filtering import OCRImageFilter, OCRImageOptimizer
@@ -21,7 +21,8 @@ class OcrCore:
         self._backends = OcrBackendManager(backends)
 
     def recognize(self, image: Image.Image):
-        OCRImageOptimizer.optimize_size(image, config.MAX_IMAGE_RESOLUTION)
+        if NO_IMAGE_RESIZE not in config.MAX_IMAGE_RESOLUTION:
+            OCRImageOptimizer.optimize_size(image, config.MAX_IMAGE_RESOLUTION)
         adjusted_image = OCRImageFilter.adjust(image)
         backend = self._backends.current()
         response = backend.recognize(adjusted_image)
