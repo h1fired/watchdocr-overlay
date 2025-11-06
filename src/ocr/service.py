@@ -32,6 +32,9 @@ class OcrService(Service):
     def recognize(self, image: Image.Image):
         self._ocr.process_area(image)
 
+    def terminate(self):
+        self._ocr.terminate()
+
     def backends(self):
         return self._ocr.backends()
 

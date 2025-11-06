@@ -63,6 +63,7 @@ class OcrViewModel(QmlViewModel):
 
     def setMode(self, arg__1: str):
         ocr_s = self.accessor.get(OcrService)
+        ocr_s.terminate()
         ocr_s.change_mode(str_to_mode(arg__1))
 
     mode = Property(str, getMode, setMode, notify=modeUpdated)

@@ -39,6 +39,7 @@ class OcrTranslateViewModel(QmlViewModel):
         id_to = target_languages.verbose_to_id(to)
 
         s = self.accessor.get(TOcrService)
+        s.terminate()
         s.recognize(box, id_from, id_to)
 
     @Slot()
