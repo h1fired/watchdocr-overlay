@@ -1,6 +1,7 @@
 from common.event import Event, IEvent, EventSystem
 from common.observable import Observable
 from typing import Callable
+from collections import defaultdict
 
 
 class Pipeline:
@@ -8,7 +9,7 @@ class Pipeline:
         self._system = eventsys
         self._pipeline = self.create_pipeline()
         self._observables = []
-        self._data = {}
+        self._data = defaultdict(dict)
         self._disabled_stages = set()
         self._current_stage = 0
 
@@ -60,7 +61,7 @@ class Pipeline:
         observable.notify(data)
 
     def inject_data(self, stage: int, data: dict):
-        self._data[stage] = data
+        self._data[stage].update(data)
 
     def get_injected_data(self):
         return self._data.get(self._current_stage, None)

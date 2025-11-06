@@ -9,6 +9,17 @@ class OcrStatus(IntEnum):
     SUCCESS = 1
 
 
+class OcrData:
+    def __init__(self, ):
+        self._data = []
+
+    def push(self, text: str, box: tuple[int, ...], conf: float):
+        self._data.append((text, box, conf))
+
+    def values(self):
+        return self._data
+
+
 class OcrBackend:
     name: str
 
@@ -58,4 +69,4 @@ class DummyOcrBackend(OcrBackend):
 
     def recognize(self, image):
         text = 'Dummy OCR text for development testing.'
-        return {'status': OcrStatus.SUCCESS, 'text': text}
+        return {'status': OcrStatus.SUCCESS, 'text': text, 'data': OcrData()}

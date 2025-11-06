@@ -1,5 +1,5 @@
-from src.ocr.backends import OcrBackend, OcrStatus
-from tesserocr import PyTessBaseAPI, PSM, OEM
+from src.ocr.backends import OcrBackend, OcrStatus, OcrData
+from tesserocr import PyTessBaseAPI, PSM, OEM, RIL, iterate_level
 import re
 
 
@@ -35,8 +35,21 @@ class TesseractOcrBackend(OcrBackend):
     def recognize(self, image):
         try:
             self._api.SetImage(image)
+
+            # Get general cleaned text
             text = self._api.GetUTF8Text()
             cleaned_text = clean_text(text)
+
+            # Get components parameters (words, boxes, confidences)
+            details = OcrData()
+            ri = self._api.GetIterator()
+            level = RIL.WORD
+            for r in iterate_level(ri, level):
+                word = r.GetUTF8Text(level)
+                box = r.BoundingBox(level)
+                conf = r.Confidence(level)
+                details.push(word, box, conf)
+
         except Exception as e:
-            return {'status': OcrStatus.ERROR, 'text': repr(e)}
-        return {'status': OcrStatus.SUCCESS, 'text': cleaned_text}
+            return {'status': OcrStatus.ERROR, 'text': repr(e), 'data': details}
+        return {'status': OcrStatus.SUCCESS, 'text': cleaned_text, 'data': details}

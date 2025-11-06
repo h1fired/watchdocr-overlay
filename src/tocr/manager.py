@@ -58,6 +58,7 @@ class TOcrPipeline(ServicePipeline):
             )
             return
 
+        self.inject_data(2, {'ocr_details': e.output['data']})
         translation_s = self.get_service(TranslationService)
         inj = self.get_injected_data()
         translation_s.translate(e.output['text'], inj['from'], inj['to'])
@@ -67,7 +68,8 @@ class TOcrPipeline(ServicePipeline):
             observable=self._observable,
             data={
                 'status': TOcrStatus(e.output['status'].value),
-                'text': e.output['text']
+                'text': e.output['text'],
+                'details': self.get_injected_data()['ocr_details']
             }
         )
 
