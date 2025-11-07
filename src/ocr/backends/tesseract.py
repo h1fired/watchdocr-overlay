@@ -32,24 +32,23 @@ class TesseractOcrBackend(OcrBackend):
             psm=PSM.SPARSE_TEXT_OSD
         )
 
-    def recognize(self, image):
+    def recognize(self, image, scaler):
         try:
             self._api.SetImage(image)
+            details = OcrData()
 
             # Get general cleaned text
             text = self._api.GetUTF8Text()
             cleaned_text = clean_text(text)
 
             # Get components parameters (words, boxes, confidences)
-            details = OcrData()
             ri = self._api.GetIterator()
             level = RIL.WORD
             for r in iterate_level(ri, level):
                 word = r.GetUTF8Text(level)
-                box = r.BoundingBox(level)
+                box = self.rescale_box(r.BoundingBox(level), scaler)
                 conf = r.Confidence(level)
                 details.push(word, box, conf)
-
         except Exception as e:
             return {'status': OcrStatus.ERROR, 'text': repr(e), 'data': details}
         return {'status': OcrStatus.SUCCESS, 'text': cleaned_text, 'data': details}

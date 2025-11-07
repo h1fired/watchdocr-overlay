@@ -53,7 +53,8 @@ class TOcrPipeline(ServicePipeline):
                 observable=self._observable,
                 data={
                     'status': TOcrStatus(e.output['status'].value),
-                    'text': e.output['text']
+                    'text': e.output['text'],
+                    'details': e.output['data']
                 }
             )
             return

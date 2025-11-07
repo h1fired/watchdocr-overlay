@@ -30,8 +30,11 @@ class OcrBackend:
         if not hasattr(self, 'name'):
             raise ValueError('Translation backend should have name property')
 
-    def recognize(self, image: Image.Image) -> dict[OcrStatus, str]:
+    def recognize(self, image: Image.Image, scaler: int) -> dict[OcrStatus, str]:
         raise NotImplementedError
+
+    def rescale_box(self, box: tuple[int, ...], scaler: float):
+        return tuple(int(v * scaler) for v in box)
 
 
 class OcrBackendManager:

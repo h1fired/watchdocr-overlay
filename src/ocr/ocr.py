@@ -21,11 +21,13 @@ class OcrCore:
         self._backends = OcrBackendManager(backends)
 
     def recognize(self, image: Image.Image):
+        original_size = image.size
         if NO_IMAGE_RESIZE not in config.MAX_IMAGE_RESOLUTION:
             OCRImageOptimizer.optimize_size(image, config.MAX_IMAGE_RESOLUTION)
+        scaler = original_size[0] / image.width
         adjusted_image = OCRImageFilter.adjust(image)
         backend = self._backends.current()
-        response = backend.recognize(adjusted_image)
+        response = backend.recognize(adjusted_image, scaler)
 
         return response
 
