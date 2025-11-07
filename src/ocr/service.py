@@ -32,6 +32,9 @@ class OcrService(Service):
     def recognize(self, image: Image.Image):
         self._ocr.process_area(image)
 
+    def terminate(self):
+        self._ocr.terminate()
+
     def backends(self):
         return self._ocr.backends()
 
@@ -39,5 +42,11 @@ class OcrService(Service):
         self._ocr.change_mode(mode)
         self.event.dispatch(
             event=self.Events.MODE_CHANGE,
-            data={'mode', mode}
+            data={'mode': mode}
         )
+
+    def modes(self):
+        return self._ocr.modes()
+
+    def current_mode(self):
+        return self._ocr.current_mode()

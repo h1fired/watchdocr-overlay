@@ -12,6 +12,7 @@ Rectangle {
     color: "black"
 
     property bool previewEnabled: switchPreview.checked
+    property bool osbEnabled: osdPreview.checked
 
     MouseArea {
         anchors.fill: parent
@@ -80,6 +81,43 @@ Rectangle {
 
         Switch {
             id: switchPreview
+
+            Layout.alignment: Qt.AlignRight
+        }
+
+        // Recongnizing mode
+        Text {
+            Layout.fillWidth: true
+
+            text: "Recognizing mode"
+            color: "white"
+            font.pixelSize: 14
+            font.weight: 600
+        }
+
+        ComboBox {
+            Layout.fillWidth: true
+
+            model: Backend.Ocr.modes
+            currentIndex: find(Backend.Ocr.mode)
+
+            onCurrentTextChanged: {
+                Backend.Ocr.mode = currentText;
+            }
+        }
+
+        // Screens preview
+        Text {
+            Layout.fillWidth: true
+
+            text: "OSD"
+            color: "white"
+            font.pixelSize: 14
+            font.weight: 600
+        }
+
+        Switch {
+            id: osdPreview
 
             Layout.alignment: Qt.AlignRight
         }

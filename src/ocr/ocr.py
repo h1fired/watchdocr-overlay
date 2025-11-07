@@ -1,18 +1,17 @@
 from common.observable import TypedObservable
 from common.task import TaskManager, Period
-from src.ocr.backends import OcrBackendManager, OcrStatus as _BOcrStatus
-from src.ocr.backends.gemini import GeminiOcrBackend
+from src.ocr.backends import OcrBackendManager, OcrStatus as _BOcrStatus, NO_IMAGE_RESIZE
+# from src.ocr.backends.gemini import GeminiOcrBackend
 from src.ocr.backends.tesseract import TesseractOcrBackend
 from src.ocr.filtering import OCRImageFilter, OCRImageOptimizer
 from src.grabber.window import ScreenGrabber
 from config import config
 from enum import IntEnum
 from PIL import Image
-from typing import Callable
 
 
 backends = [
-    GeminiOcrBackend,
+    # GeminiOcrBackend,
     TesseractOcrBackend
 ]
 
@@ -22,10 +21,13 @@ class OcrCore:
         self._backends = OcrBackendManager(backends)
 
     def recognize(self, image: Image.Image):
-        OCRImageOptimizer.optimize_size(image, config.MAX_IMAGE_RESOLUTION)
+        original_size = image.size
+        if NO_IMAGE_RESIZE not in config.MAX_IMAGE_RESOLUTION:
+            OCRImageOptimizer.optimize_size(image, config.MAX_IMAGE_RESOLUTION)
+        scaler = original_size[0] / image.width
         adjusted_image = OCRImageFilter.adjust(image)
         backend = self._backends.current()
-        response = backend.recognize(adjusted_image)
+        response = backend.recognize(adjusted_image, scaler)
 
         return response
 
@@ -166,3 +168,24 @@ class Ocr:
 
     def modes(self):
         return tuple(OcrMode)
+
+    def current_mode(self):
+        return self._mode
+
+
+def mode_to_str(mode: OcrMode):
+    match mode:
+        case OcrMode.SINGLE:
+            return 'single'
+        case OcrMode.STREAM:
+            return 'stream'
+    raise ValueError('Mode does not exists')
+
+
+def str_to_mode(mode: str):
+    match mode:
+        case 'single':
+            return OcrMode.SINGLE
+        case 'stream':
+            return OcrMode.STREAM
+    raise ValueError('Mode does not exists')

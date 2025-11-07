@@ -3,12 +3,14 @@ from frontend.common.mvvm_qml import QmlViewModel
 from src.tocr.service import TOcrService
 from src.translator.service import TranslationService
 from PySide6.QtCore import Slot, Signal, QRect
+import json
 
 
 class OcrTranslateViewModel(QmlViewModel):
     _name = 'OcrTranslate'
 
     responseReceived = Signal(dict)
+    detailsReceived = Signal(str)
 
     def onLoaded(self):
         Event.subscribe(
@@ -23,6 +25,9 @@ class OcrTranslateViewModel(QmlViewModel):
             'text': e.text
         }
         self.responseReceived.emit(data)
+
+        json_details = json.dumps(e.details.values())
+        self.detailsReceived.emit(json_details)
 
     @Slot(QRect, str, str)
     def translateArea(self, rect: QRect, _from: str, to: str):
@@ -39,6 +44,7 @@ class OcrTranslateViewModel(QmlViewModel):
         id_to = target_languages.verbose_to_id(to)
 
         s = self.accessor.get(TOcrService)
+        s.terminate()
         s.recognize(box, id_from, id_to)
 
     @Slot()

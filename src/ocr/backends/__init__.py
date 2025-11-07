@@ -4,9 +4,23 @@ from typing import Iterable
 from enum import IntEnum
 
 
+NO_IMAGE_RESIZE = -1
+
+
 class OcrStatus(IntEnum):
     ERROR = 0
     SUCCESS = 1
+
+
+class OcrData:
+    def __init__(self, ):
+        self._data = []
+
+    def push(self, text: str, box: tuple[int, ...], conf: float):
+        self._data.append((text, box, conf))
+
+    def values(self):
+        return self._data
 
 
 class OcrBackend:
@@ -16,8 +30,11 @@ class OcrBackend:
         if not hasattr(self, 'name'):
             raise ValueError('Translation backend should have name property')
 
-    def recognize(self, image: Image.Image) -> dict[OcrStatus, str]:
+    def recognize(self, image: Image.Image, scaler: int) -> dict[OcrStatus, str]:
         raise NotImplementedError
+
+    def rescale_box(self, box: tuple[int, ...], scaler: float):
+        return tuple(int(v * scaler) for v in box)
 
 
 class OcrBackendManager:
@@ -58,4 +75,4 @@ class DummyOcrBackend(OcrBackend):
 
     def recognize(self, image):
         text = 'Dummy OCR text for development testing.'
-        return {'status': OcrStatus.SUCCESS, 'text': text}
+        return {'status': OcrStatus.SUCCESS, 'text': text, 'data': OcrData()}

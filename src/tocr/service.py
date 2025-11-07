@@ -2,11 +2,13 @@ from common.service import Service
 from common.event import IEvent
 from src.tocr.manager import TOcr, TOcrStatus
 from src.ocr.service import OcrService
+from src.ocr.backends import OcrData
 
 
 class _TOcrResponceReceiveEvent(IEvent):
     status: TOcrStatus
     text: str
+    details: OcrData
 
 
 class TOcrService(Service):
@@ -25,7 +27,8 @@ class TOcrService(Service):
             event=self.Events.RESPONSE_RECEIVED,
             data={
                 'status': TOcrStatus.RECOGNIZING,
-                'text': 'Recognizing...'
+                'text': 'Recognizing...',
+                'details': OcrData()
             }
         )
 
