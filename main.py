@@ -1,5 +1,8 @@
-from config import config
+from frontend.core import GuiCoreApplication
+import sys
 
 
 if __name__ == '__main__':
-    pass
+    gui = GuiCoreApplication()
+    gui.load()
+    sys.exit(gui.exec())
