@@ -34,4 +34,21 @@ Item {
             height: root.height
         }
     }
+
+    TranslationSelectorMenu {
+        x: 0
+        y: 36
+
+        width: 360
+        height: 200
+
+        sourceLanguages: ([
+            "English",
+            "Ukrainian"
+        ])
+        targetLanguages: ([
+            "English",
+            "Ukrainian"
+        ])
+    }
 }
