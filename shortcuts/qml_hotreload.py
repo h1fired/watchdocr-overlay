@@ -1,36 +1,49 @@
+from qt.core import QApplication, QUrl, QTimer
 from qt.qml import QQmlApplicationEngine
-from qt.core import QApplication, QObject
 from qt.utils import invokeFunc
 from frontend.utils import ghotkey
-from config import config
 import sys
-import time
 
 
+QML_FILE = 'frontend/ui/WindowHotReload.qml'
 RELOAD_HOTKEY = 'Alt+B'
 
+engine = None
 
-if __name__ == '__main__':
-    ghotkey.install_keyboard_hook_proc()
 
-    app = QApplication([])
+def load():
+    global engine
+
     engine = QQmlApplicationEngine()
-    engine.load(config.QML_WINDOW_FILE)
-    if not engine.rootObjects():
-        raise RuntimeError('Failed to load QML window')
+    engine.clearComponentCache()
+    engine.load(QUrl.fromLocalFile(QML_FILE))
 
-    window = engine.rootObjects()[0]
-    loader = window.findChild(QObject, "windowContentLoader")
 
-    @invokeFunc
-    def reload():
-        engine.clearComponentCache()
+@invokeFunc
+def reload():
+    global engine
 
-        loader.setProperty("source", "")
-        loader.setProperty("source", f"Component.qml?t={time.time()}")
+    if engine:
+        for obj in engine.rootObjects():
+            obj.deleteLater()
+        engine.deleteLater()
+        engine = None
 
-    reload()
+    QTimer.singleShot(1, load)
 
+
+def main():
+    global engine
+
+    app = QApplication(sys.argv)
+
+    load()
+
+    ghotkey.install_keyboard_hook_proc()
     ghotkey.bind(RELOAD_HOTKEY, reload)
 
     sys.exit(app.exec())
+
+
+if __name__ == '__main__':
+    main()

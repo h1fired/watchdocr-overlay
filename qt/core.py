@@ -24,7 +24,8 @@ from PySide6.QtCore import (
     QEasingCurve,
     QtMsgType,
     qInstallMessageHandler,
-    QElapsedTimer
+    QElapsedTimer,
+    QUrl
 )
 from PySide6.QtGui import (
     QKeySequence,

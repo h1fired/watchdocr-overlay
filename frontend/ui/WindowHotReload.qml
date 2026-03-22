@@ -8,10 +8,13 @@ Window {
 
     visible: true
 
-    width: 800
-    height: 600
+    x: 1280
+    y: 0
+    width: 1280
+    height: 440
 
     title: "OCR Overlay"
+    flags: Qt.FramelessWindowHint
 
     WatchdOcr {
         anchors.fill: parent
