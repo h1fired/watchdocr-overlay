@@ -58,6 +58,22 @@ Rectangle {
             color: "#1A1C26"
         }
 
+        ModeSelector {
+            Layout.fillHeight: true
+            Layout.topMargin: 2
+            Layout.bottomMargin: 2
+        }
+
+        Rectangle {
+            width: 2
+
+            Layout.fillHeight: true
+            Layout.topMargin: 8
+            Layout.bottomMargin: 8
+
+            color: "#1A1C26"
+        }
+
         OButton {
             id: btnPlayPause
 
