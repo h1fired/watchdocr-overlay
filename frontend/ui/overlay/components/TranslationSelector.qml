@@ -34,6 +34,4 @@ Item {
             height: root.height
         }
     }
-
-    
 }
