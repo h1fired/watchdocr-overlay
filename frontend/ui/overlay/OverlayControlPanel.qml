@@ -14,6 +14,10 @@ Rectangle {
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
+    MouseArea {
+        anchors.fill: parent
+    }
+
     RowLayout {
         id: row
 

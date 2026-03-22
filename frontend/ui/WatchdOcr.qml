@@ -5,11 +5,17 @@ import "overlay"
 Rectangle {
     color: "gray"
 
-    OverlayContolPanel {
+    OverlayControlPanel {
         y: 20
 
         anchors.horizontalCenter: parent.horizontalCenter
 
         height: 44
+    }
+
+    OverlayTextConsole {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 20
     }
 }

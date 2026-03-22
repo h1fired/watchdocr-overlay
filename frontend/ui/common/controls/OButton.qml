@@ -11,5 +11,9 @@ Button {
         anchors.fill: parent
         
         cursorShape: Qt.PointingHandCursor
+
+        onClicked: {
+            root.clicked();
+        }
     }
 }
