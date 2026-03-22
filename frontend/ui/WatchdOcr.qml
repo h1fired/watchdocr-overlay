@@ -10,9 +10,6 @@ Rectangle {
 
         anchors.horizontalCenter: parent.horizontalCenter
 
-        width: 200
-        height: 40
-
-        radius: 12
+        height: 44
     }
 }
