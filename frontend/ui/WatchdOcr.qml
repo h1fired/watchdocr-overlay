@@ -6,7 +6,7 @@ import "overlay/components"
 Rectangle {
     color: "gray"
 
-    SelectionArea {
+    OverlaySelectionArea {
         anchors.fill: parent
     }
 
