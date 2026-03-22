@@ -33,9 +33,9 @@ OButton {
 
                 text: root.shortLanguage
                 font.family: root.font.family
-                font.weight: 700
+                font.weight: 600
                 font.pixelSize: 10
-                color: "#FAF9FF"
+                color: '#E4E3E9'
             }
 
             Text {
@@ -43,7 +43,7 @@ OButton {
 
                 text: root.language
                 font.family: root.font.family
-                font.weight: 500
+                font.weight: 600
                 font.pixelSize: 12
                 color: "#FAF9FF"
             }

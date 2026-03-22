@@ -57,8 +57,8 @@ Rectangle {
 
             anchors.verticalCenter: parent.verticalCenter
             
-            width: 6
-            height: 6
+            width: 4
+            height: 4
 
             radius: height / 2
         }

@@ -14,6 +14,16 @@ Rectangle {
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
+    component Divider: Rectangle {
+        width: 2
+
+        Layout.fillHeight: true
+        Layout.topMargin: 8
+        Layout.bottomMargin: 8
+
+        color: "#1A1C26"
+    }
+
     MouseArea {
         anchors.fill: parent
     }
@@ -26,21 +36,15 @@ Rectangle {
         anchors.leftMargin: 12
         anchors.rightMargin: 12
 
+        spacing: 8
+
         ActivityBar {
             Layout.fillHeight: true
             Layout.topMargin: 4
             Layout.bottomMargin: 4
         }
 
-        Rectangle {
-            width: 2
-
-            Layout.fillHeight: true
-            Layout.topMargin: 8
-            Layout.bottomMargin: 8
-
-            color: "#1A1C26"
-        }
+        Divider {}
 
         TranslationSelector {
             Layout.fillHeight: true
@@ -48,15 +52,7 @@ Rectangle {
             Layout.bottomMargin: 4
         }
 
-        Rectangle {
-            width: 2
-
-            Layout.fillHeight: true
-            Layout.topMargin: 8
-            Layout.bottomMargin: 8
-
-            color: "#1A1C26"
-        }
+        Divider {}
 
         ModeSelector {
             Layout.fillHeight: true
@@ -64,15 +60,7 @@ Rectangle {
             Layout.bottomMargin: 2
         }
 
-        Rectangle {
-            width: 2
-
-            Layout.fillHeight: true
-            Layout.topMargin: 8
-            Layout.bottomMargin: 8
-
-            color: "#1A1C26"
-        }
+        Divider {}
 
         OButton {
             id: btnPlayPause
@@ -102,6 +90,7 @@ Rectangle {
                         target: btnPlayPause
                         text: "Run"
                         icon.source: "../../../resources/icons/play.svg"
+                        background.color: btnPlayPause.hovered ? "#7C3AED" : "#8B5CF6"
                     }
                 },
                 State {
@@ -110,20 +99,17 @@ Rectangle {
                         target: btnPlayPause
                         text: "Pause"
                         icon.source: "../../../resources/icons/pause.svg"
+                        background.color: "#1E293B"
                     }
                 }
             ]
+
+            onClicked: {
+                state = (state === "run" ? "pause" : "run");
+            }
         }
 
-        Rectangle {
-            width: 2
-
-            Layout.fillHeight: true
-            Layout.topMargin: 8
-            Layout.bottomMargin: 8
-
-            color: "#1A1C26"
-        }
+        Divider {}
 
         OButton {
             Layout.fillHeight: true
@@ -140,15 +126,7 @@ Rectangle {
             }
         }
 
-        Rectangle {
-            width: 2
-
-            Layout.fillHeight: true
-            Layout.topMargin: 8
-            Layout.bottomMargin: 8
-
-            color: "#1A1C26"
-        }
+        Divider {}
 
         OButton {
             Layout.fillHeight: true

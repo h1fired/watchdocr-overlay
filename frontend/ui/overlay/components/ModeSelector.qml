@@ -25,7 +25,7 @@ Rectangle {
 
     implicitWidth: row.implicitWidth + 8
 
-    radius: 9
+    radius: 6
 
     color: "#12151E"
     border.width: 1
@@ -50,7 +50,7 @@ Rectangle {
 
                 background: Rectangle {
                     color: checked ? "#23272F" : "transparent"
-                    radius: 6
+                    radius: 4
                 }
 
                 text: model.title
