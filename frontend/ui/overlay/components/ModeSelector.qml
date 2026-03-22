@@ -6,9 +6,22 @@ import "../../common/controls"
 Rectangle {
     id: root
 
-    property string     _currentMode:       "live"
-    property var        _modes:             ["live", "onetime"]
-    readonly property string currentMode:    _currentMode
+    property string             _currentMode:   "live"
+    readonly property string    currentMode:    _currentMode
+
+    ListModel {
+        id: modesModel
+
+        ListElement {
+            name: "live"
+            title: "Live"
+        }
+
+        ListElement {
+            name: "onetime"
+            title: "One-time"
+        }
+    }
 
     implicitWidth: row.implicitWidth + 8
 
@@ -23,23 +36,24 @@ Rectangle {
 
         anchors.fill: parent
         anchors.margins: 4
+        spacing: 4
 
         Repeater {
-            model: root._modes
+            model: modesModel
 
             OButton {
                 Layout.fillHeight: true
-                Layout.preferredWidth: 60
+                Layout.preferredWidth: implicitWidth + 12
 
                 checkable: true
-                checked: root._currentMode === modelData
+                checked: root._currentMode === model.name
 
                 background: Rectangle {
                     color: checked ? "#23272F" : "transparent"
                     radius: 6
                 }
 
-                text: modelData
+                text: model.title
                 font.family: "Segoe UI"
                 font.weight: 600
                 font.pixelSize: 12
@@ -47,7 +61,7 @@ Rectangle {
                 palette.brightText : "#94A3B8"
 
                 onClicked: {
-                    root._currentMode = text;
+                    root._currentMode = model.name;
                 }
             }
         }
