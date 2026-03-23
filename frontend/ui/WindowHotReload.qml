@@ -11,7 +11,7 @@ Window {
     x: 1280
     y: 0
     width: 1280
-    height: 440
+    height: 560
 
     title: "OCR Overlay"
     flags: Qt.FramelessWindowHint

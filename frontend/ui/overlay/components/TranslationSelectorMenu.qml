@@ -60,7 +60,7 @@ Rectangle {
                 Layout.bottomMargin: 12
                 width: 1
 
-                color: "#1F1F1F"
+                color: "#1A1C26"
             }
 
             LanguageListView {

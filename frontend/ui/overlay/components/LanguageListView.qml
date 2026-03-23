@@ -23,7 +23,7 @@ Item {
             height: 32
 
             radius: 6
-            color: mouse.containsMouse ? "#191919" : "transparent"
+            color: mouse.containsMouse ? "#171A29" : "transparent"
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -31,10 +31,18 @@ Item {
                 anchors.leftMargin: 12
 
                 text: modelData
-                color: "white"
+                color: (
+                    index === selectedIndex ? "#A78BFA" :
+                    mouse.containsMouse ? "#C8D3E8" : "#798499"
+                )
+
+                font.family: "Segoe UI"
+                font.weight: index === selectedIndex ? 600 : 500
             }
 
             Rectangle {
+                visible: index === selectedIndex
+                
                 width: 4
                 height: 4
 
@@ -42,9 +50,8 @@ Item {
                 anchors.right: parent.right
                 anchors.rightMargin: 12
 
-                visible: index === selectedIndex
-             
                 radius: height / 2
+                color: "#8B5CF6"
             }
 
             MouseArea {

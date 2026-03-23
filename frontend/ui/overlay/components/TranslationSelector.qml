@@ -8,6 +8,10 @@ Item {
 
     implicitWidth: row.width
 
+    MouseArea {
+        anchors.fill: parent
+    }
+
     Row {
         id: row
 
