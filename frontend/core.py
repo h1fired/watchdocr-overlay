@@ -1,7 +1,10 @@
 from common.utils.meta import Singleton
-from qt.qml import QQmlApplicationEngine
-from qt.core import QApplication, QObject, Signal
+from qt.qml import QQmlApplicationEngine, qmlRegisterSingletonType
+from qt.core import QApplication, QUrl
 from config import config
+
+
+qmlRegisterSingletonType(QUrl.fromLocalFile('frontend/ui/Gui.qml'), 'App.Gui', 1, 0, 'Gui')
 
 
 class GuiCoreApplication(metaclass=Singleton):

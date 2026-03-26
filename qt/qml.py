@@ -1,1 +1,4 @@
-from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtQml import (
+    QQmlApplicationEngine,
+    qmlRegisterSingletonType
+)

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import App.Gui
 import "../../common/controls"
 
 
@@ -17,6 +18,10 @@ Item {
 
         TranslationSelectorButton {
             height: root.height
+
+            onClicked: {
+                Gui.showWindowPopup(menu);
+            }
         }
 
         OButton {
@@ -36,10 +41,18 @@ Item {
 
         TranslationSelectorButton {
             height: root.height
+
+            onClicked: {
+                Gui.showWindowPopup(menu);
+            }
         }
     }
 
     TranslationSelectorMenu {
+        id: menu
+
+        visible: false
+
         x: 0
         y: 36
 
