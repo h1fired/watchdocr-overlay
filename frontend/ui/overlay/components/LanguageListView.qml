@@ -6,7 +6,7 @@ Item {
     id: root
 
     property int selectedIndex: 0
-    property list<string> languages: ([])
+    property ListModel languages: ListModel {}
     property string current: languages[selectedIndex] || languages[0] || "empty"
 
     ListView {
@@ -29,7 +29,23 @@ Item {
                 anchors.left: parent.left
                 anchors.leftMargin: 20
 
-                text: modelData
+                text: model.code
+                color: (
+                    index === selectedIndex ? "#A78BFA" :
+                    mouse.containsMouse ? "#C8D3E8" : "#475569"
+                )
+
+                font.family: "Segoe UI"
+                font.weight: 600
+                font.pixelSize: 10
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                anchors.leftMargin: 44
+
+                text: model.name
                 color: (
                     index === selectedIndex ? "#A78BFA" :
                     mouse.containsMouse ? "#C8D3E8" : "#798499"
@@ -47,7 +63,7 @@ Item {
 
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
-                anchors.rightMargin: 12
+                anchors.rightMargin: 16
 
                 radius: height / 2
                 color: "#8B5CF6"

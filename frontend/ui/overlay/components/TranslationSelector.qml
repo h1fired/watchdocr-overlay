@@ -45,19 +45,13 @@ Item {
 
         width: 460
 
-        sourceLanguages: ([
-            "English",
-            "Ukrainian",
-            "Ukrainian",
-            "Ukrainian",
-            "Ukrainian",
-        ])
-        targetLanguages: ([
-            "English",
-            "Ukrainian",
-            "Ukrainian",
-            "Ukrainian",
-            "Ukrainian",
-        ])
+        sourceLanguages: ListModel {
+            ListElement { name: "English"; code: "EN" }
+            ListElement { name: "Ukrainian"; code: "UA" }
+        }
+        targetLanguages: ListModel {
+            ListElement { name: "English"; code: "EN" }
+            ListElement { name: "Ukrainian"; code: "UA" }
+        }
     }
 }
