@@ -50,6 +50,15 @@ Rectangle {
             Layout.fillHeight: true
             Layout.topMargin: 4
             Layout.bottomMargin: 4
+
+            sourceLanguages: ListModel {
+                ListElement { name: "English"; code: "EN" }
+                ListElement { name: "Ukrainian"; code: "UA" }
+            }
+            targetLanguages: ListModel {
+                ListElement { name: "English"; code: "EN" }
+                ListElement { name: "Ukrainian"; code: "UA" }
+            }
         }
 
         Divider {}

@@ -14,7 +14,6 @@ OMessageBoxFrame {
     border.width: 1
     border.color: "#21242D"
 
-
     property ListModel sourceLanguages: ListModel {}
     property ListModel targetLanguages: ListModel {}
     property string sourceLanguage: source.current

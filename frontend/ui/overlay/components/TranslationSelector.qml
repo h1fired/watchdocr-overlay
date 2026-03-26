@@ -7,6 +7,9 @@ import "../../common/controls"
 Item {
     id: root
 
+    property alias sourceLanguages: menu.sourceLanguages
+    property alias targetLanguages: menu.targetLanguages
+
     implicitWidth: row.width
 
     MouseArea {
@@ -57,14 +60,5 @@ Item {
         y: 36
 
         width: 460
-
-        sourceLanguages: ListModel {
-            ListElement { name: "English"; code: "EN" }
-            ListElement { name: "Ukrainian"; code: "UA" }
-        }
-        targetLanguages: ListModel {
-            ListElement { name: "English"; code: "EN" }
-            ListElement { name: "Ukrainian"; code: "UA" }
-        }
     }
 }
