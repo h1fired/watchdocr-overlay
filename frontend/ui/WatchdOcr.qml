@@ -1,6 +1,7 @@
 import QtQuick
 import "overlay"
 import "overlay/components"
+import "common/components"
 
 
 Rectangle {

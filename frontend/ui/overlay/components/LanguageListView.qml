@@ -20,15 +20,14 @@ Item {
 
         delegate: Rectangle {
             width: listView.width
-            height: 32
+            height: 36
 
-            radius: 6
             color: mouse.containsMouse ? "#171A29" : "transparent"
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
-                anchors.leftMargin: 12
+                anchors.leftMargin: 20
 
                 text: modelData
                 color: (

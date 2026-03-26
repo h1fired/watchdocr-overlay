@@ -1,15 +1,19 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
+import "../../common/controls"
+import "../../common/components"
 
 
-Rectangle {
+OMessageBoxFrame {
     id: root
 
-    color: "#070B14"
+    title: "Language pair"
+
     radius: 12
     border.width: 1
     border.color: "#21242D"
+
 
     property list<string> sourceLanguages: ([])
     property list<string> targetLanguages: ([])
@@ -19,12 +23,19 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent
 
+        spacing: 0
+
+        clip: true
+
         TextField {
             id: searchTextField
 
             Layout.fillWidth: true
             Layout.preferredHeight: 32
-            Layout.margins: 12
+            Layout.topMargin: 12
+            Layout.bottomMargin: 12
+            Layout.leftMargin: 16
+            Layout.rightMargin: 16
 
             background: Rectangle {
                 color: "#12151E"
@@ -37,13 +48,18 @@ Rectangle {
             placeholderText: "Search languages"
         }
 
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+
+            color: "#1A1C26"
+        }
+
         RowLayout {
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.leftMargin: 12
-            Layout.rightMargin: 12
+            Layout.preferredHeight: 100
 
-            spacing: 8
+            spacing: 0
 
             LanguageListView {
                 id: source
@@ -56,8 +72,6 @@ Rectangle {
 
             Rectangle {
                 Layout.fillHeight: true
-                Layout.topMargin: 12
-                Layout.bottomMargin: 12
                 width: 1
 
                 color: "#1A1C26"
@@ -70,6 +84,106 @@ Rectangle {
                 Layout.fillHeight: true
             
                 languages: root.targetLanguages
+            }
+        }
+
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 52
+
+            Rectangle {
+                width: parent.width
+                height: 1
+
+                color: "#1A1C26"
+            }
+
+            Row {
+                anchors.verticalCenter: parent.verticalCenter
+                padding: 20
+
+                spacing: 8
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    text: "NN"
+
+                    font.family: "Segoe UI"
+                    font.weight: 500
+                    font.pixelSize: 10
+                    color: "#475569"
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    text: "None"
+
+                    font.family: "Segoe UI"
+                    font.weight: 600
+                    font.pixelSize: 12
+                    color: "#475569"
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    text: "→"
+
+                    font.family: "Segoe UI"
+                    font.pixelSize: 12
+                    color: "#8B5CF6"
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    text: "NN"
+
+                    font.family: "Segoe UI"
+                    font.weight: 500
+                    font.pixelSize: 10
+                    color: "#475569"
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    text: "None"
+
+                    font.family: "Segoe UI"
+                    font.weight: 600
+                    font.pixelSize: 12
+                    color: "#475569"
+                }
+            }
+
+            OButton {
+                width: 72
+                height: 28
+
+                anchors.right: parent.right
+                anchors.rightMargin: 16
+                anchors.verticalCenter: parent.verticalCenter
+
+                text: "Swap"
+
+                font.family: "Segoe UI"
+                font.weight: 600
+
+                icon.source: "../../../../resources/icons/swap.svg"
+                icon.width: 14
+                icon.height: 14
+
+                palette.buttonText: hovered ? "#A78BFA" :"#776BC5"
+                background: Rectangle {
+                    radius: 6
+
+                    color: parent.hovered ? "#292049" : "#1C1833"
+                    border.width: 1
+                    border.color: parent.hovered ? "#51388D" : "#35275D"
+                }
             }
         }
 

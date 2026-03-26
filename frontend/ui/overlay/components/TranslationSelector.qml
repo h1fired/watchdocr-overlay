@@ -43,16 +43,21 @@ Item {
         x: 0
         y: 36
 
-        width: 360
-        height: 200
+        width: 460
 
         sourceLanguages: ([
             "English",
-            "Ukrainian"
+            "Ukrainian",
+            "Ukrainian",
+            "Ukrainian",
+            "Ukrainian",
         ])
         targetLanguages: ([
             "English",
-            "Ukrainian"
+            "Ukrainian",
+            "Ukrainian",
+            "Ukrainian",
+            "Ukrainian",
         ])
     }
 }
