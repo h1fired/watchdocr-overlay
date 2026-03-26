@@ -18,6 +18,8 @@ OMessageBoxFrame {
     property ListModel targetLanguages: ListModel {}
     property string sourceLanguage: source.current
     property string targetLanguage: target.current
+    property string sourceLanguageName: source.currentName
+    property string targetLanguageName: target.currentName
 
     ColumnLayout {
         anchors.fill: parent
@@ -184,15 +186,16 @@ OMessageBoxFrame {
                     border.color: parent.hovered ? "#51388D" : "#35275D"
                 }
 
-                onClicked: {
-                    let sIndex = source.selectedIndex;
-                    let tIndex = target.selectedIndex;
-
-                    source.selectedIndex = tIndex;
-                    target.selectedIndex = sIndex;
-                }
+                onClicked: root.swap()
             }
         }
     }
 
+    function swap() {
+        let sIndex = source.selectedIndex;
+        let tIndex = target.selectedIndex;
+
+        source.selectedIndex = tIndex;
+        target.selectedIndex = sIndex;
+    }
 }

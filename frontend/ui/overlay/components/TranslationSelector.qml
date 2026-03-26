@@ -9,6 +9,8 @@ Item {
 
     property alias sourceLanguages: menu.sourceLanguages
     property alias targetLanguages: menu.targetLanguages
+    readonly property alias sourceLanguage: menu.sourceLanguage
+    readonly property alias targetLanguage: menu.targetLanguage
 
     implicitWidth: row.width
 
@@ -21,6 +23,9 @@ Item {
 
         TranslationSelectorButton {
             height: root.height
+
+            language: menu.sourceLanguageName
+            shortLanguage: menu.sourceLanguage
 
             onClicked: {
                 Gui.showWindowPopup(menu);
@@ -40,10 +45,17 @@ Item {
                 color: parent.hovered ? "#1B1E28" : "transparent"
                 radius: 6
             }
+
+            onClicked: {
+                menu.swap();
+            }
         }
 
         TranslationSelectorButton {
             height: root.height
+
+            language: menu.targetLanguageName
+            shortLanguage: menu.targetLanguage
 
             onClicked: {
                 Gui.showWindowPopup(menu);
