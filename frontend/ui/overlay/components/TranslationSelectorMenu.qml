@@ -17,8 +17,8 @@ OMessageBoxFrame {
 
     property ListModel sourceLanguages: ListModel {}
     property ListModel targetLanguages: ListModel {}
-    property alias sourceLanguage: source.current
-    property alias targetLanguage: target.current
+    property string sourceLanguage: source.current
+    property string targetLanguage: target.current
 
     ColumnLayout {
         anchors.fill: parent
@@ -107,7 +107,7 @@ OMessageBoxFrame {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
 
-                    text: "NN"
+                    text: source.current
 
                     font.family: "Segoe UI"
                     font.weight: 500
@@ -118,7 +118,7 @@ OMessageBoxFrame {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
 
-                    text: "None"
+                    text: source.currentName
 
                     font.family: "Segoe UI"
                     font.weight: 600
@@ -139,7 +139,7 @@ OMessageBoxFrame {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
 
-                    text: "NN"
+                    text: target.current
 
                     font.family: "Segoe UI"
                     font.weight: 500
@@ -150,7 +150,7 @@ OMessageBoxFrame {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
 
-                    text: "None"
+                    text: target.currentName
 
                     font.family: "Segoe UI"
                     font.weight: 600
@@ -184,9 +184,16 @@ OMessageBoxFrame {
                     border.width: 1
                     border.color: parent.hovered ? "#51388D" : "#35275D"
                 }
+
+                onClicked: {
+                    let sIndex = source.selectedIndex;
+                    let tIndex = target.selectedIndex;
+
+                    source.selectedIndex = tIndex;
+                    target.selectedIndex = sIndex;
+                }
             }
         }
-
     }
 
 }
