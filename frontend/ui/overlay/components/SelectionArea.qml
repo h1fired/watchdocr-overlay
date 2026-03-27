@@ -19,6 +19,8 @@ Item {
     MouseArea {
         anchors.fill: parent
 
+        cursorShape: Qt.CrossCursor
+
         onPressed: (event) => {
             root.pressed();
             privates.startPoint = Qt.point(event.x, event.y);
@@ -42,7 +44,7 @@ Item {
 
         anchors.fill: parent
 
-        opacity: 0.4
+        opacity: root.enabled ? 0.45 : 0.4
 
         onPaint: {
             let ctx = getContext("2d");

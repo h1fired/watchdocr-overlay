@@ -11,6 +11,8 @@ Rectangle {
         id: selectionArea
 
         anchors.fill: parent
+
+        area.enabled: controlPanel.selectionToolActive
     }
 
     OverlayControlPanel {

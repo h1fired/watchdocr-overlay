@@ -7,6 +7,8 @@ import "components"
 Rectangle {
     id: root
 
+    readonly property bool selectionToolActive: btnToolSelection.checked
+
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
     radius: 12
@@ -112,17 +114,25 @@ Rectangle {
         Divider {}
 
         OButton {
+            id: btnToolSelection
+
             Layout.fillHeight: true
             Layout.preferredWidth: height
 
+            checkable: true
+
             icon.source: "../../../resources/icons/selection.svg"
-            icon.color: hovered ? "#94A3B8" : "#475569"
+            icon.color: hovered || checked ? "#94A3B8" : "#475569"
             icon.width: 22
             icon.height: 22
 
             background: Rectangle {
-                color: parent.hovered ? "#1B1E28" : "transparent"
+                color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
                 radius: 6
+            }
+
+            onClicked: {
+                checked = !checked;
             }
         }
 

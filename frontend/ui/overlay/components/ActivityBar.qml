@@ -6,7 +6,7 @@ Rectangle {
 
     implicitWidth: row.implicitWidth + 20
 
-    state: "live"
+    state: "stopped"
     states: [
         State {
             name: "live"
