@@ -50,19 +50,8 @@ Rectangle {
                     Layout.rightMargin: 8
                 }
 
-                OButton {
+                CopyButton {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: height
-
-                    icon.source: "../../../resources/icons/copy.svg"
-                    icon.color: hovered ? "#94A3B8" : "#475569"
-                    icon.width: 16
-                    icon.height: 16
-
-                    background: Rectangle {
-                        color: parent.hovered ? "#1B1E28" : "transparent"
-                        radius: 6
-                    }
                 }
 
                 OButton {
