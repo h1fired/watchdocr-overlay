@@ -7,12 +7,12 @@ import "components"
 Rectangle {
     id: root
 
+    implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
+
     radius: 12
     color: "#070B14"
     border.width: 1
     border.color: "#21242D"
-
-    implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
     component Divider: Rectangle {
         width: 2
@@ -50,15 +50,6 @@ Rectangle {
             Layout.fillHeight: true
             Layout.topMargin: 4
             Layout.bottomMargin: 4
-
-            sourceLanguages: ListModel {
-                ListElement { name: "English"; code: "EN" }
-                ListElement { name: "Ukrainian"; code: "UA" }
-            }
-            targetLanguages: ListModel {
-                ListElement { name: "English"; code: "EN" }
-                ListElement { name: "Ukrainian"; code: "UA" }
-            }
         }
 
         Divider {}

@@ -7,8 +7,8 @@ Item {
 
     property int selectedIndex: 0
     property ListModel languages: ListModel {}
-    readonly property string current: languages.get(selectedIndex).code
-    readonly property string currentName: languages.get(selectedIndex).name
+    readonly property string current: languages.get(selectedIndex)?.code || "NN"
+    readonly property string currentName: languages.get(selectedIndex)?.name || "None"
 
     ListView {
         id: listView

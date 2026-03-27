@@ -137,7 +137,7 @@ Rectangle {
                 Text {
                     Layout.alignment: Qt.AlignVCenter
 
-                    text: 'None  ·  None'
+                    text: "None  ·  None"
 
                     font.family: "Segoe UI"
                     font.weight: 500
