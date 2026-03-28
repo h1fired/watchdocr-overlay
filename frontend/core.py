@@ -7,6 +7,7 @@ from qt.qml import (
 from qt.core import QApplication, QUrl
 from config import config
 from frontend.viewmodels import WatchdOcrLinkerCore
+from src.common.event import EventSystem
 
 
 _qmlLinkerCore = WatchdOcrLinkerCore()
@@ -15,7 +16,11 @@ qmlRegisterSingletonType(QUrl.fromLocalFile('frontend/ui/Gui.qml'), 'App.Gui', 1
 
 
 class GuiCoreApplication(metaclass=Singleton):
-    def load(self, load_viewmodels=True):
+    def load(
+        self,
+        eventsys: EventSystem,
+        load_viewmodels=True
+    ):
         app = QApplication([])
 
         engine = QQmlApplicationEngine()
@@ -27,8 +32,10 @@ class GuiCoreApplication(metaclass=Singleton):
         self._engine = engine
         self._window = engine.rootObjects()[0]
 
+        self._eventsys = eventsys
+
         if load_viewmodels:
-            _qmlLinkerCore.initialize(self._window)
+            _qmlLinkerCore.initialize(self._window, eventsys)
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 

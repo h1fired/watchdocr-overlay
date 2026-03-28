@@ -52,8 +52,10 @@ class QmlViewModel(QObject):
     def initialize(
         self,
         window: QQuickWindow,
+        eventsys
     ):
         self._window = window
+        self._eventsys = eventsys
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)
@@ -74,6 +76,9 @@ class QmlViewModel(QObject):
         self.statusChanged.emit()
 
     status = Property(int, getStatus, notify=statusChanged)
+
+    def eventsys(self):
+        return self._eventsys
 
     def onInit(self):
         pass
@@ -97,15 +102,17 @@ class QmlLinkerCore(QObject, metaclass=QmlLinkerCoreMeta):
         super().__init__()
         self._status = QmlViewModelStatus.NOT_READY
         self._window = None
+        self._eventsys = None
 
     def window(self):
         return self._window
 
-    def initialize(self, window):
+    def initialize(self, window, eventsys):
         self._window = window
+        self._eventsys = eventsys
 
         for vm in self.__viewmodels__.values():
-            vm.initialize(window)
+            vm.initialize(window, eventsys)
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)
