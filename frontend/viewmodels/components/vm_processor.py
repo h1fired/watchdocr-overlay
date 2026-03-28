@@ -7,14 +7,14 @@ from qt.core import Signal
 class ProcessorViewModel(QmlViewModel):
     _name = 'Processor'
 
-    textResultReceived = Signal(str)
+    resultReceived = Signal(str)
 
     def onLoaded(self):
         Event.subscribe(
             system=self.eventsys(),
-            event=Events.TEXT_RESULT_RECEIVED,
-            handler=self.onTextResultReceived
+            event=Events.PROCESSOR_RESULT_RECEIVED,
+            handler=self.onProcessorResultReceived
         )
 
-    def onTextResultReceived(self, e):
-        self.textResultReceived.emit(e.text)
+    def onProcessorResultReceived(self, e):
+        self.resultReceived.emit(e.text)

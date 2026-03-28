@@ -12,14 +12,14 @@ class ProcessorStoppedEvent(IEvent):
     pass
 
 
-class TextResultReceivedEvent(IEvent):
+class ProcessorResultReceivedEvent(IEvent):
     text: str
 
 
 class Events:
     PROCESSOR_STARTED = ProcessorStartedEvent
     PROCESSOR_STOPPED = ProcessorStoppedEvent
-    TEXT_RESULT_RECEIVED = TextResultReceivedEvent
+    PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
 
 
 class WatchdOcrProcessor:
@@ -54,7 +54,7 @@ class WatchdOcrProcessor:
     def _loop_infinite(self):
         while self._loop_active:
             self._eventsys.dispatch(
-                Events.TEXT_RESULT_RECEIVED,
+                Events.PROCESSOR_RESULT_RECEIVED,
                 {'text': 'result text'}
             )
             time.sleep(1)

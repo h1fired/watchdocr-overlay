@@ -149,7 +149,7 @@ Rectangle {
     Connections {
         target: Backend.Processor
 
-        function onTextResultReceived(text) {
+        function onResultReceived(text) {
             responseTextEdit.text = text;
         }
     }
