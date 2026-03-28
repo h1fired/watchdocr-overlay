@@ -2,6 +2,7 @@ from PySide6.QtCore import QObject, Property, Signal, QEnum
 from PySide6.QtQuick import QQuickWindow
 from PySide6.QtQml import qmlRegisterType
 from enum import IntEnum
+from src.common.event import EventSystem
 
 
 class QmlViewModelStatus(IntEnum):
@@ -52,7 +53,7 @@ class QmlViewModel(QObject):
     def initialize(
         self,
         window: QQuickWindow,
-        eventsys
+        eventsys: EventSystem
     ):
         self._window = window
         self._eventsys = eventsys

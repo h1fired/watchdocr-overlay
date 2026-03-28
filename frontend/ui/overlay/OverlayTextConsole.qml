@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import App.Backend
 import "../common/controls"
 import "components"
 
@@ -141,6 +142,15 @@ Rectangle {
                     color: "#475569"
                 }
             }
+        }
+    }
+
+    // Backend
+    Connections {
+        target: Backend.Processor
+
+        function onTextResultReceived(text) {
+            responseTextEdit.text = text;
         }
     }
 }
