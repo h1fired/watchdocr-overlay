@@ -11,6 +11,14 @@ Rectangle {
         anchors.fill: parent
 
         area.enabled: controlPanel.selectionToolActive
+
+        Connections {
+            target: selectionArea.area
+
+            function onBoxReleased() {
+                controlPanel.selectionToolActive = false;
+            }
+        }
     }
 
     OverlayControlPanel {

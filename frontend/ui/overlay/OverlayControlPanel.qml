@@ -7,7 +7,7 @@ import "components"
 Rectangle {
     id: root
 
-    readonly property bool selectionToolActive: btnToolSelection.checked
+    property alias selectionToolActive: btnToolSelection.checked
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
