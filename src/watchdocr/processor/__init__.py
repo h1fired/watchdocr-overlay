@@ -1,7 +1,7 @@
-from queue import Queue
-from threading import Thread
 from src.common.event import EventSystem, IEvent
-import time
+from threading import Thread
+from enum import IntEnum
+import queue
 
 
 class ProcessorStartedEvent(IEvent):
@@ -22,13 +22,37 @@ class Events:
     PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
 
 
+class ProcessorCommandType(IntEnum):
+    ONETIME_MODE_ENABLE = 0
+    LIVE_MODE_ENABLE = 1
+
+
+class ProcessorCommand:
+    def __init__(self, type: ProcessorCommandType, *args):
+        self._type = type
+        self._args = args
+
+    def type(self):
+        return self._type
+
+    def args(self):
+        return self._args
+
+
+class ProcessorMode(IntEnum):
+    ONETIME = 0
+    LIVE = 1
+
+
 class WatchdOcrProcessor:
     def __init__(self, eventsys: EventSystem):
         self._eventsys = eventsys
 
-        self._command_q = Queue()
+        self._command_q = queue.Queue()
         self._loop_active = False
         self._loop_thread = None
+
+        self._mode = ProcessorMode.ONETIME
 
     def start_loop(self):
         if self._loop_active:
@@ -51,10 +75,28 @@ class WatchdOcrProcessor:
 
         self._eventsys.dispatch(Events.PROCESSOR_STOPPED, {})
 
+    def queue_command(self, command: ProcessorCommand):
+        self._command_q.put(command)
+
     def _loop_infinite(self):
         while self._loop_active:
+            if self._mode == ProcessorMode.ONETIME:
+                cmd: ProcessorCommand = self._command_q.get()
+            else:
+                try:
+                    cmd: ProcessorCommand = self._command_q.get(timeout=1.0)
+                except queue.Empty:
+                    cmd = None
+
+            if cmd:
+                match cmd.type():
+                    case ProcessorCommandType.ONETIME_MODE_ENABLE:
+                        self._mode = ProcessorMode.ONETIME
+                    case ProcessorCommandType.LIVE_MODE_ENABLE:
+                        self._mode = ProcessorMode.LIVE
+
+            # Send test result data to event system
             self._eventsys.dispatch(
-                Events.PROCESSOR_RESULT_RECEIVED,
-                {'text': 'result text'}
+                event=Events.PROCESSOR_RESULT_RECEIVED,
+                data={'text': 'some result'}
             )
-            time.sleep(1)
