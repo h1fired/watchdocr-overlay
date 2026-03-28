@@ -68,6 +68,7 @@ class WatchdOcrProcessor:
         if not self._loop_active:
             return
 
+        self._command_q.put(False)
         self._loop_active = False
         if self._loop_thread.is_alive():
             self._loop_thread.join()
@@ -79,6 +80,8 @@ class WatchdOcrProcessor:
         self._command_q.put(command)
 
     def _loop_infinite(self):
+        counter = 1
+
         while self._loop_active:
             if self._mode == ProcessorMode.ONETIME:
                 cmd: ProcessorCommand = self._command_q.get()
@@ -87,6 +90,9 @@ class WatchdOcrProcessor:
                     cmd: ProcessorCommand = self._command_q.get(timeout=1.0)
                 except queue.Empty:
                     cmd = None
+
+            if cmd is False:
+                break
 
             if cmd:
                 match cmd.type():
@@ -98,5 +104,6 @@ class WatchdOcrProcessor:
             # Send test result data to event system
             self._eventsys.dispatch(
                 event=Events.PROCESSOR_RESULT_RECEIVED,
-                data={'text': 'some result'}
+                data={'text': f'some result {counter}'}
             )
+            counter += 1

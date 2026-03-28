@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import App.Backend
 import "../common/controls"
 import "components"
 
@@ -60,6 +61,10 @@ Rectangle {
             Layout.fillHeight: true
             Layout.topMargin: 2
             Layout.bottomMargin: 2
+
+            onCurrentModeChanged: {
+                Backend.Processor.onModeChanged(currentMode);
+            }
         }
 
         Divider {}
@@ -107,7 +112,7 @@ Rectangle {
             ]
 
             onClicked: {
-                state = (state === "run" ? "pause" : "run");
+                Backend.Processor.onPlayPauseButtonClick(state);
             }
         }
 
@@ -158,4 +163,16 @@ Rectangle {
         }
     }
 
+    // Backend
+    Connections {
+        target: Backend.Processor
+
+        function onStarted() {
+            btnPlayPause.state = "pause";
+        }
+
+        function onStopped() {
+            btnPlayPause.state = "run";
+        }
+    }
 }
