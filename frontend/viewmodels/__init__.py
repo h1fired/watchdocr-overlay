@@ -1,7 +1,10 @@
 from frontend.viewmodels.common.mvvm import QmlLinkerCore
+from frontend.viewmodels.components.vm_processor import ProcessorViewModel
 
 
-VIEWMODELS = tuple()
+VIEWMODELS = (
+    ProcessorViewModel,
+)
 
 
 class WatchdOcrLinkerCore(QmlLinkerCore):
