@@ -5,8 +5,6 @@ import "common/components"
 
 
 Rectangle {
-    color: "gray"
-
     OverlaySelectionArea {
         id: selectionArea
 

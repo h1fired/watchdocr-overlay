@@ -37,9 +37,7 @@ Rectangle {
 
                 spacing: 0
 
-                TranslationInfo {
-                    Layout.fillHeight: true
-                }
+                TextConsoleStatus {}
 
                 Item {
                     Layout.fillWidth: true
@@ -121,7 +119,16 @@ Rectangle {
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 16
+                anchors.rightMargin: 16
                 anchors.bottomMargin: 4
+
+                TranslationInfo {
+                    Layout.fillHeight: true
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
 
                 Text {
                     Layout.alignment: Qt.AlignVCenter
