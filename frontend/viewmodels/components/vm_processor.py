@@ -11,7 +11,7 @@ class ProcessorViewModel(QmlViewModel):
 
     started = Signal()
     stopped = Signal()
-    resultReceived = Signal(str)
+    resultReceived = Signal(dict)
 
     def onInit(self):
         self._p = PROCESSOR
@@ -34,7 +34,7 @@ class ProcessorViewModel(QmlViewModel):
         )
 
     def onResultReceived(self, e):
-        self.resultReceived.emit(e.data['original_text'])
+        self.resultReceived.emit(e.data)
 
     def onStarted(self, _):
         self.started.emit()

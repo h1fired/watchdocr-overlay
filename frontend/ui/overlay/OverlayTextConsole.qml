@@ -45,6 +45,8 @@ Rectangle {
                 }
 
                 AccuracyBar {
+                    id: accuracyBar
+
                     Layout.fillHeight: true
                     Layout.rightMargin: 8
                 }
@@ -149,8 +151,9 @@ Rectangle {
     Connections {
         target: Backend.Processor
 
-        function onResultReceived(text) {
-            responseTextEdit.text = text;
+        function onResultReceived(data) {
+            accuracyBar.accuracy = data.confidence
+            responseTextEdit.text = data.translated_text;
         }
     }
 }

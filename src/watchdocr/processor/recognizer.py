@@ -1,5 +1,5 @@
 from src.watchdocr.processor.ocr import Ocr
-from src.watchdocr.processor.image import grab_window_area
+from src.watchdocr.processor.image import grab_window_area, OcrImageFilter
 from enum import IntEnum
 from dataclasses import dataclass, asdict
 from threading import Thread, Condition
@@ -15,6 +15,7 @@ class RecognizerMode(IntEnum):
 class RecognizerResult:
     original_text: str
     translated_text: str
+    confidence: int
 
     def to_dict(self):
         return asdict(self)
@@ -99,10 +100,12 @@ class Recognizer:
             return False, None
 
         image = grab_window_area(self._box)
+        image = OcrImageFilter.adjust(image)
         ocr_data = self._ocr.recognize(image)
 
         res = RecognizerResult(
             f'{ocr_data.text()} - {self._mode.name} - {self._box}',
             f'{ocr_data.text()} - {self._mode.name} - {self._box}',
+            ocr_data.confidence()
         )
         return True, res

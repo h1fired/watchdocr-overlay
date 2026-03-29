@@ -6,15 +6,23 @@ DATA_MODELS_DIR = 'data/tessdata-main'
 
 
 class OcrData:
-    def __init__(self, text: str | None, boxes: tuple):
+    def __init__(
+        self, text: str | None,
+        boxes: tuple,
+        confidence: int
+    ):
         self._text = text
         self._boxes = boxes
+        self._conf = confidence
 
     def boxes(self):
         return self._boxes
 
     def text(self):
         return self._text
+
+    def confidence(self):
+        return self._conf
 
 
 class TesseractOcrPlugin:
@@ -30,6 +38,7 @@ class TesseractOcrPlugin:
             self._api.SetImage(image)
 
             text = self._api.GetUTF8Text()
+            global_conf = self._api.MeanTextConf()
             boxes = []
 
             # Get components parameters (words, boxes, confidences)
@@ -40,6 +49,6 @@ class TesseractOcrPlugin:
                 box = r.BoundingBox(level)
                 conf = r.Confidence(level)
                 boxes.append((word, box, conf))
-            return OcrData(text, boxes)
+            return OcrData(text, boxes, global_conf)
         except Exception:
-            return OcrData('', tuple())
+            return OcrData('', tuple(), 0)

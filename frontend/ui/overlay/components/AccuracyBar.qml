@@ -4,7 +4,7 @@ import QtQuick
 Item {
     id: root
 
-    property int accuracy: 50
+    property int accuracy: 0
 
     implicitWidth: row.implicitWidth
 
@@ -31,7 +31,7 @@ Item {
 
                 radius: height / 2
 
-                color: "#34D399"
+                color: root.accuracy > 70 ? "#34D399" : "#8993A1"
             }
         }
 
@@ -43,7 +43,7 @@ Item {
             font.family: "Segoe UI"
             font.weight: 600
             font.pixelSize: 12
-            color: "#34D399"
+            color: root.accuracy > 70 ? "#34D399" : "#8993A1"
         }
     }
 }

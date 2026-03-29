@@ -15,7 +15,8 @@ Item {
         anchors.fill: parent
 
         onBoxReleased: {
-            Backend.Processor.onSelectionAreaBoxReleased(box);
+            let absoluteBox = area.relativeToAbsoluteBox(area.box);
+            Backend.Processor.onSelectionAreaBoxReleased(absoluteBox);
         }
     }
 }
