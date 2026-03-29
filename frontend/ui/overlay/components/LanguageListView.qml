@@ -19,6 +19,20 @@ Item {
         spacing: 0
         clip: true
 
+        ScrollBar.vertical: ScrollBar {
+            policy: ScrollBar.AlwaysOn
+
+            contentItem: Rectangle {
+                implicitWidth: 6
+                color: parent.pressed ? "#21242D" : "#21242D"
+                opacity: parent.active ? 1.0 : 0.5
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 200 }
+                }
+            }
+        }
+
         delegate: Rectangle {
             width: listView.width
             height: 36

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls.Basic
 import App.Backend
 import "../common/controls"
 import "components"
@@ -97,6 +98,20 @@ Rectangle {
 
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
+
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AlwaysOn
+
+                    contentItem: Rectangle {
+                        implicitWidth: 6
+                        color: parent.pressed ? "#21242D" : "#21242D"
+                        opacity: parent.active ? 1.0 : 0.5
+
+                        Behavior on opacity {
+                            NumberAnimation { duration: 200 }
+                        }
+                    }
+                }
 
                 TextEdit {
                     id: responseTextEdit
