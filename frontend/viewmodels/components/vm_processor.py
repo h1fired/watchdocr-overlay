@@ -45,17 +45,13 @@ class ProcessorViewModel(QmlViewModel):
     @Slot(str)
     def onPlayPauseButtonClick(self, state: str):
         if state == 'run':
-            cmd = ProcessorCommand(ProcessorCommandType.START)
-            self._p.p.queue_command(cmd)
+            self._p.p.queue_command(ProcessorCommandType.START)
         elif state == 'pause':
-            cmd = ProcessorCommand(ProcessorCommandType.STOP)
-            self._p.p.queue_command(cmd)
+            self._p.p.queue_command(ProcessorCommandType.STOP)
 
     @Slot(str)
     def onModeChanged(self, mode: str):
         if mode == 'onetime':
-            cmd = ProcessorCommand(ProcessorCommandType.ONETIME_MODE_ENABLE)
-            self._p.p.queue_command(cmd)
+            self._p.p.queue_command(ProcessorCommandType.ONETIME_MODE_ENABLE)
         elif mode == 'live':
-            cmd = ProcessorCommand(ProcessorCommandType.LIVE_MODE_ENABLE)
-            self._p.p.queue_command(cmd)
+            self._p.p.queue_command(ProcessorCommandType.LIVE_MODE_ENABLE)

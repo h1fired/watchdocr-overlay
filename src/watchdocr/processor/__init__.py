@@ -76,8 +76,9 @@ class WatchdOcrProcessor:
         self._loop_thread = None
         self._command_q.queue.clear()
 
-    def queue_command(self, command: ProcessorCommand):
-        self._command_q.put(command)
+    def queue_command(self, type: ProcessorCommandType, *args):
+        cmd = ProcessorCommand(type, *args)
+        self._command_q.put(cmd)
 
     def _loop_infinite(self):
         counter = 0
