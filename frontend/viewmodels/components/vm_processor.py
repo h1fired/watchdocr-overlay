@@ -9,9 +9,9 @@ from src.watchdocr.processor import ProcessorCommand, ProcessorCommandType
 class ProcessorViewModel(QmlViewModel):
     _name = 'Processor'
 
-    resultReceived = Signal(str)
     started = Signal()
     stopped = Signal()
+    resultReceived = Signal(str)
 
     def onInit(self):
         self._p = PROCESSOR
@@ -45,9 +45,11 @@ class ProcessorViewModel(QmlViewModel):
     @Slot(str)
     def onPlayPauseButtonClick(self, state: str):
         if state == 'run':
-            self._p.p.start_loop()
+            cmd = ProcessorCommand(ProcessorCommandType.START)
+            self._p.p.queue_command(cmd)
         elif state == 'pause':
-            self._p.p.stop_loop()
+            cmd = ProcessorCommand(ProcessorCommandType.STOP)
+            self._p.p.queue_command(cmd)
 
     @Slot(str)
     def onModeChanged(self, mode: str):
