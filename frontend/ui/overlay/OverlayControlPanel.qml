@@ -42,6 +42,8 @@ Rectangle {
         spacing: 8
 
         ActivityBar {
+            id: activityBar
+
             Layout.fillHeight: true
             Layout.topMargin: 4
             Layout.bottomMargin: 4
@@ -169,10 +171,12 @@ Rectangle {
 
         function onStarted() {
             btnPlayPause.state = "pause";
+            activityBar.state = "live"
         }
 
         function onStopped() {
             btnPlayPause.state = "run";
+            activityBar.state = "idle"
         }
     }
 }

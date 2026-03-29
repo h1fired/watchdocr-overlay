@@ -6,7 +6,7 @@ Rectangle {
 
     implicitWidth: row.implicitWidth + 20
 
-    state: "stopped"
+    state: "idle"
     states: [
         State {
             name: "live"
@@ -25,19 +25,19 @@ Rectangle {
             }
         },
         State {
-            name: "stopped"
+            name: "idle"
             PropertyChanges {
                 target: root
-                color: "#1F0C0C"
+                color: "#23272F"
             }
             PropertyChanges {
                 target: stateText
-                text: "stopped"
-                color: "#D33437"
+                text: "idle"
+                color: "#94A3B8"
             }
             PropertyChanges {
                 target: circle
-                color: "#D33437"
+                color: "#94A3B8"
             }
         },
     ]
