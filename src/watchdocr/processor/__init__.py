@@ -27,6 +27,7 @@ class ProcessorCommandType(IntEnum):
     STOP = auto()
     ONETIME_MODE_ENABLE = auto()
     LIVE_MODE_ENABLE = auto()
+    DETECTING_BOX_CHANGED = auto()
 
 
 class ProcessorCommand:
@@ -107,6 +108,9 @@ class WatchdOcrProcessor:
                         self._mode = ProcessorMode.ONETIME
                     case ProcessorCommandType.LIVE_MODE_ENABLE:
                         self._mode = ProcessorMode.LIVE
+                    case ProcessorCommandType.DETECTING_BOX_CHANGED:
+                        # TODO: Need implementation
+                        pass
 
             if not self._active:
                 continue

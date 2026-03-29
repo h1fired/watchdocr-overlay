@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import App.Backend
 import "components"
 
 
@@ -12,5 +13,9 @@ Item {
         id: area
 
         anchors.fill: parent
+
+        onBoxReleased: {
+            Backend.Processor.onSelectionAreaBoxReleased(box);
+        }
     }
 }

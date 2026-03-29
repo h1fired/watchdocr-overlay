@@ -1,9 +1,9 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import Signal, Slot
+from qt.core import Signal, Slot, QRect
 from src.watchdocr.processor import Events
 from src.common.event import Event
 from src.core import PROCESSOR
-from src.watchdocr.processor import ProcessorCommand, ProcessorCommandType
+from src.watchdocr.processor import ProcessorCommandType
 
 
 class ProcessorViewModel(QmlViewModel):
@@ -55,3 +55,10 @@ class ProcessorViewModel(QmlViewModel):
             self._p.p.queue_command(ProcessorCommandType.ONETIME_MODE_ENABLE)
         elif mode == 'live':
             self._p.p.queue_command(ProcessorCommandType.LIVE_MODE_ENABLE)
+
+    @Slot(QRect)
+    def onSelectionAreaBoxReleased(self, box: QRect):
+        self._p.p.queue_command(
+            ProcessorCommandType.DETECTING_BOX_CHANGED,
+            box
+        )
