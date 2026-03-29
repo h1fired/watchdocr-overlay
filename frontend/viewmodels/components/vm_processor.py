@@ -34,7 +34,7 @@ class ProcessorViewModel(QmlViewModel):
         )
 
     def onResultReceived(self, e):
-        self.resultReceived.emit(e.text)
+        self.resultReceived.emit(e.data['original_text'])
 
     def onStarted(self, _):
         self.started.emit()

@@ -1,4 +1,5 @@
 from src.common.event import EventSystem, IEvent
+from src.watchdocr.processor.recognizer import Recognizer, RecognizerResult
 from threading import Thread
 from enum import Enum, IntEnum
 import queue
@@ -13,7 +14,7 @@ class ProcessorStoppedEvent(IEvent):
 
 
 class ProcessorResultReceivedEvent(IEvent):
-    text: str
+    data: dict
 
 
 class Events:
@@ -108,13 +109,14 @@ class WatchdOcrProcessor:
         self._loop_active = False
         self._loop_thread = None
 
-        self._active = False
-        self._mode = ProcessorMode.ONETIME
-        self._box = (0, 0, 0, 0)
+        self._recognizer = Recognizer()
+        self._recognizer.register_callback(self._on_recognizer_result)
 
     def start_loop(self):
         if self._loop_active:
             return
+
+        self._recognizer.run()
 
         self._loop_active = True
         self._loop_thread = Thread(target=self._loop_infinite, daemon=True)
@@ -137,44 +139,33 @@ class WatchdOcrProcessor:
         self._command_q.put(cmd)
 
     def _loop_infinite(self):
-        counter = 0
-
         while self._loop_active:
-            if self._mode == ProcessorMode.ONETIME:
-                cmd: ProcessorCommand = self._command_q.get()
-            else:
-                try:
-                    cmd: ProcessorCommand = self._command_q.get(timeout=1.0)
-                except ProcessorQueueEmpty:
-                    cmd = None
-
+            cmd: ProcessorCommand = self._command_q.get()
             if cmd is False:
                 break
 
-            if cmd:
-                match cmd.id():
-                    case ProcessorCommandType.START:
-                        self._active = True
-                        self._eventsys.dispatch(Events.PROCESSOR_STARTED, {})
-                    case ProcessorCommandType.STOP:
-                        self._active = False
-                        self._eventsys.dispatch(Events.PROCESSOR_STOPPED, {})
-                    case ProcessorCommandType.ONETIME_MODE_ENABLE:
-                        self._mode = ProcessorMode.ONETIME
-                    case ProcessorCommandType.LIVE_MODE_ENABLE:
-                        self._mode = ProcessorMode.LIVE
-                    case ProcessorCommandType.DETECTING_BOX_CHANGED:
-                        self._box = cmd.args()[0]
+            match cmd.id():
+                case ProcessorCommandType.START:
+                    self._recognizer.set_active(True)
+                    self._eventsys.dispatch(Events.PROCESSOR_STARTED, {})
+                case ProcessorCommandType.STOP:
+                    self._recognizer.set_active(False)
+                    self._eventsys.dispatch(Events.PROCESSOR_STOPPED, {})
+                case ProcessorCommandType.ONETIME_MODE_ENABLE:
+                    self._recognizer.set_mode(ProcessorMode.ONETIME)
+                case ProcessorCommandType.LIVE_MODE_ENABLE:
+                    self._recognizer.set_mode(ProcessorMode.LIVE)
+                case ProcessorCommandType.DETECTING_BOX_CHANGED:
+                    self._recognizer.set_area(cmd.args()[0])
 
-                if not cmd.need_restart():
-                    continue
+            if cmd.interruptive():
+                self._recognizer.interrupt()
 
-            if not self._active:
-                continue
+            if cmd.need_restart():
+                self._recognizer.refresh()
 
-            # Send test result data to event system
-            self._eventsys.dispatch(
-                event=Events.PROCESSOR_RESULT_RECEIVED,
-                data={'text': f'some result {counter} - {self._box}'}
-            )
-            counter += 1
+    def _on_recognizer_result(self, result: RecognizerResult):
+        self._eventsys.dispatch(
+            event=Events.PROCESSOR_RESULT_RECEIVED,
+            data={'data': result.to_dict()}
+        )
