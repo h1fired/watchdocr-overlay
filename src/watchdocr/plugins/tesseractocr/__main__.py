@@ -30,7 +30,7 @@ class TesseractOcrPlugin:
         self._api = PyTessBaseAPI(
             path=DATA_MODELS_DIR,
             oem=OEM.LSTM_ONLY,
-            psm=PSM.SPARSE_TEXT_OSD
+            psm=PSM.AUTO
         )
 
     def recognize(self, image: Image.Image):
