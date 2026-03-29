@@ -3,6 +3,7 @@ import QtQuick.Window
 import QtQuick.Controls
 import App.Gui
 import App.Utils
+import App.System
 import "common/components"
 
 
@@ -31,6 +32,20 @@ Window {
         y: 0
         width: window.width
         height: window.height
+    }
+
+    Connections {
+        target: System
+
+        function onVisibilityChanged() {
+            if (window.visible) {
+                window.close();
+                window.visible = false;
+            } else {
+                window.show();
+                window.visible = true;
+            }
+        }
     }
 
     Component.onCompleted: {

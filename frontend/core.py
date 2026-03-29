@@ -4,7 +4,7 @@ from qt.qml import (
     qmlRegisterSingletonType,
     qmlRegisterSingletonInstance
 )
-from qt.core import QApplication, QUrl
+from qt.core import QApplication, QUrl, QObject, Signal
 from config import config
 from frontend.viewmodels import WatchdOcrLinkerCore
 from frontend.viewmodels.types import registerUtilsQmlTypes
@@ -15,6 +15,17 @@ _qmlLinkerCore = WatchdOcrLinkerCore()
 qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.Backend', 1, 0, 'Backend', _qmlLinkerCore)
 qmlRegisterSingletonType(QUrl.fromLocalFile('frontend/ui/Gui.qml'), 'App.Gui', 1, 0, 'Gui')
 registerUtilsQmlTypes()
+
+
+class SystemObject(QObject):
+    visibilityChanged = Signal()
+
+    def requestVisibilityChange(self):
+        self.visibilityChanged.emit()
+
+
+_qmlSystemObj = SystemObject()
+qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.System', 1, 0, 'System', _qmlSystemObj)
 
 
 class GuiCoreApplication(metaclass=Singleton):
@@ -51,3 +62,9 @@ class GuiCoreApplication(metaclass=Singleton):
 
     def exec(self):
         return self._app.exec()
+
+    def window(self):
+        return self._window
+
+    def system_obj(self):
+        return _qmlSystemObj
