@@ -47,11 +47,36 @@ class ProcessorMode(IntEnum):
     LIVE = 1
 
 
+class ProcessorQueueEmpty(Exception):
+    pass
+
+
+class ProcessorQueue:
+    def __init__(self):
+        self._q = queue.PriorityQueue()
+
+    def put(self, cmd: ProcessorCommand, priority: int = 0):
+        self._q.put((priority, cmd))
+
+    def get(self, timeout: float | None = None):
+        try:
+            _, cmd = self._q.get(timeout=timeout)
+            return cmd
+        except queue.Empty:
+            raise ProcessorQueueEmpty
+
+    def size(self):
+        return self._q.qsize()
+
+    def clear(self):
+        self._q.queue.clear()
+
+
 class WatchdOcrProcessor:
     def __init__(self, eventsys: EventSystem):
         self._eventsys = eventsys
 
-        self._command_q = queue.Queue()
+        self._command_q = ProcessorQueue()
         self._loop_active = False
         self._loop_thread = None
 
@@ -75,7 +100,7 @@ class WatchdOcrProcessor:
         if self._loop_thread.is_alive():
             self._loop_thread.join()
         self._loop_thread = None
-        self._command_q.queue.clear()
+        self._command_q.clear()
 
     def queue_command(self, type: ProcessorCommandType, *args):
         cmd = ProcessorCommand(type, *args)
@@ -90,7 +115,7 @@ class WatchdOcrProcessor:
             else:
                 try:
                     cmd: ProcessorCommand = self._command_q.get(timeout=1.0)
-                except queue.Empty:
+                except ProcessorQueueEmpty:
                     cmd = None
 
             if cmd is False:
