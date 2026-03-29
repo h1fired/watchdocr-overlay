@@ -53,6 +53,10 @@ Rectangle {
 
                 CopyButton {
                     Layout.fillHeight: true
+
+                    onCopied: {
+                        Backend.Utils.copyTextToClipboard(responseTextEdit.text);
+                    }
                 }
 
                 OButton {
@@ -103,8 +107,6 @@ Rectangle {
 
                     readOnly: true
 
-                    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec elementum, odio at pretium cursus, magna massa porttitor nunc, a imperdiet massa tellus sed eros. Integer justo ex, fermentum quis magna eu, fringilla ornare libero. Quisque ornare sed elit sed cursus. Vivamus quis enim mi. Suspendisse blandit velit ut ipsum sodales ultrices. Duis nec odio dapibus, volutpat turpis sit amet, sollicitudin enim. Nam euismod non dui ac maximus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Aenean non ipsum a risus consequat consequat at ut mi."
-                
                     font.family: "Segoe UI"
                     font.weight: 600
                     font.pixelSize: 14
