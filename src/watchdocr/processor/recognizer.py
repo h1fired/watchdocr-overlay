@@ -1,3 +1,5 @@
+from src.watchdocr.processor.ocr import Ocr
+from src.watchdocr.processor.image import grab_window_area
 from enum import IntEnum
 from dataclasses import dataclass, asdict
 from threading import Thread, Condition
@@ -29,6 +31,8 @@ class Recognizer:
         self._active = False
         self._mode = RecognizerMode.ONETIME
         self._box = (0, 0, 0, 0)
+
+        self._ocr = Ocr()
 
     def run(self):
         self._loop_active = True
@@ -72,23 +76,33 @@ class Recognizer:
         self._result_callback = callback
 
     def _loop(self):
-        counter = 0
-
         while self._loop_active:
             if not self._active:
                 with self._w:
                     self._w.wait()
+                continue
 
-            if self._result_callback:
-                counter += 1
-                res = RecognizerResult(
-                    f'text - {self._mode.name} - {self._box} - {counter}',
-                    f'текст - {self._mode.name} - {self._box} - {counter}',
-                )
-                self._result_callback(res)
+            # Recognize text
+            success, res = self._recognize()
+            if success:
+                if self._result_callback:
+                    self._result_callback(res)
 
             with self._w:
                 if self._mode == RecognizerMode.LIVE:
                     self._w.wait(self._live_freq)
                 else:
                     self._w.wait()
+
+    def _recognize(self):
+        if all(s == 0 for s in self._box):
+            return False, None
+
+        image = grab_window_area(self._box)
+        ocr_data = self._ocr.recognize(image)
+
+        res = RecognizerResult(
+            f'{ocr_data.text()} - {self._mode.name} - {self._box}',
+            f'{ocr_data.text()} - {self._mode.name} - {self._box}',
+        )
+        return True, res

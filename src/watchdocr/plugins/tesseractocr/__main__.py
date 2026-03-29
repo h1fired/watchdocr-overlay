@@ -1,7 +1,8 @@
 from tesserocr import PyTessBaseAPI, PSM, OEM, RIL, iterate_level
+from PIL import Image
 
 
-DATA_MODELS_DIR = 'data/tessdata-4.1.0'
+DATA_MODELS_DIR = 'data/tessdata-main'
 
 
 class OcrData:
@@ -24,7 +25,7 @@ class TesseractOcrPlugin:
             psm=PSM.SPARSE_TEXT_OSD
         )
 
-    def recognize(self, image, scaler):
+    def recognize(self, image: Image.Image):
         try:
             self._api.SetImage(image)
 
@@ -36,9 +37,9 @@ class TesseractOcrPlugin:
             level = RIL.WORD
             for r in iterate_level(ri, level):
                 word = r.GetUTF8Text(level)
-                box = self.rescale_box(r.BoundingBox(level), scaler)
+                box = r.BoundingBox(level)
                 conf = r.Confidence(level)
                 boxes.append((word, box, conf))
             return OcrData(text, boxes)
         except Exception:
-            return OcrData(None, '')
+            return OcrData('', tuple())
