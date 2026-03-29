@@ -1,7 +1,11 @@
 from src.common.event import EventSystem, IEvent
-from src.watchdocr.processor.recognizer import Recognizer, RecognizerResult
+from src.watchdocr.processor.recognizer import (
+    Recognizer,
+    RecognizerResult,
+    RecognizerMode
+)
 from threading import Thread
-from enum import Enum, IntEnum
+from enum import Enum
 import queue
 
 
@@ -69,11 +73,6 @@ PROCESSOR_COMMAND_PARAMETERS = {
     ProcessorCommandType.LIVE_MODE_ENABLE:      (0, True, True),
     ProcessorCommandType.DETECTING_BOX_CHANGED: (0, True, True),
 }
-
-
-class ProcessorMode(IntEnum):
-    ONETIME = 0
-    LIVE = 1
 
 
 class ProcessorQueueEmpty(Exception):
@@ -152,9 +151,9 @@ class WatchdOcrProcessor:
                     self._recognizer.set_active(False)
                     self._eventsys.dispatch(Events.PROCESSOR_STOPPED, {})
                 case ProcessorCommandType.ONETIME_MODE_ENABLE:
-                    self._recognizer.set_mode(ProcessorMode.ONETIME)
+                    self._recognizer.set_mode(RecognizerMode.ONETIME)
                 case ProcessorCommandType.LIVE_MODE_ENABLE:
-                    self._recognizer.set_mode(ProcessorMode.LIVE)
+                    self._recognizer.set_mode(RecognizerMode.LIVE)
                 case ProcessorCommandType.DETECTING_BOX_CHANGED:
                     self._recognizer.set_area(cmd.args()[0])
 
