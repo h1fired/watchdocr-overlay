@@ -1,6 +1,6 @@
 from src.common.event import EventSystem, IEvent
 from threading import Thread
-from enum import IntEnum, auto
+from enum import Enum, IntEnum
 import queue
 
 
@@ -22,24 +22,52 @@ class Events:
     PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
 
 
-class ProcessorCommandType(IntEnum):
-    START = auto()
-    STOP = auto()
-    ONETIME_MODE_ENABLE = auto()
-    LIVE_MODE_ENABLE = auto()
-    DETECTING_BOX_CHANGED = auto()
-
-
 class ProcessorCommand:
-    def __init__(self, type: ProcessorCommandType, *args):
-        self._type = type
+    def __init__(
+        self,
+        id: str,
+        priority=0,
+        need_restart=False,
+        interruptive=False,
+        args=tuple()
+    ):
+        self._id = id
         self._args = args
+        self._priority = priority
+        self._need_restart = need_restart
+        self._interruptive = interruptive
 
-    def type(self):
-        return self._type
+    def id(self):
+        return self._id
 
     def args(self):
         return self._args
+
+    def get_priority(self):
+        return self._priority
+
+    def need_restart(self):
+        return self._need_restart
+
+    def interruptive(self):
+        return self._interruptive
+
+
+class ProcessorCommandType(str, Enum):
+    START = 'start'
+    STOP = 'stop'
+    ONETIME_MODE_ENABLE = 'onetime_mode_enable'
+    LIVE_MODE_ENABLE = 'live_mode_enable'
+    DETECTING_BOX_CHANGED = 'detecting_box_changed'
+
+
+PROCESSOR_COMMAND_PARAMETERS = {
+    ProcessorCommandType.START:                 (5, True),
+    ProcessorCommandType.STOP:                  (5, False, True),
+    ProcessorCommandType.ONETIME_MODE_ENABLE:   (0, True, True),
+    ProcessorCommandType.LIVE_MODE_ENABLE:      (0, True, True),
+    ProcessorCommandType.DETECTING_BOX_CHANGED: (0, True, True),
+}
 
 
 class ProcessorMode(IntEnum):
@@ -82,6 +110,7 @@ class WatchdOcrProcessor:
 
         self._active = False
         self._mode = ProcessorMode.ONETIME
+        self._box = (0, 0, 0, 0)
 
     def start_loop(self):
         if self._loop_active:
@@ -95,7 +124,7 @@ class WatchdOcrProcessor:
         if not self._loop_active:
             return
 
-        self._command_q.put(False)
+        self._command_q.put((0, False))
         self._loop_active = False
         if self._loop_thread.is_alive():
             self._loop_thread.join()
@@ -103,7 +132,8 @@ class WatchdOcrProcessor:
         self._command_q.clear()
 
     def queue_command(self, type: ProcessorCommandType, *args):
-        cmd = ProcessorCommand(type, *args)
+        params = PROCESSOR_COMMAND_PARAMETERS[type]
+        cmd = ProcessorCommand(type, *params, args=args)
         self._command_q.put(cmd)
 
     def _loop_infinite(self):
@@ -122,7 +152,7 @@ class WatchdOcrProcessor:
                 break
 
             if cmd:
-                match cmd.type():
+                match cmd.id():
                     case ProcessorCommandType.START:
                         self._active = True
                         self._eventsys.dispatch(Events.PROCESSOR_STARTED, {})
@@ -134,8 +164,10 @@ class WatchdOcrProcessor:
                     case ProcessorCommandType.LIVE_MODE_ENABLE:
                         self._mode = ProcessorMode.LIVE
                     case ProcessorCommandType.DETECTING_BOX_CHANGED:
-                        # TODO: Need implementation
-                        pass
+                        self._box = cmd.args()[0]
+
+                if not cmd.need_restart():
+                    continue
 
             if not self._active:
                 continue
@@ -143,6 +175,6 @@ class WatchdOcrProcessor:
             # Send test result data to event system
             self._eventsys.dispatch(
                 event=Events.PROCESSOR_RESULT_RECEIVED,
-                data={'text': f'some result {counter}'}
+                data={'text': f'some result {counter} - {self._box}'}
             )
             counter += 1

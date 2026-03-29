@@ -60,5 +60,5 @@ class ProcessorViewModel(QmlViewModel):
     def onSelectionAreaBoxReleased(self, box: QRect):
         self._p.p.queue_command(
             ProcessorCommandType.DETECTING_BOX_CHANGED,
-            box
+            (box.x(), box.y(), box.width(), box.height())
         )
