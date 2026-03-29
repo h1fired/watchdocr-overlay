@@ -6,20 +6,20 @@ import "../../common/controls"
 Rectangle {
     id: root
 
-    property string             _currentMode:   "live"
+    property string             _currentMode:   "onetime"
     readonly property string    currentMode:    _currentMode
 
     ListModel {
         id: modesModel
 
         ListElement {
-            name: "live"
-            title: "Live"
+            name: "onetime"
+            title: "One-time"
         }
 
         ListElement {
-            name: "onetime"
-            title: "One-time"
+            name: "live"
+            title: "Live"
         }
     }
 

@@ -9,12 +9,8 @@ from enum import Enum
 import queue
 
 
-class ProcessorStartedEvent(IEvent):
-    pass
-
-
-class ProcessorStoppedEvent(IEvent):
-    pass
+class ProcessorActiveChanged(IEvent):
+    active: bool
 
 
 class ProcessorResultReceivedEvent(IEvent):
@@ -22,8 +18,7 @@ class ProcessorResultReceivedEvent(IEvent):
 
 
 class Events:
-    PROCESSOR_STARTED = ProcessorStartedEvent
-    PROCESSOR_STOPPED = ProcessorStoppedEvent
+    PROCESSOR_ACTIVE_CHANGED = ProcessorActiveChanged
     PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
 
 
@@ -132,6 +127,9 @@ class WatchdOcrProcessor:
         self._loop_thread = None
         self._command_q.clear()
 
+    def is_active(self):
+        return self._loop_active
+
     def queue_command(self, type: ProcessorCommandType, *args):
         params = PROCESSOR_COMMAND_PARAMETERS[type]
         cmd = ProcessorCommand(type, *params, args=args)
@@ -146,14 +144,30 @@ class WatchdOcrProcessor:
             match cmd.id():
                 case ProcessorCommandType.START:
                     self._recognizer.set_active(True)
-                    self._eventsys.dispatch(Events.PROCESSOR_STARTED, {})
+                    self._eventsys.dispatch(
+                        Events.PROCESSOR_ACTIVE_CHANGED,
+                        {'active': True}
+                    )
                 case ProcessorCommandType.STOP:
                     self._recognizer.set_active(False)
-                    self._eventsys.dispatch(Events.PROCESSOR_STOPPED, {})
+                    self._eventsys.dispatch(
+                        Events.PROCESSOR_ACTIVE_CHANGED,
+                        {'active': False}
+                    )
                 case ProcessorCommandType.ONETIME_MODE_ENABLE:
+                    self._recognizer.set_active(True)
                     self._recognizer.set_mode(RecognizerMode.ONETIME)
+                    self._eventsys.dispatch(
+                        Events.PROCESSOR_ACTIVE_CHANGED,
+                        {'active': True}
+                    )
                 case ProcessorCommandType.LIVE_MODE_ENABLE:
+                    self._recognizer.set_active(True)
                     self._recognizer.set_mode(RecognizerMode.LIVE)
+                    self._eventsys.dispatch(
+                        Events.PROCESSOR_ACTIVE_CHANGED,
+                        {'active': True}
+                    )
                 case ProcessorCommandType.DETECTING_BOX_CHANGED:
                     self._recognizer.set_area(cmd.args()[0])
 
@@ -168,3 +182,6 @@ class WatchdOcrProcessor:
             event=Events.PROCESSOR_RESULT_RECEIVED,
             data={'data': result.to_dict()}
         )
+
+    def recognizer(self):
+        return self._recognizer

@@ -44,6 +44,8 @@ Rectangle {
         ActivityBar {
             id: activityBar
 
+            state: Backend.Processor.active ? "live" : "idle"
+
             Layout.fillHeight: true
             Layout.topMargin: 4
             Layout.bottomMargin: 4
@@ -60,16 +62,21 @@ Rectangle {
         Divider {}
 
         ModeSelector {
+            id: modeSelector
+
             Layout.fillHeight: true
             Layout.topMargin: 2
             Layout.bottomMargin: 2
 
             onCurrentModeChanged: {
                 Backend.Processor.onModeChanged(currentMode);
+                btnPlayPause.visible = currentMode == "live";
             }
         }
 
-        Divider {}
+        Divider {
+            visible: modeSelector.currentMode == "live";
+        }
 
         OButton {
             id: btnPlayPause
@@ -91,7 +98,7 @@ Rectangle {
                 radius: 6
             }
 
-            state: "run"
+            state: Backend.Processor.active ? "pause" : "run"
             states: [
                 State {
                     name: "run"
@@ -162,21 +169,6 @@ Rectangle {
 
         Item {
             Layout.fillWidth: true
-        }
-    }
-
-    // Backend
-    Connections {
-        target: Backend.Processor
-
-        function onStarted() {
-            btnPlayPause.state = "pause";
-            activityBar.state = "live"
-        }
-
-        function onStopped() {
-            btnPlayPause.state = "run";
-            activityBar.state = "idle"
         }
     }
 }

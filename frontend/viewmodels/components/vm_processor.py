@@ -1,5 +1,5 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import Signal, Slot, QRect
+from qt.core import Signal, Slot, QRect, Property
 from src.watchdocr.processor import Events
 from src.common.event import Event
 from src.core import PROCESSOR
@@ -9,9 +9,8 @@ from src.watchdocr.processor import ProcessorCommandType
 class ProcessorViewModel(QmlViewModel):
     _name = 'Processor'
 
-    started = Signal()
-    stopped = Signal()
     resultReceived = Signal(dict)
+    activeChanged = Signal()
 
     def onInit(self):
         self._p = PROCESSOR
@@ -24,23 +23,15 @@ class ProcessorViewModel(QmlViewModel):
         )
         Event.subscribe(
             system=self.eventsys(),
-            event=Events.PROCESSOR_STARTED,
-            handler=self.onStarted
-        )
-        Event.subscribe(
-            system=self.eventsys(),
-            event=Events.PROCESSOR_STOPPED,
-            handler=self.onStopped
+            event=Events.PROCESSOR_ACTIVE_CHANGED,
+            handler=self.onActiveChanged
         )
 
     def onResultReceived(self, e):
         self.resultReceived.emit(e.data)
 
-    def onStarted(self, _):
-        self.started.emit()
-
-    def onStopped(self, _):
-        self.stopped.emit()
+    def onActiveChanged(self, _):
+        self.activeChanged.emit()
 
     @Slot(str)
     def onPlayPauseButtonClick(self, state: str):
@@ -62,3 +53,8 @@ class ProcessorViewModel(QmlViewModel):
             ProcessorCommandType.DETECTING_BOX_CHANGED,
             (box.x(), box.y(), box.width(), box.height())
         )
+
+    def getActive(self):
+        return self._p.p.recognizer().is_active()
+
+    active = Property(bool, getActive, notify=activeChanged)
