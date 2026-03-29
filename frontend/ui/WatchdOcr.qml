@@ -4,7 +4,7 @@ import "overlay/components"
 import "common/components"
 
 
-Rectangle {
+Item {
     OverlaySelectionArea {
         id: selectionArea
 
@@ -21,21 +21,27 @@ Rectangle {
         }
     }
 
-    OverlayControlPanel {
-        id: controlPanel
+    ScreenArea {
+        id: screenArea
 
-        y: 20
+        monitor: 0
 
-        anchors.horizontalCenter: parent.horizontalCenter
+        OverlayControlPanel {
+            id: controlPanel
 
-        height: 44
-    }
+            y: 20
 
-    OverlayTextConsole {
-        id: textConsole
+            anchors.horizontalCenter: parent.horizontalCenter
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 20
+            height: 44
+        }
+
+        OverlayTextConsole {
+            id: textConsole
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 20
+        }
     }
 }

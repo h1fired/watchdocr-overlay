@@ -7,12 +7,14 @@ from qt.qml import (
 from qt.core import QApplication, QUrl
 from config import config
 from frontend.viewmodels import WatchdOcrLinkerCore
+from frontend.viewmodels.types import registerUtilsQmlTypes
 from src.common.event import EventSystem
 
 
 _qmlLinkerCore = WatchdOcrLinkerCore()
 qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.Backend', 1, 0, 'Backend', _qmlLinkerCore)
 qmlRegisterSingletonType(QUrl.fromLocalFile('frontend/ui/Gui.qml'), 'App.Gui', 1, 0, 'Gui')
+registerUtilsQmlTypes()
 
 
 class GuiCoreApplication(metaclass=Singleton):
