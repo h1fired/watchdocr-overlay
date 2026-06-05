@@ -18,7 +18,7 @@ Window {
     height: UtilsScreen.globalHeight
 
     title: "OCR Overlay"
-    flags: Qt.FramelessWindowHint
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
 
     WatchdOcr {
