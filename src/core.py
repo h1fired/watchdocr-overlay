@@ -1,9 +1,6 @@
 from src.common.event import EventSystem
 from src.common.plugin import PluginManager
 from src.context import AppContext
-
-from src.watchdocr.plugins.ocr.tesseract.main import TesseractOcrPlugin
-from src.watchdocr.plugins.translation.dummy.main import DummyTranslatorPlugin
 from src.watchdocr.processor import WatchdOcrProcessor
 
 
@@ -11,8 +8,8 @@ class WatchdOcrCore:
     def initialize(self):
         self._eventsys = EventSystem()
         self._plugin_manager = PluginManager(self._eventsys)
+        self._plugin_manager.add_entry_point('src.watchdocr.plugins')
 
-        self._add_plugins()
         self._plugin_manager.init()
 
         self._processor = WatchdOcrProcessor(self._eventsys, self._plugin_manager)
@@ -28,7 +25,3 @@ class WatchdOcrCore:
 
     def context(self) -> AppContext:
         return self._context
-
-    def _add_plugins(self):
-        self._plugin_manager.add_plugin(TesseractOcrPlugin)
-        self._plugin_manager.add_plugin(DummyTranslatorPlugin)
