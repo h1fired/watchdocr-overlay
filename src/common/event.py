@@ -23,7 +23,7 @@ def validate_event_data(obj: IEvent, data: dict):
             continue
         if name not in data:
             return False
-        if type(data[name]) is not _type:
+        if type(data[name]) is not type(_type):
             return False
     return True
 
@@ -61,33 +61,10 @@ class _DisposableBusEvent(_BusEvent):
     pass
 
 
-class Event:
-    @staticmethod
-    def subscribe(
-        system: 'EventSystem',
-        event: IEvent,
-        handler: Callable,
-        when: Callable = None
-    ):
-        e = _BusEvent(event, handler, when)
-        system.register(e)
-        return e
-
-    @staticmethod
-    def once(
-        system: 'EventSystem',
-        event: IEvent,
-        handler: Callable,
-        when: Callable = None
-    ):
-        e = _DisposableBusEvent(event, handler, when)
-        system.register(e)
-        return e
-
-
 class EventSystem:
     def __init__(self):
         self._events = defaultdict(list)
+        self._listeners: list[Callable] = []
         self._lock = Lock()
 
     def register(self, event: _Event):
@@ -95,17 +72,23 @@ class EventSystem:
             self._events[event.interface].append(event)
         return event
 
+    def listen(self, callback: Callable):
+        self._listeners.append(callback)
+
     def dispatch(self, event: IEvent, data: dict):
         if type(data) is not dict:
             raise TypeError('Only dict is supported for event data')
 
+        if not validate_event_data(event, data):
+            raise ValueError(f'Event data is not valid -> {event.__name__}')
+
+        namespace = EventData(**data)
+
+        for listener in self._listeners:
+            listener(event, namespace)
+
         entities = self._events[event]
-
         for e in entities:
-            if not validate_event_data(event, data):
-                raise ValueError(f'Event data is not valid -> {event.__name__}')
-
-            namespace = EventData(**data)
             if type(e) is _BusEvent:
                 if e.condition(namespace):
                     try:
