@@ -19,8 +19,12 @@ Window {
     height: UtilsScreen.globalHeight
 
     title: "OCR Overlay"
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    flags: window.mainUiVisible
+        ? Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        : Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
     color: "transparent"
+
+    property bool mainUiVisible: true
 
     Loader {
         id: loaderWatchdOcr
@@ -31,7 +35,11 @@ Window {
         focus: true
         sourceComponent: Component {
             WatchdOcr {
+                id: watchdOcr
+
                 anchors.fill: parent
+
+                controlsVisible: window.mainUiVisible
             }
         }
     }
@@ -49,13 +57,7 @@ Window {
         target: System
 
         function onVisibilityChanged() {
-            if (window.visible) {
-                window.close();
-                window.visible = false;
-            } else {
-                window.show();
-                window.visible = true;
-            }
+            window.mainUiVisible = !window.mainUiVisible;
         }
     }
 
