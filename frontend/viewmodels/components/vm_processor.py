@@ -1,8 +1,9 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
 from qt.core import Signal, Slot, QRect, Property
 from src.watchdocr.processor import Events
-from src.core import PROCESSOR
 from src.watchdocr.processor import ProcessorCommandType
+from src.common.event import IEvent, EventData
+from src.core import PROCESSOR
 
 
 class ProcessorViewModel(QmlViewModel):
@@ -15,23 +16,14 @@ class ProcessorViewModel(QmlViewModel):
         self._p = PROCESSOR
 
     def onLoaded(self):
-        # Event.subscribe(
-        #     system=self.eventsys(),
-        #     event=Events.PROCESSOR_RESULT_RECEIVED,
-        #     handler=self.onResultReceived
-        # )
-        # Event.subscribe(
-        #     system=self.eventsys(),
-        #     event=Events.PROCESSOR_ACTIVE_CHANGED,
-        #     handler=self.onActiveChanged
-        # )
-        pass
+        self._eventsys.listen(self.onEvent)
 
-    def onResultReceived(self, e):
-        self.resultReceived.emit(e.data)
-
-    def onActiveChanged(self, _):
-        self.activeChanged.emit()
+    def onEvent(self, event: IEvent, data: EventData):
+        match event:
+            case Events.PROCESSOR_RESULT_RECEIVED:
+                self.resultReceived.emit(data.data)
+            case Events.PROCESSOR_ACTIVE_CHANGED:
+                self.activeChanged.emit()
 
     @Slot(str)
     def onPlayPauseButtonClick(self, state: str):

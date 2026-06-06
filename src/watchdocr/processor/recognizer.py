@@ -4,6 +4,7 @@ from enum import IntEnum
 from dataclasses import dataclass, asdict
 from threading import Thread, Condition
 from typing import Callable
+from src.common.plugin import PluginManager
 
 
 class RecognizerMode(IntEnum):
@@ -22,7 +23,9 @@ class RecognizerResult:
 
 
 class Recognizer:
-    def __init__(self):
+    def __init__(self, plugins_manager: PluginManager):
+        self._plugins_manager = plugins_manager
+
         self._loop_active = False
         self._thread = None
         self._w = Condition()
@@ -33,7 +36,7 @@ class Recognizer:
         self._mode = RecognizerMode.ONETIME
         self._box = (0, 0, 0, 0)
 
-        self._ocr = Ocr()
+        self._ocr = Ocr(plugins_manager)
 
     def run(self):
         self._loop_active = True
@@ -101,11 +104,12 @@ class Recognizer:
 
         image = grab_window_area(self._box)
         image = OcrImageFilter.adjust(image)
+
         ocr_data = self._ocr.recognize(image)
 
         res = RecognizerResult(
-            f'{ocr_data.text()} - {self._mode.name} - {self._box}',
-            f'{ocr_data.text()} - {self._mode.name} - {self._box}',
-            ocr_data.confidence()
+            f'{ocr_data.text} - {self._mode.name} - {self._box}',
+            f'{ocr_data.text} - {self._mode.name} - {self._box}',
+            ocr_data.confidence
         )
         return True, res

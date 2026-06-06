@@ -1,14 +1,17 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, Type, TypeVar
 from .event import IEvent, EventSystem, EventData
 
 
+T = TypeVar('T')
+
+
 class PluginManager:
-    def __init__(self):
-        self._eventsys = EventSystem()
+    def __init__(self, eventsys: EventSystem):
+        self._eventsys = eventsys
         self._initialized = False
         self._plugins_types = []
-        self._plugins = []
+        self._plugins: list[Plugin] = []
 
     def init(self):
         for plugin in self._plugins_types:
@@ -19,17 +22,20 @@ class PluginManager:
                 obj.on_startup()
             self._plugins.append(obj)
 
-        self._eventsys.listen(self.on_event)
+        # Register on_event callback for event system
+        def on_event(event: IEvent, data: EventData):
+            for plugin in self._plugins:
+                if isinstance(plugin, EventPlugin):
+                    plugin.on_event(event, data)
+        self._eventsys.listen(on_event)
 
     def add_plugin(self, plugin: type[Plugin]):
         if self._initialized:
             raise RuntimeError('Cannot add plugin when manager initialized')
         self._plugins_types.append(plugin)
 
-    def on_event(self, event: IEvent, data: EventData):
-        for plugin in self._plugins:
-            if isinstance(plugin, EventPlugin):
-                plugin.on_event(event, data)
+    def get_realizations(self, plugin: Type[T]) -> tuple[T, ...]:
+        return tuple([p for p in self._plugins if isinstance(p, plugin)])
 
 
 class Plugin:
@@ -52,7 +58,3 @@ class EventPlugin(Plugin):
 
     def fire(self, event: IEvent, data: dict[str, Any]):
         self.__eventsys__.dispatch(event, data)
-
-
-class SwitchablePlugin(Plugin):
-    pass

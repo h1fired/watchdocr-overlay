@@ -1,32 +1,21 @@
 from tesserocr import PyTessBaseAPI, PSM, OEM, RIL, iterate_level
 from PIL import Image
+from src.watchdocr.plugins.ocr import OcrPlugin, OcrData
+
+
+__plugin_meta__ = {
+    'id': 'watchdocr.ocr.tesseract',
+    'name': 'TesseractOCR',
+    'version': (0, 1, 0)
+}
+__plugin_main__ = 'TesseractOcrPlugin'
 
 
 DATA_MODELS_DIR = 'data/tessdata-main'
 
 
-class OcrData:
-    def __init__(
-        self, text: str | None,
-        boxes: tuple,
-        confidence: int
-    ):
-        self._text = text
-        self._boxes = boxes
-        self._conf = confidence
-
-    def boxes(self):
-        return self._boxes
-
-    def text(self):
-        return self._text
-
-    def confidence(self):
-        return self._conf
-
-
-class TesseractOcrPlugin:
-    def on_load(self):
+class TesseractOcrPlugin(OcrPlugin):
+    def on_startup(self):
         self._api = PyTessBaseAPI(
             path=DATA_MODELS_DIR,
             oem=OEM.LSTM_ONLY,
