@@ -4,6 +4,7 @@ import QtQuick.Controls
 import App.Gui
 import App.Utils
 import App.System
+import App.Backend
 import "common/components"
 
 
@@ -21,8 +22,18 @@ Window {
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
 
-    WatchdOcr {
+    Loader {
+        id: loaderWatchdOcr
+
         anchors.fill: parent
+
+        active: Backend.status === ViewModelStatus.READY
+        focus: true
+        sourceComponent: Component {
+            WatchdOcr {
+                anchors.fill: parent
+            }
+        }
     }
 
     OWindowPopup {

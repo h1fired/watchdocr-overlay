@@ -1,4 +1,5 @@
 from src.common.event import EventSystem, IEvent
+from src.common.plugin import PluginManager
 from src.watchdocr.processor.recognizer import (
     Recognizer,
     RecognizerResult,
@@ -96,14 +97,15 @@ class ProcessorQueue:
 
 
 class WatchdOcrProcessor:
-    def __init__(self, eventsys: EventSystem):
+    def __init__(self, eventsys: EventSystem, plugins_manager: PluginManager):
         self._eventsys = eventsys
+        self._plugins_manager = plugins_manager
 
         self._command_q = ProcessorQueue()
         self._loop_active = False
         self._loop_thread = None
 
-        self._recognizer = Recognizer()
+        self._recognizer = Recognizer(self._plugins_manager)
         self._recognizer.register_callback(self._on_recognizer_result)
 
     def start_loop(self):

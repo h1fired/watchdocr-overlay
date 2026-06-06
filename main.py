@@ -11,7 +11,7 @@ if __name__ == '__main__':
     core.initialize()
 
     gui = GuiCoreApplication()
-    gui.load(core.eventsys())
+    gui.load(core.context())
 
     # Install global keyboard events hook
     ghotkey.install_keyboard_hook_proc()
