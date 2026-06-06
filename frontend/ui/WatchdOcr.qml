@@ -8,6 +8,8 @@ Item {
     OverlayVisualHints {
         id: visualHints
 
+        visible: controlPanel.visualHintsActive
+
         anchors.fill: parent
 
         offset: Qt.point(selectionArea.area.box.x, selectionArea.area.box.y)
@@ -24,7 +26,7 @@ Item {
             target: selectionArea.area
 
             function onPressed() {
-                visualHints.visible = false;
+                visualHints.boxesVisible = false;
             }
 
             function onBoxReleased() {
