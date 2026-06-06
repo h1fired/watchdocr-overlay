@@ -2,7 +2,7 @@ from PySide6.QtCore import QObject, Property, Signal, QEnum
 from PySide6.QtQuick import QQuickWindow
 from PySide6.QtQml import qmlRegisterType
 from enum import IntEnum
-from src.common.event import EventSystem
+from src.context import AppContext
 
 
 class QmlViewModelStatus(IntEnum):
@@ -53,10 +53,11 @@ class QmlViewModel(QObject):
     def initialize(
         self,
         window: QQuickWindow,
-        eventsys: EventSystem
+        context: AppContext
     ):
         self._window = window
-        self._eventsys = eventsys
+        self._context = context
+        self._eventsys = context.eventsys
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)
@@ -108,12 +109,12 @@ class QmlLinkerCore(QObject, metaclass=QmlLinkerCoreMeta):
     def window(self):
         return self._window
 
-    def initialize(self, window, eventsys):
+    def initialize(self, window, context: AppContext):
         self._window = window
-        self._eventsys = eventsys
+        self._context = context
 
         for vm in self.__viewmodels__.values():
-            vm.initialize(window, eventsys)
+            vm.initialize(window, context)
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)

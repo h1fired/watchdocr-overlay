@@ -3,7 +3,6 @@ from qt.core import Signal, Slot, QRect, Property
 from src.watchdocr.processor import Events
 from src.watchdocr.processor import ProcessorCommandType
 from src.common.event import IEvent, EventData
-from src.core import PROCESSOR
 
 
 class ProcessorViewModel(QmlViewModel):
@@ -12,10 +11,8 @@ class ProcessorViewModel(QmlViewModel):
     resultReceived = Signal(dict)
     activeChanged = Signal()
 
-    def onInit(self):
-        self._p = PROCESSOR
-
     def onLoaded(self):
+        self._processor = self._context.processor
         self._eventsys.listen(self.onEvent)
 
     def onEvent(self, event: IEvent, data: EventData):
@@ -28,25 +25,25 @@ class ProcessorViewModel(QmlViewModel):
     @Slot(str)
     def onPlayPauseButtonClick(self, state: str):
         if state == 'run':
-            self._p.p.queue_command(ProcessorCommandType.START)
+            self._processor.queue_command(ProcessorCommandType.START)
         elif state == 'pause':
-            self._p.p.queue_command(ProcessorCommandType.STOP)
+            self._processor.queue_command(ProcessorCommandType.STOP)
 
     @Slot(str)
     def onModeChanged(self, mode: str):
         if mode == 'onetime':
-            self._p.p.queue_command(ProcessorCommandType.ONETIME_MODE_ENABLE)
+            self._processor.queue_command(ProcessorCommandType.ONETIME_MODE_ENABLE)
         elif mode == 'live':
-            self._p.p.queue_command(ProcessorCommandType.LIVE_MODE_ENABLE)
+            self._processor.queue_command(ProcessorCommandType.LIVE_MODE_ENABLE)
 
     @Slot(QRect)
     def onSelectionAreaBoxReleased(self, box: QRect):
-        self._p.p.queue_command(
+        self._processor.queue_command(
             ProcessorCommandType.DETECTING_BOX_CHANGED,
             (box.x(), box.y(), box.width(), box.height())
         )
 
     def getActive(self):
-        return self._p.p.recognizer().is_active()
+        return self._processor.recognizer().is_active()
 
     active = Property(bool, getActive, notify=activeChanged)
