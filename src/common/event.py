@@ -23,7 +23,7 @@ def validate_event_data(obj: IEvent, data: dict):
             continue
         if name not in data:
             return False
-        if type(data[name]) is not type(_type):
+        if type(data[name]) is not _type:
             return False
     return True
 

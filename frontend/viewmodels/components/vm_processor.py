@@ -1,7 +1,6 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
 from qt.core import Signal, Slot, QRect, Property
 from src.watchdocr.processor import Events
-from src.common.event import Event
 from src.core import PROCESSOR
 from src.watchdocr.processor import ProcessorCommandType
 
@@ -16,16 +15,17 @@ class ProcessorViewModel(QmlViewModel):
         self._p = PROCESSOR
 
     def onLoaded(self):
-        Event.subscribe(
-            system=self.eventsys(),
-            event=Events.PROCESSOR_RESULT_RECEIVED,
-            handler=self.onResultReceived
-        )
-        Event.subscribe(
-            system=self.eventsys(),
-            event=Events.PROCESSOR_ACTIVE_CHANGED,
-            handler=self.onActiveChanged
-        )
+        # Event.subscribe(
+        #     system=self.eventsys(),
+        #     event=Events.PROCESSOR_RESULT_RECEIVED,
+        #     handler=self.onResultReceived
+        # )
+        # Event.subscribe(
+        #     system=self.eventsys(),
+        #     event=Events.PROCESSOR_ACTIVE_CHANGED,
+        #     handler=self.onActiveChanged
+        # )
+        pass
 
     def onResultReceived(self, e):
         self.resultReceived.emit(e.data)
