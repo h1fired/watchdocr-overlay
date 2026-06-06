@@ -18,9 +18,7 @@ class WatchdOcrCore:
         self._eventsys = EventSystem()
         self._plugin_manager = PluginManager(self._eventsys)
 
-        # TEMP: Register plugins
-        self._plugin_manager.add_plugin(TesseractOcrPlugin)
-
+        self._add_plugins()
         self._plugin_manager.init()
 
         self._processor = WatchdOcrProcessor(self._eventsys, self._plugin_manager)
@@ -32,3 +30,6 @@ class WatchdOcrCore:
 
     def eventsys(self):
         return self._eventsys
+
+    def _add_plugins(self):
+        self._plugin_manager.add_plugin(TesseractOcrPlugin)

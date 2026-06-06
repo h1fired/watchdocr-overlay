@@ -1,6 +1,6 @@
-from PIL import Image
-from src.watchdocr.plugins.ocr import OcrPlugin
 from src.common.plugin import PluginManager
+from src.watchdocr.plugins.ocr import OcrPlugin
+from PIL import Image
 
 
 class Ocr:
