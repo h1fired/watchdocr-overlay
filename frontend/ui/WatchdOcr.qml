@@ -5,6 +5,14 @@ import "common/components"
 
 
 Item {
+    OverlayVisualHints {
+        id: visualHints
+
+        anchors.fill: parent
+
+        offset: Qt.point(selectionArea.area.box.x, selectionArea.area.box.y)
+    }
+
     OverlaySelectionArea {
         id: selectionArea
 
@@ -14,6 +22,10 @@ Item {
 
         Connections {
             target: selectionArea.area
+
+            function onPressed() {
+                visualHints.visible = false;
+            }
 
             function onBoxReleased() {
                 controlPanel.selectionToolActive = false;

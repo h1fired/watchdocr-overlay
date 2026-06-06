@@ -43,7 +43,7 @@ class TesseractOcrPlugin(OcrPlugin):
                 word = r.GetUTF8Text(level)
                 box = r.BoundingBox(level)
                 conf = r.Confidence(level)
-                boxes.append((word, box, conf))
-            return OcrData(text, boxes, global_conf)
+                boxes.append((word, box, int(conf)))
+            return OcrData(text, tuple(boxes), global_conf)
         except Exception:
             return OcrData('', tuple(), 0)
