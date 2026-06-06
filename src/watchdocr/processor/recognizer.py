@@ -1,5 +1,5 @@
 from src.watchdocr.processor.ocr import Ocr
-from src.watchdocr.processor.image import grab_window_area, OcrImageFilter
+from src.watchdocr.processor.image import grab_window_area
 from enum import IntEnum
 from dataclasses import dataclass, asdict
 from threading import Thread, Condition
@@ -103,8 +103,6 @@ class Recognizer:
             return False, None
 
         image = grab_window_area(self._box)
-        image = OcrImageFilter.adjust(image)
-
         ocr_data = self._ocr.recognize(image)
 
         res = RecognizerResult(
