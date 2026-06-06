@@ -2,6 +2,7 @@ from src.common.event import EventSystem
 from src.common.plugin import PluginManager
 
 from src.watchdocr.plugins.ocr.tesseract.main import TesseractOcrPlugin
+from src.watchdocr.plugins.translation.dummy.main import DummyTranslatorPlugin
 from src.watchdocr.processor import WatchdOcrProcessor
 
 
@@ -33,3 +34,4 @@ class WatchdOcrCore:
 
     def _add_plugins(self):
         self._plugin_manager.add_plugin(TesseractOcrPlugin)
+        self._plugin_manager.add_plugin(DummyTranslatorPlugin)

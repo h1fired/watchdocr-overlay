@@ -1,4 +1,5 @@
 from src.watchdocr.processor.ocr import Ocr
+from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import grab_window_area
 from enum import IntEnum
 from dataclasses import dataclass, asdict
@@ -37,6 +38,7 @@ class Recognizer:
         self._box = (0, 0, 0, 0)
 
         self._ocr = Ocr(plugins_manager)
+        self._translator = Translator(plugins_manager)
 
     def run(self):
         self._loop_active = True
@@ -104,10 +106,11 @@ class Recognizer:
 
         image = grab_window_area(self._box)
         ocr_data = self._ocr.recognize(image)
+        translation_data = self._translator.translate(ocr_data.text)
 
         res = RecognizerResult(
-            f'{ocr_data.text} - {self._mode.name} - {self._box}',
-            f'{ocr_data.text} - {self._mode.name} - {self._box}',
+            ocr_data.text,
+            translation_data.translated_text,
             ocr_data.confidence
         )
         return True, res
