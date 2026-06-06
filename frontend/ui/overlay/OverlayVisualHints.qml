@@ -8,6 +8,7 @@ Item {
     property bool boxesVisible: false
     property var _boxes: ([])
     property point offset: Qt.point(0, 0)
+    property int _expand: 4
 
     Item {
         visible: root.boxesVisible
@@ -18,13 +19,21 @@ Item {
             model: root._boxes
 
             Rectangle {
-                x: modelData[1][0] + root.offset.x - 12
-                y: modelData[1][1] + root.offset.y - 12
-                width: modelData[1][2] - modelData[1][0]
-                height: modelData[1][3] - modelData[1][1]
+                x: modelData[1][0] + root.offset.x - 12 - root._expand
+                y: modelData[1][1] + root.offset.y - 12 - root._expand
+                width: modelData[1][2] - modelData[1][0] + root._expand
+                height: modelData[1][3] - modelData[1][1] + root._expand
 
                 Text {
+                    anchors.fill: parent
+
                     text: modelData[0]
+                    fontSizeMode: Text.Fit
+                    font.pixelSize: height
+                    font.weight: 600
+                    minimumPixelSize: 6
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
             }
         }
