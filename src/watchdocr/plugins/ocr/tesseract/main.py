@@ -36,6 +36,7 @@ class TesseractOcrPlugin(OcrPlugin):
             self._api.SetImage(image)
 
             text = self._api.GetUTF8Text()
+            text = self.cleanup_text(text)
             global_conf = self._api.MeanTextConf()
             boxes = []
 

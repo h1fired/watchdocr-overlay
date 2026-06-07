@@ -11,9 +11,6 @@ __plugin_meta__ = {
 __plugin_main__ = 'RapidOcrPlugin'
 
 
-DATA_MODELS_DIR = 'data/tessdata-main'
-
-
 class RapidOcrPlugin(OcrPlugin):
     def on_startup(self):
         self._api = RapidOCR()
@@ -26,7 +23,8 @@ class RapidOcrPlugin(OcrPlugin):
             res = self._api(image)
             if not len(res.txts):
                 raise
-            text = ''.join(res.txts)
+            text = ' '.join(res.txts)
+            text = self.cleanup_text(text)
             global_conf = sum(res.scores) / len(res.scores)
             boxes = []
             for i, b in enumerate(res.boxes):
