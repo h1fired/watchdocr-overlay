@@ -10,5 +10,5 @@ class Translator:
         apis = self._plugins_manager.get_realizations(TranslatorPlugin)
         if not len(apis):
             raise ValueError('Translator backend plugins not found')
-        api = apis[0]
-        return api.translate(text)
+        api = sorted(apis, key=lambda e: e.get_priority())[0]
+        return api.translate(text, 'EN', 'UK')

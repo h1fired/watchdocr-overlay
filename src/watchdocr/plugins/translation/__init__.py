@@ -1,4 +1,4 @@
-from src.common.plugin import LaunchPlugin, EventPlugin
+from src.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
 from dataclasses import dataclass
 
 
@@ -8,6 +8,12 @@ class TranslationData:
     translated_text: str
 
 
-class TranslatorPlugin(LaunchPlugin, EventPlugin):
-    def translate(self, text: str) -> TranslationData:
+class TranslatorPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
+    def translate(self, text: str, _from: str, to: str) -> TranslationData:
         raise NotImplementedError
+
+    def source_languages(self):
+        return {}
+
+    def target_languages(self):
+        return {}
