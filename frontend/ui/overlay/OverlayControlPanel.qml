@@ -9,6 +9,7 @@ Rectangle {
     id: root
 
     property alias selectionToolActive: btnToolSelection.checked
+    property alias visualHintsActive: btnVisualHints.checked
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
@@ -164,6 +165,31 @@ Rectangle {
             background: Rectangle {
                 color: parent.hovered ? "#1B1E28" : "transparent"
                 radius: 6
+            }
+        }
+
+        Divider {}
+
+        OButton {
+            id: btnVisualHints
+
+            Layout.fillHeight: true
+            Layout.preferredWidth: height
+
+            checkable: true
+
+            icon.source: "../../../resources/icons/selection.svg"
+            icon.color: hovered || checked ? "#94A3B8" : "#475569"
+            icon.width: 22
+            icon.height: 22
+
+            background: Rectangle {
+                color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
+                radius: 6
+            }
+
+            onClicked: {
+                checked = !checked;
             }
         }
 

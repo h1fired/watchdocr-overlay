@@ -3,12 +3,13 @@ from qt.core import Signal, Slot, QRect, Property
 from src.watchdocr.processor import Events
 from src.watchdocr.processor import ProcessorCommandType
 from src.common.event import IEvent, EventData
+import json
 
 
 class ProcessorViewModel(QmlViewModel):
     _name = 'Processor'
 
-    resultReceived = Signal(dict)
+    resultReceived = Signal(str)
     activeChanged = Signal()
 
     def onLoaded(self):
@@ -18,7 +19,7 @@ class ProcessorViewModel(QmlViewModel):
     def onEvent(self, event: IEvent, data: EventData):
         match event:
             case Events.PROCESSOR_RESULT_RECEIVED:
-                self.resultReceived.emit(data.data)
+                self.resultReceived.emit(json.dumps(data.data))
             case Events.PROCESSOR_ACTIVE_CHANGED:
                 self.activeChanged.emit()
 

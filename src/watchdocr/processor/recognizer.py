@@ -18,6 +18,7 @@ class RecognizerResult:
     original_text: str
     translated_text: str
     confidence: int
+    boxes: tuple
 
     def to_dict(self):
         return asdict(self)
@@ -111,6 +112,7 @@ class Recognizer:
         res = RecognizerResult(
             ocr_data.text,
             translation_data.translated_text,
-            ocr_data.confidence
+            ocr_data.confidence,
+            ocr_data.boxes
         )
         return True, res

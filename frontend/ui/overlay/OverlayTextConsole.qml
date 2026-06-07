@@ -168,7 +168,8 @@ Rectangle {
     Connections {
         target: Backend.Processor
 
-        function onResultReceived(data) {
+        function onResultReceived(json) {
+            let data = JSON.parse(json);
             accuracyBar.accuracy = data.confidence
             responseTextEdit.text = data.translated_text;
         }
