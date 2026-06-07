@@ -8,6 +8,7 @@ from src.common.api import (
     KernelAPICollection,
     T, Type
 )
+from src.common.event import EventSystem
 
 
 class QmlViewModelStatus(IntEnum):
@@ -59,10 +60,12 @@ class QmlViewModel(QObject):
     def initialize(
         self,
         window: QQuickWindow,
-        api_collection: KernelAPIStrictCollection
+        api_collection: KernelAPIStrictCollection,
+        eventsys: EventSystem
     ):
         self._window = window
         self._apis = api_collection
+        self._eventsys = eventsys
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)
@@ -86,6 +89,9 @@ class QmlViewModel(QObject):
 
     def getApi(self, api: Type[T]) -> T:
         return self._apis.get(api)
+
+    def getEventSystem(self):
+        return self._eventsys
 
     def onInit(self):
         pass
@@ -114,7 +120,12 @@ class QmlLinkerCore(QObject, metaclass=QmlLinkerCoreMeta):
     def window(self):
         return self._window
 
-    def initialize(self, window, api: KernelAPICollection):
+    def initialize(
+        self,
+        window,
+        api: KernelAPICollection,
+        eventsys: EventSystem
+    ):
         self._window = window
 
         for vm in self.__viewmodels__.values():
@@ -124,7 +135,7 @@ class QmlLinkerCore(QObject, metaclass=QmlLinkerCoreMeta):
             strict_api = KernelAPIStrictCollection(tuple(objs))
 
             # Init viewmodel
-            vm.initialize(window, strict_api)
+            vm.initialize(window, strict_api, eventsys)
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)

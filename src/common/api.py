@@ -8,6 +8,12 @@ class KernelAPI:
     def __init__(self, kernel):
         self._kernel = kernel
 
+    @property
+    def kernel(self):
+        from src.core import WatchdOcrKernel
+        k: WatchdOcrKernel = self._kernel
+        return k
+
 
 class KernelAPICollection:
     def __init__(self):
@@ -25,4 +31,8 @@ class KernelAPIStrictCollection:
         self._components = {type(c): c for c in components}
 
     def get(self, api: Type[T]) -> T:
-        return self._components[api]
+        obj = self._components.get(api)
+        if not obj:
+            raise KeyError('Invalid API class or it\'s not '
+                           'registered or added to viewmodel')
+        return obj

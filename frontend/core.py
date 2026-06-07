@@ -9,6 +9,7 @@ from config import config
 from frontend.viewmodels import WatchdOcrLinkerCore
 from frontend.viewmodels.types import registerUtilsQmlTypes
 from src.common.api import KernelAPICollection
+from src.common.event import EventSystem
 
 
 _qmlLinkerCore = WatchdOcrLinkerCore()
@@ -29,7 +30,12 @@ qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.System', 1, 0, 'System', 
 
 
 class GuiCoreApplication(metaclass=Singleton):
-    def load(self, api_collection: KernelAPICollection, load_viewmodels=True):
+    def load(
+        self,
+        api_collection: KernelAPICollection,
+        eventsys: EventSystem,
+        load_viewmodels=True
+    ):
         app = QApplication([])
 
         engine = QQmlApplicationEngine()
@@ -42,7 +48,7 @@ class GuiCoreApplication(metaclass=Singleton):
         self._window = engine.rootObjects()[0]
 
         if load_viewmodels:
-            _qmlLinkerCore.initialize(self._window, api_collection)
+            _qmlLinkerCore.initialize(self._window, api_collection, eventsys)
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 
