@@ -1,27 +1,68 @@
 from src.common.event import EventSystem
 from src.common.plugin import PluginManager
-from src.context import AppContext
 from src.watchdocr.processor import WatchdOcrProcessor
+from src.common.api import KernelAPICollection
+from typing import Any
+
+from src.watchdocr.api.processor import ProcessorAPI
+
+
+class WatchdOcrKernelObjectsRegistry:
+    def __init__(self):
+        self._objects: dict[str, Any] = {}
+
+    def set(self, id: str, obj: Any):
+        if id in self._objects.keys():
+            raise KeyError('Object already exists')
+        self._objects[id] = obj
+
+    def pull(self, id: str):
+        return self._objects[id]
+
+
+class WatchdOcrKernel:
+    def __init__(self):
+        self._eventsys = EventSystem()
+        self._plugin_manager = PluginManager(self._eventsys)
+        self._objects = WatchdOcrKernelObjectsRegistry()
+
+    @property
+    def plugins(self):
+        return self._plugin_manager
+
+    @property
+    def event_system(self):
+        return self._eventsys
+
+    @property
+    def objects(self):
+        return self._objects
 
 
 class WatchdOcrCore:
     def initialize(self):
-        self._eventsys = EventSystem()
-        self._plugin_manager = PluginManager(self._eventsys)
-        self._plugin_manager.add_entry_point('src.watchdocr.plugins')
+        self._kernel = WatchdOcrKernel()
+        self._kernel_apis = KernelAPICollection()
 
-        self._plugin_manager.init()
+        self._kernel.plugins.add_entry_point('src.watchdocr.plugins')
+        self._kernel.plugins.init()
 
-        self._processor = WatchdOcrProcessor(self._eventsys, self._plugin_manager)
-        self._processor.start_loop()
-
-        self._context = AppContext(
-            eventsys=self._eventsys,
-            processor=self._processor,
+        processor = WatchdOcrProcessor(
+            eventsys=self._kernel.event_system,
+            plugins_manager=self._kernel.plugins
         )
+        processor.start_loop()
+        self._kernel.objects.set('watchdocr-processor', processor)
+
+        processor_api = ProcessorAPI(self._kernel)
+        self._kernel_apis.add(processor_api)
 
     def destroy(self):
-        self._processor.stop_loop()
+        processor = self._kernel.objects.pull('watchdocr-processor')
+        processor.stop_loop()
 
-    def context(self) -> AppContext:
-        return self._context
+    def api_collection(self):
+        return self._kernel_apis
+
+    def event_system(self):
+        return self._kernel.event_system

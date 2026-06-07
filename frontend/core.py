@@ -4,12 +4,12 @@ from qt.qml import (
     qmlRegisterSingletonType,
     qmlRegisterSingletonInstance
 )
-from qt.core import QApplication, QUrl, QObject, Signal, Qt
+from qt.core import QApplication, QUrl, QObject, Signal
 from config import config
 from frontend.viewmodels import WatchdOcrLinkerCore
 from frontend.viewmodels.types import registerUtilsQmlTypes
-from src.context import AppContext
-import time
+from src.common.api import KernelAPICollection
+from src.common.event import EventSystem
 
 
 _qmlLinkerCore = WatchdOcrLinkerCore()
@@ -32,7 +32,8 @@ qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.System', 1, 0, 'System', 
 class GuiCoreApplication(metaclass=Singleton):
     def load(
         self,
-        context: AppContext,
+        api_collection: KernelAPICollection,
+        eventsys: EventSystem,
         load_viewmodels=True
     ):
         app = QApplication([])
@@ -45,10 +46,9 @@ class GuiCoreApplication(metaclass=Singleton):
         self._app = app
         self._engine = engine
         self._window = engine.rootObjects()[0]
-        self._context = context
 
         if load_viewmodels:
-            _qmlLinkerCore.initialize(self._window, self._context)
+            _qmlLinkerCore.initialize(self._window, api_collection, eventsys)
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 

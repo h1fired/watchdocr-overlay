@@ -2,7 +2,13 @@ from PySide6.QtCore import QObject, Property, Signal, QEnum
 from PySide6.QtQuick import QQuickWindow
 from PySide6.QtQml import qmlRegisterType
 from enum import IntEnum
-from src.context import AppContext
+from src.common.api import (
+    KernelAPI,
+    KernelAPIStrictCollection,
+    KernelAPICollection,
+    T, Type
+)
+from src.common.event import EventSystem
 
 
 class QmlViewModelStatus(IntEnum):
@@ -38,6 +44,7 @@ class QmlLinkerCoreMeta(type(QObject)):
 
 class QmlViewModel(QObject):
     _name: str
+    _needed_api: tuple[Type[KernelAPI], ...] = tuple()
 
     statusChanged = Signal()
 
@@ -53,11 +60,12 @@ class QmlViewModel(QObject):
     def initialize(
         self,
         window: QQuickWindow,
-        context: AppContext
+        api_collection: KernelAPIStrictCollection,
+        eventsys: EventSystem
     ):
         self._window = window
-        self._context = context
-        self._eventsys = context.eventsys
+        self._apis = api_collection
+        self._eventsys = eventsys
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)
@@ -79,7 +87,10 @@ class QmlViewModel(QObject):
 
     status = Property(int, getStatus, notify=statusChanged)
 
-    def eventsys(self):
+    def getApi(self, api: Type[T]) -> T:
+        return self._apis.get(api)
+
+    def getEventSystem(self):
         return self._eventsys
 
     def onInit(self):
@@ -109,12 +120,22 @@ class QmlLinkerCore(QObject, metaclass=QmlLinkerCoreMeta):
     def window(self):
         return self._window
 
-    def initialize(self, window, context: AppContext):
+    def initialize(
+        self,
+        window,
+        api: KernelAPICollection,
+        eventsys: EventSystem
+    ):
         self._window = window
-        self._context = context
 
         for vm in self.__viewmodels__.values():
-            vm.initialize(window, context)
+
+            # Create strict API collection
+            objs = [a for a in api.all() if type(a) in vm._needed_api]
+            strict_api = KernelAPIStrictCollection(tuple(objs))
+
+            # Init viewmodel
+            vm.initialize(window, strict_api, eventsys)
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)

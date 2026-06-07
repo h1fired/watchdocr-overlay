@@ -3,18 +3,20 @@ from qt.core import Signal, Slot, QRect, Property
 from src.watchdocr.processor import Events
 from src.watchdocr.processor import ProcessorCommandType
 from src.common.event import IEvent, EventData
+from src.watchdocr.api.processor import ProcessorAPI
 import json
 
 
 class ProcessorViewModel(QmlViewModel):
     _name = 'Processor'
+    _needed_api = (ProcessorAPI, )
 
     resultReceived = Signal(str)
     activeChanged = Signal()
 
     def onLoaded(self):
-        self._processor = self._context.processor
-        self._eventsys.listen(self.onEvent)
+        self._api = self.getApi(ProcessorAPI)
+        self.getEventSystem().listen(self.onEvent)
 
     def onEvent(self, event: IEvent, data: EventData):
         match event:
@@ -26,25 +28,25 @@ class ProcessorViewModel(QmlViewModel):
     @Slot(str)
     def onPlayPauseButtonClick(self, state: str):
         if state == 'run':
-            self._processor.queue_command(ProcessorCommandType.START)
+            self._api.queue_command(ProcessorCommandType.START)
         elif state == 'pause':
-            self._processor.queue_command(ProcessorCommandType.STOP)
+            self._api.queue_command(ProcessorCommandType.STOP)
 
     @Slot(str)
     def onModeChanged(self, mode: str):
         if mode == 'onetime':
-            self._processor.queue_command(ProcessorCommandType.ONETIME_MODE_ENABLE)
+            self._api.queue_command(ProcessorCommandType.ONETIME_MODE_ENABLE)
         elif mode == 'live':
-            self._processor.queue_command(ProcessorCommandType.LIVE_MODE_ENABLE)
+            self._api.queue_command(ProcessorCommandType.LIVE_MODE_ENABLE)
 
     @Slot(QRect)
     def onSelectionAreaBoxReleased(self, box: QRect):
-        self._processor.queue_command(
+        self._api.queue_command(
             ProcessorCommandType.DETECTING_BOX_CHANGED,
             (box.x(), box.y(), box.width(), box.height())
         )
 
     def getActive(self):
-        return self._processor.recognizer().is_active()
+        return self._api.get_active()
 
     active = Property(bool, getActive, notify=activeChanged)
