@@ -4,16 +4,32 @@ from src.watchdocr.processor import WatchdOcrProcessor
 from src.common.api import KernelAPICollection
 
 
-class WatchdOcrCore:
-    def initialize(self):
+class WatchdOcrKernel:
+    def __init__(self):
         self._eventsys = EventSystem()
-        self._kernel_apis = KernelAPICollection()
         self._plugin_manager = PluginManager(self._eventsys)
 
-        self._plugin_manager.add_entry_point('src.watchdocr.plugins')
-        self._plugin_manager.init()
+    @property
+    def plugins(self):
+        return self._plugin_manager
 
-        self._processor = WatchdOcrProcessor(self._eventsys, self._plugin_manager)
+    @property
+    def event_system(self):
+        return self._eventsys
+
+
+class WatchdOcrCore:
+    def initialize(self):
+        self._kernel = WatchdOcrKernel()
+        self._kernel_apis = KernelAPICollection()
+
+        self._kernel.plugins.add_entry_point('src.watchdocr.plugins')
+        self._kernel.plugins.init()
+
+        self._processor = WatchdOcrProcessor(
+            eventsys=self._kernel.event_system,
+            plugins_manager=self._kernel.plugins
+        )
         self._processor.start_loop()
 
     def destroy(self):
