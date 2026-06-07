@@ -11,5 +11,5 @@ class Ocr:
         apis = self._plugins_manager.get_realizations(OcrPlugin)
         if not len(apis):
             raise ValueError('OCR backend plugins not found')
-        api = apis[0]
+        api = sorted(apis, key=lambda e: e.get_priority())[0]
         return api.recognize(image)

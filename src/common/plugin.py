@@ -130,3 +130,8 @@ class EventPlugin(Plugin):
 
     def fire(self, event: IEvent, data: dict[str, Any]):
         self.__eventsys__.dispatch(event, data)
+
+
+class PriorityPlugin(Plugin):
+    def get_priority(self):
+        return 0

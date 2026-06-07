@@ -19,8 +19,8 @@ Item {
             model: root._boxes
 
             Rectangle {
-                x: modelData[1][0] + root.offset.x - 12 - root._expand
-                y: modelData[1][1] + root.offset.y - 12 - root._expand
+                x: modelData[1][0] + root.offset.x - root._expand
+                y: modelData[1][1] + root.offset.y - root._expand
                 width: modelData[1][2] - modelData[1][0] + root._expand
                 height: modelData[1][3] - modelData[1][1] + root._expand
 

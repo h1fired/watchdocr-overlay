@@ -23,6 +23,9 @@ class TesseractOcrPlugin(OcrPlugin):
             psm=PSM.AUTO
         )
 
+    def get_priority(self):
+        return 20
+
     def _optimize_image(self, image: Image.Image):
         return OcrImageFilter.adjust(image)
 
@@ -39,11 +42,18 @@ class TesseractOcrPlugin(OcrPlugin):
             # Get components parameters (words, boxes, confidences)
             ri = self._api.GetIterator()
             level = RIL.WORD
+            offset = self.provided_offset()
             for r in iterate_level(ri, level):
                 word = r.GetUTF8Text(level)
-                box = r.BoundingBox(level)
+                box = tuple([
+                    b + (offset[0] if i % 2 == 0 else offset[1])
+                    for i, b in enumerate(r.BoundingBox(level))
+                ])
                 conf = r.Confidence(level)
                 boxes.append((word, box, int(conf)))
             return OcrData(text, tuple(boxes), global_conf)
         except Exception:
             return OcrData('', tuple(), 0)
+
+    def provided_offset(self):
+        return (-8, -8)

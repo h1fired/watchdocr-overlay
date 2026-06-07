@@ -1,4 +1,4 @@
-from src.common.plugin import LaunchPlugin, EventPlugin
+from src.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
 from PIL import Image
 from dataclasses import dataclass
 
@@ -10,6 +10,9 @@ class OcrData:
     confidence: float
 
 
-class OcrPlugin(LaunchPlugin, EventPlugin):
+class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
     def recognize(self, image: Image.Image) -> OcrData:
         raise NotImplementedError
+
+    def provided_offset(self):
+        return (0, 0)
