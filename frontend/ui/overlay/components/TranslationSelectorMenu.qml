@@ -58,7 +58,7 @@ OMessageBoxFrame {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 100
+            Layout.preferredHeight: 160
 
             spacing: 0
 

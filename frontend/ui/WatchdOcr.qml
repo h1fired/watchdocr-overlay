@@ -3,7 +3,6 @@ import "overlay"
 import "overlay/components"
 import "common/components"
 
-
 Item {
     id: root
 

@@ -58,7 +58,7 @@ Item {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
-                anchors.leftMargin: 44
+                anchors.leftMargin: 52
 
                 text: model.name
                 color: (
