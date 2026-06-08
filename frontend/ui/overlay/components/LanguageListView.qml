@@ -6,7 +6,7 @@ Item {
     id: root
 
     property int selectedIndex: 0
-    property ListModel languages: ListModel {}
+    property var languages: []
     readonly property string current: languages.get(selectedIndex)?.code || "NN"
     readonly property string currentName: languages.get(selectedIndex)?.name || "None"
 

@@ -59,21 +59,8 @@ Rectangle {
             Layout.topMargin: 4
             Layout.bottomMargin: 4
 
-            property string pSourceLanguages: Backend.Translation.sourceLanguages
-
-            onPSourceLanguagesChanged: {
-                let languages = JSON.parse(pSourceLanguages);
-                sourceLanguages.clear();
-                languages.forEach(lang => sourceLanguages.append(lang));
-            }
-
-            property string pTargetLanguages: Backend.Translation.targetLanguages
-
-            onPTargetLanguagesChanged: {
-                let languages = JSON.parse(pTargetLanguages);
-                targetLanguages.clear();
-                languages.forEach(lang => targetLanguages.append(lang));
-            }
+            sourceLanguages: Backend.Translation.sourceLanguages
+            targetLanguages: Backend.Translation.targetLanguages
 
             onSourceLanguageChanged: {
                 Backend.Translation.setSourceLanguage(sourceLanguage);
