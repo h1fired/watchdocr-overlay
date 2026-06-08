@@ -19,7 +19,7 @@ if __name__ == '__main__':
     @invokeFunc
     def toggle_window_visibility():
         system_obj = gui.system_obj()
-        system_obj.requestVisibilityChange()
+        system_obj.requestVisibilitySwap()
 
     ghotkey.bind(config.WINDOW_TOGGLE_HOTKEY, toggle_window_visibility)
 

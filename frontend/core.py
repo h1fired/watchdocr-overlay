@@ -4,12 +4,13 @@ from qt.qml import (
     qmlRegisterSingletonType,
     qmlRegisterSingletonInstance
 )
-from qt.core import QApplication, QUrl, QObject, Signal
-from config import config
-from frontend.viewmodels import WatchdOcrLinkerCore
-from frontend.viewmodels.types import registerUtilsQmlTypes
+from qt.core import QApplication, QUrl, QObject, Signal, Property
 from src.common.api import KernelAPICollection
 from src.common.event import EventSystem
+from frontend.ui.tray import SystemTray
+from frontend.viewmodels import WatchdOcrLinkerCore
+from frontend.viewmodels.types import registerUtilsQmlTypes
+from config import config
 
 
 _qmlLinkerCore = WatchdOcrLinkerCore()
@@ -19,10 +20,24 @@ registerUtilsQmlTypes()
 
 
 class SystemObject(QObject):
-    visibilityChanged = Signal()
+    visibleChanged = Signal()
+    visibilitySwapRequested = Signal()
 
-    def requestVisibilityChange(self):
-        self.visibilityChanged.emit()
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._visible = True
+
+    def requestVisibilitySwap(self):
+        self.visibilitySwapRequested.emit()
+
+    def getVisible(self):
+        return self._visible
+
+    def setVisible(self, value: bool):
+        self._visible = value
+        self.visibleChanged.emit()
+
+    visible = Property(bool, getVisible, setVisible, notify=visibleChanged)
 
 
 _qmlSystemObj = SystemObject()
@@ -30,11 +45,15 @@ qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.System', 1, 0, 'System', 
 
 
 class GuiCoreApplication(metaclass=Singleton):
+    def __init__(self):
+        self._tray = None
+
     def load(
         self,
         api_collection: KernelAPICollection,
         eventsys: EventSystem,
-        load_viewmodels=True
+        load_viewmodels=True,
+        notray=False
     ):
         app = QApplication([])
 
@@ -46,6 +65,15 @@ class GuiCoreApplication(metaclass=Singleton):
         self._app = app
         self._engine = engine
         self._window = engine.rootObjects()[0]
+
+        if not notray:
+            app.setQuitOnLastWindowClosed(False)
+            self._tray = SystemTray(self._window, app)
+
+            def onTrayShowTriggered():
+                if not _qmlSystemObj.getVisible():
+                    _qmlSystemObj.setVisible(True)
+            self._tray.showTriggered.connect(onTrayShowTriggered)
 
         if load_viewmodels:
             _qmlLinkerCore.initialize(self._window, api_collection, eventsys)
@@ -61,6 +89,8 @@ class GuiCoreApplication(metaclass=Singleton):
         self._engine = None
 
     def exec(self):
+        if self._tray:
+            self._tray.show()
         return self._app.exec()
 
     def window(self):
