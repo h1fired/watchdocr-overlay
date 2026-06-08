@@ -11,6 +11,7 @@ Item {
     property alias targetLanguages: menu.targetLanguages
     readonly property alias sourceLanguage: menu.sourceLanguage
     readonly property alias targetLanguage: menu.targetLanguage
+    readonly property alias searchQuery: menu.searchQuery
 
     implicitWidth: row.width
 

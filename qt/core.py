@@ -27,7 +27,10 @@ from PySide6.QtCore import (
     QElapsedTimer,
     QUrl,
     QAbstractListModel,
-    QModelIndex
+    QModelIndex,
+    QAbstractProxyModel,
+    QRegularExpression,
+    QSortFilterProxyModel
 )
 from PySide6.QtGui import (
     QKeySequence,

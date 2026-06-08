@@ -69,6 +69,10 @@ Rectangle {
             onTargetLanguageChanged: {
                 Backend.Translation.setTargetLanguage(targetLanguage);
             }
+
+            onSearchQueryChanged: {
+                Backend.Translation.setLanguageSearchQuery(searchQuery);
+            }
         }
 
         Divider {}

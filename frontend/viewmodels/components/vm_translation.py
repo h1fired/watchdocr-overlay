@@ -1,7 +1,17 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
 from src.watchdocr.api.translation import TranslationAPI
 from src.watchdocr.plugins.translation.types import LANGUAGES_VERBOSE
-from qt.core import Property, Signal, Slot, QAbstractListModel, Qt, QModelIndex, QObject
+from qt.core import (
+    Qt,
+    Property,
+    Signal,
+    Slot,
+    QAbstractListModel,
+    QSortFilterProxyModel,
+    QModelIndex,
+    QObject,
+    QRegularExpression
+)
 
 
 class LanguageListModel(QAbstractListModel):
@@ -47,6 +57,53 @@ class LanguageListModel(QAbstractListModel):
         self._entries = entries
         self.endResetModel()
 
+    def entries(self):
+        return self._entries
+
+
+class LanguageFilterProxyModel(QSortFilterProxyModel):
+    countChanged = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.setFilterRole(LanguageListModel.NameRole)
+
+    @Slot(str)
+    def setSearchQuery(self, query: str):
+        escaped = QRegularExpression.escape(query)
+        self.setFilterRegularExpression(escaped)
+
+    @Slot(str, result=str)
+    def getNameByCode(self, code: str):
+        if self.rowCount() == 0:
+            return None
+        items = tuple(filter(
+            lambda e: e['code'] == code,
+            self.sourceModel().entries()
+        ))
+        if not len(items):
+            return None
+        return items[0]['name']
+
+    @Property(int, notify=countChanged)
+    def count(self):
+        return self.rowCount()
+
+    @Slot(int, result='QVariant')
+    def get(self, row: int):
+        return self.sourceModel().get(row)
+
+    @Slot(str, result=bool)
+    def codeExists(self, code: str):
+        if self.rowCount() == 0:
+            return None
+        items = tuple(filter(
+            lambda e: e['code'] == code,
+            self.sourceModel().entries()
+        ))
+        return len(items) > 0
+
 
 class TranslationViewModel(QmlViewModel):
     _name = 'Translation'
@@ -58,6 +115,10 @@ class TranslationViewModel(QmlViewModel):
     def onInit(self):
         self._sl_model = LanguageListModel()
         self._tl_model = LanguageListModel()
+        self._sl_model_proxy = LanguageFilterProxyModel()
+        self._sl_model_proxy.setSourceModel(self._sl_model)
+        self._tl_model_proxy = LanguageFilterProxyModel()
+        self._tl_model_proxy.setSourceModel(self._tl_model)
 
     def onLoaded(self):
         self.loadSourceLanguages()
@@ -82,14 +143,19 @@ class TranslationViewModel(QmlViewModel):
         self.targetLanguagesChanged.emit()
 
     def getSourceLanguages(self):
-        return self._sl_model
+        return self._sl_model_proxy
 
     sourceLanguages = Property(QObject, getSourceLanguages, notify=sourceLanguagesChanged)
 
     def getTargetLanguages(self):
-        return self._tl_model
+        return self._tl_model_proxy
 
     targetLanguages = Property(QObject, getTargetLanguages, notify=targetLanguagesChanged)
+
+    @Slot(str)
+    def setLanguageSearchQuery(self, text: str):
+        self._sl_model_proxy.setSearchQuery(text)
+        self._tl_model_proxy.setSearchQuery(text)
 
     @Slot(str)
     def setSourceLanguage(self, code: str):
