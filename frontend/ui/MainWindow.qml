@@ -24,7 +24,7 @@ Window {
         : Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
     color: "transparent"
 
-    property bool mainUiVisible: true
+    property bool mainUiVisible: System.visible
 
     Loader {
         id: loaderWatchdOcr
@@ -56,8 +56,8 @@ Window {
     Connections {
         target: System
 
-        function onVisibilityChanged() {
-            window.mainUiVisible = !window.mainUiVisible;
+        function onVisibilitySwapRequested() {
+            System.visible = !System.visible;
         }
     }
 
