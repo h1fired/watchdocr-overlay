@@ -58,6 +58,30 @@ Rectangle {
             Layout.fillHeight: true
             Layout.topMargin: 4
             Layout.bottomMargin: 4
+
+            property string pSourceLanguages: Backend.Translation.sourceLanguages
+
+            onPSourceLanguagesChanged: {
+                let languages = JSON.parse(pSourceLanguages);
+                sourceLanguages.clear();
+                languages.forEach(lang => sourceLanguages.append(lang));
+            }
+
+            property string pTargetLanguages: Backend.Translation.targetLanguages
+
+            onPTargetLanguagesChanged: {
+                let languages = JSON.parse(pTargetLanguages);
+                targetLanguages.clear();
+                languages.forEach(lang => targetLanguages.append(lang));
+            }
+
+            onSourceLanguageChanged: {
+                Backend.Translation.setSourceLanguage(sourceLanguage);
+            }
+
+            onTargetLanguageChanged: {
+                Backend.Translation.setTargetLanguage(targetLanguage);
+            }
         }
 
         Divider {}

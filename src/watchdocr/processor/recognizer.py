@@ -133,3 +133,9 @@ class Recognizer:
         )
 
         return True, res
+
+    def translator(self):
+        return self._translator
+
+    def ocr(self):
+        return self._ocr
