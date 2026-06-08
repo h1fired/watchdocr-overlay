@@ -13,6 +13,7 @@ class ProcessorViewModel(QmlViewModel):
 
     resultReceived = Signal(str)
     activeChanged = Signal()
+    recognizerStatusChanged = Signal(int)
 
     def onLoaded(self):
         self._api = self.getApi(ProcessorAPI)
@@ -24,6 +25,8 @@ class ProcessorViewModel(QmlViewModel):
                 self.resultReceived.emit(json.dumps(data.data))
             case Events.PROCESSOR_ACTIVE_CHANGED:
                 self.activeChanged.emit()
+            case Events.PROCESSOR_STATUS_CHANGED:
+                self.recognizerStatusChanged.emit(data.status)
 
     @Slot(str)
     def onPlayPauseButtonClick(self, state: str):

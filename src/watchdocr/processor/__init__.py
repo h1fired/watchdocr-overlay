@@ -3,7 +3,8 @@ from src.common.plugin import PluginManager
 from src.watchdocr.processor.recognizer import (
     Recognizer,
     RecognizerResult,
-    RecognizerMode
+    RecognizerMode,
+    RecognizerStatus
 )
 from threading import Thread
 from enum import Enum
@@ -18,9 +19,14 @@ class ProcessorResultReceivedEvent(IEvent):
     data: dict
 
 
+class ProcessorStateChangeEvent(IEvent):
+    status: RecognizerStatus
+
+
 class Events:
     PROCESSOR_ACTIVE_CHANGED = ProcessorActiveChanged
     PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
+    PROCESSOR_STATUS_CHANGED = ProcessorStateChangeEvent
 
 
 class ProcessorCommand:
@@ -107,6 +113,7 @@ class WatchdOcrProcessor:
 
         self._recognizer = Recognizer(self._plugins_manager)
         self._recognizer.register_callback(self._on_recognizer_result)
+        self._recognizer.register_status_callback(self._on_recognizer_status)
 
     def start_loop(self):
         if self._loop_active:
@@ -183,6 +190,12 @@ class WatchdOcrProcessor:
         self._eventsys.dispatch(
             event=Events.PROCESSOR_RESULT_RECEIVED,
             data={'data': result.to_dict()}
+        )
+
+    def _on_recognizer_status(self, status: RecognizerStatus):
+        self._eventsys.dispatch(
+            event=Events.PROCESSOR_STATUS_CHANGED,
+            data={'status': status}
         )
 
     def recognizer(self):

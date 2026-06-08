@@ -24,6 +24,11 @@ class RecognizerResult:
         return asdict(self)
 
 
+class RecognizerStatus(IntEnum):
+    IDLE = 0
+    RECOGNIZING = 1
+
+
 class Recognizer:
     def __init__(self, plugins_manager: PluginManager):
         self._plugins_manager = plugins_manager
@@ -32,7 +37,9 @@ class Recognizer:
         self._thread = None
         self._w = Condition()
         self._live_freq = 1.0
+
         self._result_callback = None
+        self._status_callback = None
 
         self._active = False
         self._mode = RecognizerMode.ONETIME
@@ -82,6 +89,9 @@ class Recognizer:
     def register_callback(self, callback: Callable):
         self._result_callback = callback
 
+    def register_status_callback(self, callback: Callable):
+        self._status_callback = callback
+
     def _loop(self):
         while self._loop_active:
             if not self._active:
@@ -105,9 +115,15 @@ class Recognizer:
         if all(s == 0 for s in self._box):
             return False, None
 
+        if self._status_callback:
+            self._status_callback(RecognizerStatus.RECOGNIZING)
+
         image = grab_window_area(self._box)
         ocr_data = self._ocr.recognize(image)
         translation_data = self._translator.translate(ocr_data.text)
+
+        if self._status_callback:
+            self._status_callback(RecognizerStatus.IDLE)
 
         res = RecognizerResult(
             ocr_data.text,
@@ -115,4 +131,5 @@ class Recognizer:
             ocr_data.confidence,
             ocr_data.boxes
         )
+
         return True, res

@@ -19,4 +19,12 @@ Item {
             Backend.Processor.onSelectionAreaBoxReleased(absoluteBox);
         }
     }
+
+    Connections {
+        target: Backend.Processor
+
+        function onRecognizerStatusChanged(status) {
+            area.loading = status === 1;
+        }
+    }
 }

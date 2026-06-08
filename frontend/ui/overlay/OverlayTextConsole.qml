@@ -39,7 +39,9 @@ Rectangle {
 
                 spacing: 0
 
-                TextConsoleStatus {}
+                TextConsoleStatus {
+                    id: textConsoleStatus
+                }
 
                 Item {
                     Layout.fillWidth: true
@@ -172,6 +174,14 @@ Rectangle {
             let data = JSON.parse(json);
             accuracyBar.accuracy = data.confidence
             responseTextEdit.text = data.translated_text;
+        }
+
+        function onRecognizerStatusChanged(status) {
+            if (status === 0) {
+                textConsoleStatus.state = "idle";
+            } else if (status === 1) {
+                textConsoleStatus.state = "processing";
+            }
         }
     }
 }
