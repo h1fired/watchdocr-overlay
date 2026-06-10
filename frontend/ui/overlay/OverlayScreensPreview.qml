@@ -31,13 +31,19 @@ Item {
         target: System
 
         function onVisibleChanged() {
-            updatePreview();
+            updatePreview(false);
         }
     }
 
-    function updatePreview() {
+    function updatePreview(delayed: bool) {
         root.grabbing = true;
-        timer.start();
+
+        if (delayed) {
+            timer.start();
+        } else {
+            Backend.Preview.requestAllScreensPreview();
+            root.grabbing = false;
+        }
     }
 
     Timer {

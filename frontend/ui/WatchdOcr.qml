@@ -9,6 +9,10 @@ Item {
 
     property bool controlsVisible: true
 
+    MouseArea {
+        anchors.fill: parent
+    }
+
     OverlayScreensPreview {
         id: screensPreview
 
@@ -65,7 +69,7 @@ Item {
 
             onScreensPreviewActiveChanged: {
                 if (screensPreviewActive) {
-                    screensPreview.updatePreview();
+                    screensPreview.updatePreview(true);
                 }
             }
         }
