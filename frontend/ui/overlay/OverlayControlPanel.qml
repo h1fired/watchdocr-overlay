@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import App.Backend
 import "../common/controls"
 import "components"
@@ -169,6 +170,11 @@ Rectangle {
                 radius: 6
             }
 
+            ToolTip.text: "Selection tool"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
+
+
             onClicked: {
                 checked = !checked;
             }
@@ -189,6 +195,10 @@ Rectangle {
                 color: parent.hovered ? "#1B1E28" : "transparent"
                 radius: 6
             }
+
+            ToolTip.text: "Settings"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
         }
 
         Divider {}
@@ -210,6 +220,10 @@ Rectangle {
                 color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
                 radius: 6
             }
+
+            ToolTip.text: "Toggle visual hints"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
 
             onClicked: {
                 checked = !checked;
@@ -233,6 +247,10 @@ Rectangle {
                 color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
                 radius: 6
             }
+
+            ToolTip.text: "Toggle preview"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
 
             onClicked: {
                 checked = !checked;
