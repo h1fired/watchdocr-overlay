@@ -27,4 +27,8 @@ Item {
             area.loading = status === 1;
         }
     }
+
+    function cleanUp() {
+        area.clear();
+    }
 }

@@ -89,4 +89,19 @@ Item {
             translationInfo.targetShortLanguage: controlPanel.translationSelector.targetLanguage
         }
     }
+
+    function cleanUp() {
+        selectionArea.cleanUp();
+        controlPanel.selectionToolActive = true;
+    }
+
+    onControlsVisibleChanged: {
+        if (controlsVisible) {
+            cleanUp();
+        }
+    }
+
+    Component.onCompleted: {
+        cleanUp();
+    }
 }
