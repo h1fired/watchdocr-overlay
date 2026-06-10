@@ -5,10 +5,10 @@ import QtQuick.Controls.Basic
 Item {
     id: root
 
-    property int selectedIndex: 0
-    property ListModel languages: ListModel {}
-    readonly property string current: languages.get(selectedIndex)?.code || "NN"
-    readonly property string currentName: languages.get(selectedIndex)?.name || "None"
+    property string selectedCode: ""
+    property var languages: []
+    readonly property string current: selectedCode
+    readonly property string currentName: languages.getNameByCode(selectedCode) ?? "None"
 
     ListView {
         id: listView
@@ -39,6 +39,8 @@ Item {
 
             color: mouse.containsMouse ? "#171A29" : "transparent"
 
+            readonly property bool isSelected: model.code === root.selectedCode
+
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
@@ -46,7 +48,7 @@ Item {
 
                 text: model.code
                 color: (
-                    index === selectedIndex ? "#A78BFA" :
+                    isSelected ? "#A78BFA" :
                     mouse.containsMouse ? "#C8D3E8" : "#475569"
                 )
 
@@ -58,20 +60,20 @@ Item {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
-                anchors.leftMargin: 44
+                anchors.leftMargin: 52
 
                 text: model.name
                 color: (
-                    index === selectedIndex ? "#A78BFA" :
+                    isSelected ? "#A78BFA" :
                     mouse.containsMouse ? "#C8D3E8" : "#798499"
                 )
 
                 font.family: "Segoe UI"
-                font.weight: index === selectedIndex ? 600 : 500
+                font.weight: isSelected ? 600 : 500
             }
 
             Rectangle {
-                visible: index === selectedIndex
+                visible: isSelected
                 
                 width: 4
                 height: 4
@@ -92,8 +94,13 @@ Item {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
 
-                onClicked: selectedIndex = index
+                onClicked: root.selectedCode = model.code
             }
         }
+    }
+
+    Component.onCompleted: {
+        if (root.languages.count > 0)
+            root.selectedCode = root.languages.get(0).code;
     }
 }

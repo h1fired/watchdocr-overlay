@@ -6,7 +6,7 @@ import App.Utils
 import App.System
 import App.Backend
 import "common/components"
-
+import "overlay/components"
 
 Window {
     id: window
@@ -44,13 +44,19 @@ Window {
         }
     }
 
-    OWindowPopup {
-        id: windowPopup
+    ScreenArea {
+        id: screenArea
 
-        x: 0
-        y: 0
-        width: window.width
-        height: window.height
+        monitor: 0
+    
+        OWindowPopup {
+            id: windowPopup
+
+            x: 0
+            y: 0
+            width: parent.width
+            height: parent.height
+        }
     }
 
     Connections {
@@ -58,6 +64,12 @@ Window {
 
         function onVisibilitySwapRequested() {
             System.visible = !System.visible;
+        }
+
+        function onVisibleChanged() {
+            if (!System.visible) {
+                Gui.closeWindowPopup();
+            }
         }
     }
 

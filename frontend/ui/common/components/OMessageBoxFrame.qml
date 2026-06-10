@@ -84,4 +84,10 @@ Rectangle {
             bottomRightRadius: 12
         }
     }
+
+    onVisibleChanged: {
+        if (!root.visible) {
+            root.closed();
+        }
+    }
 }

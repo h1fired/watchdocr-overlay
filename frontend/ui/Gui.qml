@@ -14,4 +14,8 @@ QtObject {
     function showWindowPopup(component) {
         root._windowPopup.contentObject = component;
     }
+
+    function closeWindowPopup() {
+        root._windowPopup.clear();
+    }
 }

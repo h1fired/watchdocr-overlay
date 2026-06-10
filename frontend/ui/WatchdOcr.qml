@@ -3,7 +3,6 @@ import "overlay"
 import "overlay/components"
 import "common/components"
 
-
 Item {
     id: root
 
@@ -64,6 +63,11 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 20
+
+            translationInfo.sourceLanguage: controlPanel.translationSelector.sourceLanguageName
+            translationInfo.targetLanguage: controlPanel.translationSelector.targetLanguageName
+            translationInfo.sourceShortLanguage: controlPanel.translationSelector.sourceLanguage
+            translationInfo.targetShortLanguage: controlPanel.translationSelector.targetLanguage
         }
     }
 }

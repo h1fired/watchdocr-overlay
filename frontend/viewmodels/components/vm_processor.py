@@ -9,7 +9,7 @@ import json
 
 class ProcessorViewModel(QmlViewModel):
     _name = 'Processor'
-    _needed_api = (ProcessorAPI, )
+    _needed_api = (ProcessorAPI,)
 
     resultReceived = Signal(str)
     activeChanged = Signal()

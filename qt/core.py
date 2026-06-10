@@ -25,7 +25,12 @@ from PySide6.QtCore import (
     QtMsgType,
     qInstallMessageHandler,
     QElapsedTimer,
-    QUrl
+    QUrl,
+    QAbstractListModel,
+    QModelIndex,
+    QAbstractProxyModel,
+    QRegularExpression,
+    QSortFilterProxyModel
 )
 from PySide6.QtGui import (
     QKeySequence,

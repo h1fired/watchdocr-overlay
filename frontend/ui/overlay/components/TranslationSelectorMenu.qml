@@ -14,12 +14,13 @@ OMessageBoxFrame {
     border.width: 1
     border.color: "#21242D"
 
-    property ListModel sourceLanguages: ListModel {}
-    property ListModel targetLanguages: ListModel {}
+    property var sourceLanguages: []
+    property var targetLanguages: []
     property string sourceLanguage: source.current
     property string targetLanguage: target.current
     property string sourceLanguageName: source.currentName
     property string targetLanguageName: target.currentName
+    readonly property string searchQuery: searchTextField.text
 
     ColumnLayout {
         anchors.fill: parent
@@ -58,7 +59,7 @@ OMessageBoxFrame {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 100
+            Layout.preferredHeight: 160
 
             spacing: 0
 
@@ -192,10 +193,17 @@ OMessageBoxFrame {
     }
 
     function swap() {
-        let sIndex = source.selectedIndex;
-        let tIndex = target.selectedIndex;
+        let sCode = source.selectedCode;
+        let tCode = target.selectedCode;
 
-        source.selectedIndex = tIndex;
-        target.selectedIndex = sIndex;
+        if (source.languages.codeExists(tCode))
+            source.selectedCode = tCode;
+        else
+            source.selectedCode = source.languages.get(0).code;
+        
+        if (target.languages.codeExists(sCode))
+            target.selectedCode = sCode;
+        else
+            target.selectedCode = target.languages.get(0).code;
     }
 }

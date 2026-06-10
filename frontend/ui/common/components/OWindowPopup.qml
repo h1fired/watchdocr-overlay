@@ -46,9 +46,15 @@ Popup {
     }
 
     function _close() {
+        if (!root.contentObject)
+            return;
         root.contentObject.closed.disconnect(root._close);
         root.visible = false;
         root.contentObject.visible = false;
         root.contentObject = undefined;
+    }
+
+    function clear() {
+        root._close();
     }
 }
