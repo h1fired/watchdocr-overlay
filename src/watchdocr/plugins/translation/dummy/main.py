@@ -15,3 +15,6 @@ class DummyTranslatorPlugin(TranslatorPlugin):
 
     def get_priority(self):
         return 100
+
+    def get_provider_name(self):
+        return 'Dummy'

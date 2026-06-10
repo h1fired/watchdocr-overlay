@@ -6,6 +6,7 @@ from typing import Any
 
 from src.watchdocr.api.processor import ProcessorAPI
 from src.watchdocr.api.translation import TranslationAPI
+from src.watchdocr.api.ocr import OcrAPI
 
 
 class WatchdOcrKernelObjectsRegistry:
@@ -58,6 +59,9 @@ class WatchdOcrCore:
         # API
         processor_api = ProcessorAPI(self._kernel)
         self._kernel_apis.add(processor_api)
+
+        ocr_api = OcrAPI(self._kernel)
+        self._kernel_apis.add(ocr_api)
 
         translation_api = TranslationAPI(self._kernel)
         self._kernel_apis.add(translation_api)

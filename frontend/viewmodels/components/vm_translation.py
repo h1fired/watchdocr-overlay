@@ -111,6 +111,7 @@ class TranslationViewModel(QmlViewModel):
 
     sourceLanguagesChanged = Signal()
     targetLanguagesChanged = Signal()
+    providerNameChanged = Signal()
 
     def onInit(self):
         self._sl_model = LanguageListModel()
@@ -123,6 +124,12 @@ class TranslationViewModel(QmlViewModel):
     def onLoaded(self):
         self.loadSourceLanguages()
         self.loadTargetLanguages()
+
+    def getProviderName(self):
+        api = self.getApi(TranslationAPI)
+        return api.get_provider_name()
+
+    providerName = Property(str, getProviderName, notify=providerNameChanged)
 
     def loadSourceLanguages(self):
         api = self.getApi(TranslationAPI)

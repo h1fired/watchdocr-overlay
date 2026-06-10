@@ -18,6 +18,9 @@ class RapidOcrPlugin(OcrPlugin):
     def get_priority(self):
         return 1
 
+    def get_provider_name(self):
+        return 'Rapid'
+
     def recognize(self, image: Image.Image):
         try:
             res = self._api(image)

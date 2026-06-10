@@ -10,6 +10,8 @@ Rectangle {
     id: root
 
     property TranslationInfo translationInfo: translationInfo
+    property string ocrProvider: Backend.Ocr.providerName
+    property string translatorProvider: Backend.Translation.providerName
 
     width: 500
     height: 180
@@ -159,7 +161,7 @@ Rectangle {
                 Text {
                     Layout.alignment: Qt.AlignVCenter
 
-                    text: "None  ·  None"
+                    text: root.ocrProvider + " · " + root.translatorProvider
 
                     font.family: "Segoe UI"
                     font.weight: 500

@@ -12,6 +12,9 @@ class TranslatorPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
     def translate(self, text: str, _from: str, to: str) -> TranslationData:
         raise NotImplementedError
 
+    def get_provider_name(self) -> str:
+        return 'Unknown'
+
     def source_languages(self):
         return {}
 

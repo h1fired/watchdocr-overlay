@@ -144,5 +144,8 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
     def target_languages(self):
         return TARGET_LANGUAGES
 
+    def get_provider_name(self):
+        return 'Google'
+
     def get_priority(self):
         return 1

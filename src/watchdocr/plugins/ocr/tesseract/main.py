@@ -26,6 +26,9 @@ class TesseractOcrPlugin(OcrPlugin):
     def get_priority(self):
         return 20
 
+    def get_provider_name(self):
+        return 'Tesseract'
+
     def _optimize_image(self, image: Image.Image):
         return OcrImageFilter.adjust(image)
 

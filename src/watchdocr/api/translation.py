@@ -3,6 +3,12 @@ from src.watchdocr.plugins.translation import TranslatorPlugin
 
 
 class TranslationAPI(KernelAPI):
+    def get_provider_name(self):
+        plugins = self.kernel.plugins.get_realizations(TranslatorPlugin)
+        plugins = sorted(plugins, key=lambda e: e.get_priority())
+        plugin = plugins[0]
+        return plugin.get_provider_name()
+
     def get_source_languages(self):
         plugins = self.kernel.plugins.get_realizations(TranslatorPlugin)
         plugins = sorted(plugins, key=lambda e: e.get_priority())

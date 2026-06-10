@@ -15,6 +15,9 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
     def recognize(self, image: Image.Image) -> OcrData:
         raise NotImplementedError
 
+    def get_provider_name(self):
+        return 'Unknown'
+
     def provided_offset(self):
         return (0, 0)
 
