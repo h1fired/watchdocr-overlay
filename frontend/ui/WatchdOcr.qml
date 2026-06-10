@@ -12,7 +12,7 @@ Item {
     OverlayScreensPreview {
         id: screensPreview
 
-        active: root.controlsVisible
+        active: root.controlsVisible && controlPanel.screensPreviewActive
     }
 
     OverlaySelectionArea {
@@ -62,6 +62,12 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
 
             height: 44
+
+            onScreensPreviewActiveChanged: {
+                if (screensPreviewActive) {
+                    screensPreview.updatePreview();
+                }
+            }
         }
 
         OverlayTextConsole {

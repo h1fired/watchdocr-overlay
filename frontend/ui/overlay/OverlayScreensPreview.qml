@@ -30,9 +30,11 @@ Item {
         target: System
 
         function onVisibleChanged() {
-            if (root.active) {
-                Backend.Preview.requestAllScreensPreview();
-            }
+            updatePreview();
         }
+    }
+
+    function updatePreview() {
+        Backend.Preview.requestAllScreensPreview();
     }
 }
