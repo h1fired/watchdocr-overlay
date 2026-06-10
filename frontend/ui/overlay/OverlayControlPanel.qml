@@ -83,6 +83,8 @@ Rectangle {
         ModeSelector {
             id: modeSelector
 
+            visible: false
+
             Layout.fillHeight: true
             Layout.topMargin: 2
             Layout.bottomMargin: 2
@@ -144,7 +146,9 @@ Rectangle {
             }
         }
 
-        Divider {}
+        Divider {
+            visible: false
+        }
 
         OButton {
             id: btnToolSelection
