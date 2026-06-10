@@ -1,4 +1,5 @@
 import QtQuick
+import App.Backend
 import "overlay"
 import "overlay/components"
 import "common/components"
@@ -7,6 +8,12 @@ Item {
     id: root
 
     property bool controlsVisible: true
+
+    OverlayScreensPreview {
+        id: screensPreview
+
+        active: root.controlsVisible
+    }
 
     OverlaySelectionArea {
         id: selectionArea

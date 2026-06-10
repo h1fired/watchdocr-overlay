@@ -9,7 +9,10 @@ from src.common.api import KernelAPICollection
 from src.common.event import EventSystem
 from frontend.ui.tray import SystemTray
 from frontend.viewmodels import WatchdOcrLinkerCore
-from frontend.viewmodels.types import registerUtilsQmlTypes
+from frontend.viewmodels.types import (
+    registerUtilsQmlTypes,
+    registerQmlImageProviders
+)
 from config import config
 
 
@@ -80,6 +83,8 @@ class GuiCoreApplication(metaclass=Singleton):
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 
+        self._image_providers = registerQmlImageProviders(engine)
+
     def destroy(self):
         _qmlLinkerCore.destroyContent()
 
@@ -98,3 +103,6 @@ class GuiCoreApplication(metaclass=Singleton):
 
     def system_obj(self):
         return _qmlSystemObj
+
+    def image_providers(self):
+        return self._image_providers
