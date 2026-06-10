@@ -18,7 +18,7 @@ Item {
     OverlaySelectionArea {
         id: selectionArea
 
-        visible: root.controlsVisible
+        visible: root.controlsVisible && !screensPreview.grabbing
 
         anchors.fill: parent
 
@@ -40,7 +40,7 @@ Item {
     OverlayVisualHints {
         id: visualHints
 
-        visible: controlPanel.visualHintsActive
+        visible: controlPanel.visualHintsActive && !controlPanel.selectionToolActive
 
         anchors.fill: parent
 
@@ -72,6 +72,8 @@ Item {
 
         OverlayTextConsole {
             id: textConsole
+
+            visible: !controlPanel.selectionToolActive
 
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom

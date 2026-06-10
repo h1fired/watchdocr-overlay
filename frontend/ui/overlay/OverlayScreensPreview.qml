@@ -7,6 +7,7 @@ Item {
     id: root
 
     property bool active: false
+    property bool grabbing: false
 
     ImageProvider {
         id: screensPreview
@@ -35,6 +36,18 @@ Item {
     }
 
     function updatePreview() {
-        Backend.Preview.requestAllScreensPreview();
+        root.grabbing = true;
+        timer.start();
+    }
+
+    Timer {
+        id: timer
+
+        interval: 5
+
+        onTriggered: {
+            Backend.Preview.requestAllScreensPreview();
+            root.grabbing = false;
+        }
     }
 }
