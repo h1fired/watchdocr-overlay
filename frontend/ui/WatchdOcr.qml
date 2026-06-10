@@ -1,4 +1,5 @@
 import QtQuick
+import App.Backend
 import "overlay"
 import "overlay/components"
 import "common/components"
@@ -8,10 +9,16 @@ Item {
 
     property bool controlsVisible: true
 
+    OverlayScreensPreview {
+        id: screensPreview
+
+        active: root.controlsVisible && controlPanel.screensPreviewActive
+    }
+
     OverlaySelectionArea {
         id: selectionArea
 
-        visible: root.controlsVisible
+        visible: root.controlsVisible && !screensPreview.grabbing
 
         anchors.fill: parent
 
@@ -33,7 +40,7 @@ Item {
     OverlayVisualHints {
         id: visualHints
 
-        visible: controlPanel.visualHintsActive
+        visible: controlPanel.visualHintsActive && !controlPanel.selectionToolActive
 
         anchors.fill: parent
 
@@ -55,10 +62,18 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
 
             height: 44
+
+            onScreensPreviewActiveChanged: {
+                if (screensPreviewActive) {
+                    screensPreview.updatePreview();
+                }
+            }
         }
 
         OverlayTextConsole {
             id: textConsole
+
+            visible: !controlPanel.selectionToolActive
 
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom

@@ -44,7 +44,7 @@ Item {
 
         anchors.fill: parent
 
-        opacity: root.enabled ? 0.45 : 0.4
+        opacity: root.enabled ? 0.3 : 0.35
 
         onPaint: {
             let ctx = getContext("2d");

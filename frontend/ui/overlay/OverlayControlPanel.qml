@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import App.Backend
 import "../common/controls"
 import "components"
@@ -10,6 +11,7 @@ Rectangle {
 
     property alias selectionToolActive: btnToolSelection.checked
     property alias visualHintsActive: btnVisualHints.checked
+    property alias screensPreviewActive: btnScreensPreview.checked
     property TranslationSelector translationSelector: translationSelector
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
@@ -168,6 +170,11 @@ Rectangle {
                 radius: 6
             }
 
+            ToolTip.text: "Selection tool"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
+
+
             onClicked: {
                 checked = !checked;
             }
@@ -188,6 +195,10 @@ Rectangle {
                 color: parent.hovered ? "#1B1E28" : "transparent"
                 radius: 6
             }
+
+            ToolTip.text: "Settings"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
         }
 
         Divider {}
@@ -209,6 +220,37 @@ Rectangle {
                 color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
                 radius: 6
             }
+
+            ToolTip.text: "Toggle visual hints"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
+
+            onClicked: {
+                checked = !checked;
+            }
+        }
+
+        OButton {
+            id: btnScreensPreview
+
+            Layout.fillHeight: true
+            Layout.preferredWidth: height
+
+            checkable: true
+
+            icon.source: "../../../resources/icons/selection.svg"
+            icon.color: hovered || checked ? "#94A3B8" : "#475569"
+            icon.width: 22
+            icon.height: 22
+
+            background: Rectangle {
+                color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
+                radius: 6
+            }
+
+            ToolTip.text: "Toggle preview"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
 
             onClicked: {
                 checked = !checked;
