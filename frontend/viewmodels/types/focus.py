@@ -15,7 +15,8 @@ class FocusHelper(QObject):
     def grab_focus(self, window):
         self._previous_hwnd = user32.GetForegroundWindow()
         hwnd = int(window.winId())
-        # Allow our process to set foreground window
+
+        # Allow process to set foreground window
         current_thread = ctypes.windll.kernel32.GetCurrentThreadId()
         fg_thread = user32.GetWindowThreadProcessId(self._previous_hwnd, None)
         user32.AttachThreadInput(fg_thread, current_thread, True)
