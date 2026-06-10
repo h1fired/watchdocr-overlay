@@ -9,6 +9,8 @@ import "components"
 Rectangle {
     id: root
 
+    property TranslationInfo translationInfo: translationInfo
+
     width: 500
     height: 180
 
@@ -145,6 +147,8 @@ Rectangle {
                 anchors.bottomMargin: 4
 
                 TranslationInfo {
+                    id: translationInfo
+
                     Layout.fillHeight: true
                 }
 

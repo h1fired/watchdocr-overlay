@@ -10,6 +10,7 @@ Rectangle {
 
     property alias selectionToolActive: btnToolSelection.checked
     property alias visualHintsActive: btnVisualHints.checked
+    property TranslationSelector translationSelector: translationSelector
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
@@ -55,6 +56,8 @@ Rectangle {
         Divider {}
 
         TranslationSelector {
+            id: translationSelector
+
             Layout.fillHeight: true
             Layout.topMargin: 4
             Layout.bottomMargin: 4
