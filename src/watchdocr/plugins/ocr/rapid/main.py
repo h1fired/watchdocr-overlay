@@ -28,7 +28,7 @@ class RapidOcrPlugin(OcrPlugin):
                 raise
             text = ' '.join(res.txts)
             text = self.cleanup_text(text)
-            global_conf = sum(res.scores) / len(res.scores)
+            global_conf = int((sum(res.scores) / len(res.scores)) * 100)
             boxes = []
             for i, b in enumerate(res.boxes):
                 a = int(b[0][0]), int(b[0][1]), int(b[2][0]), int(b[2][1])
