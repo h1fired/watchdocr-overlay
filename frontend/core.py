@@ -9,6 +9,7 @@ from src.common.api import KernelAPICollection
 from src.common.event import EventSystem
 from frontend.ui.tray import SystemTray
 from frontend.viewmodels import WatchdOcrLinkerCore
+from frontend.viewmodels.types.focus import FocusHelper
 from frontend.viewmodels.types import (
     registerUtilsQmlTypes,
     registerQmlImageProviders
@@ -29,6 +30,7 @@ class SystemObject(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._visible = True
+        self._focus_helper = FocusHelper(self)
 
     def requestVisibilitySwap(self):
         self.visibilitySwapRequested.emit()
@@ -41,6 +43,11 @@ class SystemObject(QObject):
         self.visibleChanged.emit()
 
     visible = Property(bool, getVisible, setVisible, notify=visibleChanged)
+
+    def getFocusHelper(self):
+        return self._focus_helper
+
+    focusHelper = Property(QObject, getFocusHelper, constant=True)
 
 
 _qmlSystemObj = SystemObject()

@@ -69,6 +69,10 @@ Window {
         function onVisibleChanged() {
             if (!System.visible) {
                 Gui.closeWindowPopup();
+                System.focusHelper.restore_focus();
+            } else {
+                requestActivate();
+                System.focusHelper.grab_focus(window);
             }
         }
     }
