@@ -70,6 +70,7 @@ class OcrPipelineStage(PipelineStage):
         ctx.text = data.text
         ctx.translated_text = data.text
         ctx.confidence = data.confidence
+        ctx.boxes = data.boxes
 
 
 class TranslationPipelineStage(PipelineStage):
