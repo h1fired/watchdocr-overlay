@@ -31,12 +31,9 @@ Item {
         Connections {
             target: selectionArea.area
 
-            function onPressed() {
-                visualHints.boxesVisible = false;
-            }
-
             function onBoxReleased() {
                 controlPanel.selectionToolActive = false;
+                visualHints.offset = Qt.point(selectionArea.area.box.x, selectionArea.area.box.y);
             }
         }
     }
@@ -44,11 +41,13 @@ Item {
     OverlayVisualHints {
         id: visualHints
 
-        visible: controlPanel.visualHintsActive && !controlPanel.selectionToolActive
-
         anchors.fill: parent
-
-        offset: Qt.point(selectionArea.area.box.x, selectionArea.area.box.y)
+            
+        boxesVisible: (
+            !selectionArea.area.loading && !selectionArea.area.selecting &&
+            (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
+            root.controlsVisible && controlPanel.visualHintsActive)
+        )
     }
 
     ScreenArea {

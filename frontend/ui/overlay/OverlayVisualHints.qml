@@ -6,9 +6,9 @@ import "components"
 Item {
     id: root
 
-    property bool boxesVisible: false
-    property var _boxes: ([])
+    property bool boxesVisible: true
     property point offset: Qt.point(0, 0)
+    property var _boxes: ([])
     property int _expand: 0
 
     ImageProvider {
@@ -133,7 +133,6 @@ Item {
         function onResultReceived(json) {
             let data = JSON.parse(json);
             root._boxes = data.boxes;
-            root.boxesVisible = true;
         }
     }
 

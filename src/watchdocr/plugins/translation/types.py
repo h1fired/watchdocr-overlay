@@ -1,5 +1,6 @@
 LANGUAGES_VERBOSE = {
     'AUTO': 'Auto',
+    'ORIG': 'Original',
     'AR': 'Arabic',
     'BN': 'Bengali',
     'BG': 'Bulgarian',
