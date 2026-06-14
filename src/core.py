@@ -1,14 +1,14 @@
 from src.common.event import EventSystem
 from src.common.plugin import PluginManager
-from src.watchdocr.processor import WatchdOcrProcessor
 from src.common.api import KernelAPICollection
-from typing import Any
+
+from src.watchdocr.processor.processor import WatchdOcrProcessor
 
 from src.watchdocr.api.processor import ProcessorAPI
 from src.watchdocr.api.translation import TranslationAPI
 from src.watchdocr.api.ocr import OcrAPI
 
-from src.watchdocr.processor2.processor import WatchdOcrProcessor as WOP2
+from typing import Any
 
 
 class WatchdOcrKernelObjectsRegistry:
@@ -52,19 +52,11 @@ class WatchdOcrCore:
         self._kernel.plugins.init()
 
         processor = WatchdOcrProcessor(
-            eventsys=self._kernel.event_system,
-            plugins_manager=self._kernel.plugins
-        )
-        processor.start_loop()
-        self._kernel.objects.set('watchdocr-processor', processor)
-
-        # Test processor2
-        processor2 = WOP2(
             self._kernel.plugins,
             self._kernel.event_system
         )
-        processor2.run()
-        self._kernel.objects.set('watchdocr-processor2', processor2)
+        processor.run()
+        self._kernel.objects.set('watchdocr-processor', processor)
 
         # API
         processor_api = ProcessorAPI(self._kernel)
@@ -78,7 +70,7 @@ class WatchdOcrCore:
 
     def destroy(self):
         processor = self._kernel.objects.pull('watchdocr-processor')
-        processor.stop_loop()
+        processor.stop()
 
     def api_collection(self):
         return self._kernel_apis

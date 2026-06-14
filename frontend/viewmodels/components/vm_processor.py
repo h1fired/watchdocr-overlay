@@ -2,7 +2,7 @@ from frontend.viewmodels.common.mvvm import QmlViewModel
 from qt.core import Signal, Slot, QRect, Property
 from src.common.event import IEvent, EventData
 from src.watchdocr.api.processor import ProcessorAPI
-from src.watchdocr.processor2.processor import PipelineStrategy, Events
+from src.watchdocr.processor.processor import PipelineStrategy, Events
 import json
 
 

@@ -1,16 +1,15 @@
+from src.common.utils.logging import log
+from src.common.event import EventSystem, IEvent
+from src.common.plugin import PluginManager
+from src.watchdocr.processor.ocr import Ocr
+from src.watchdocr.processor.translator import Translator
+from src.watchdocr.processor.image import grab_window_area
 from dataclasses import dataclass, asdict, fields
 from enum import IntEnum, auto
 from threading import Thread
 from PIL import Image
 from typing import Callable
 import queue
-from src.common.utils.logging import log
-from src.watchdocr.processor.ocr import Ocr
-from src.watchdocr.processor.translator import Translator
-from src.watchdocr.processor.image import grab_window_area
-
-from src.common.event import EventSystem, IEvent
-from src.common.plugin import PluginManager
 
 
 @dataclass(slots=True)
