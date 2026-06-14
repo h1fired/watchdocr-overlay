@@ -8,14 +8,14 @@ MenuItem {
 
     contentItem: Text {
         text: parent.text
-        color: highlighted ? "#ffffff" : "#bdbdbd"
+        color: highlighted ? "#FFFFFF" : "#BDBDBD"
         verticalAlignment: Text.AlignVCenter
         leftPadding: 8
     }
 
     background: Rectangle {
         radius: 6
-        color: highlighted ? "#2f2f2f" : "transparent"
+        color: highlighted ? "#1B1E28" : "transparent"
     }
 
     indicator: Item {

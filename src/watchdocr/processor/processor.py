@@ -13,8 +13,8 @@ from typing import Callable
 import queue
 
 
-BOXED_TEXT_SEPARATOR1 = ' ⟦S⟧ '
-BOXED_TEXT_SEPARATOR2 = '⟦S⟧'
+BOXED_TEXT_SEPARATOR1 = ' ⟦$⟧ '
+BOXED_TEXT_SEPARATOR2 = '⟦$⟧'
 
 
 @dataclass(slots=True)
@@ -92,12 +92,15 @@ class TranslationPipelineStage(PipelineStage):
             ctx.target_language
         )
 
-        texts = data.translated_text.split(BOXED_TEXT_SEPARATOR2)
+        if data.translated_text == '':
+            texts = []
+        else:
+            texts = data.translated_text.split(BOXED_TEXT_SEPARATOR2)
         ctx.translated_text = cleanup_text_simple(' '.join(texts))
 
         boxes = []
-        for i in range(len(ctx.boxes)):
-            boxes.append((texts[i], ctx.boxes[i][1], ctx.boxes[i][2]))
+        for i, (_, t) in enumerate(zip(ctx.boxes, texts)):
+            boxes.append((t, ctx.boxes[i][1], ctx.boxes[i][2]))
         ctx.boxes = tuple(boxes)
 
 

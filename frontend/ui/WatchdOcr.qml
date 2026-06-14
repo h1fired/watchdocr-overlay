@@ -44,8 +44,9 @@ Item {
         anchors.fill: parent
             
         boxesVisible: (
-            !root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
-            root.controlsVisible && controlPanel.visualHintsActive
+            !selectionArea.area.loading && !selectionArea.area.selecting &&
+            (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
+            root.controlsVisible && controlPanel.visualHintsActive)
         )
     }
 

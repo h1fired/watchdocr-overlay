@@ -64,6 +64,7 @@ SOURCE_LANGUAGES = {
     'ZU': 'zu'
 }
 TARGET_LANGUAGES = {
+    'ORIG': 'orig',
     'AR': 'ar',
     'BN': 'bn',
     'BG': 'bg',
@@ -119,6 +120,9 @@ TARGET_LANGUAGES = {
 class GoogleTranslatorPlugin(TranslatorPlugin):
     def translate(self, text, _from, to):
         if text == '':
+            return TranslationData(text, text)
+
+        if to == 'ORIG':
             return TranslationData(text, text)
 
         from_language = self.source_languages()[_from]

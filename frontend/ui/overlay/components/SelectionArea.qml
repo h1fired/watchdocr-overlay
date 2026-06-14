@@ -5,9 +5,10 @@ import QtQuick.Controls
 Item {
     id: root
 
-    property rect box:          Qt.rect(0, 0, 0, 0)
-    property bool loading:      false
-    property bool drawBorders:  true
+    property    rect box:           Qt.rect(0, 0, 0, 0)
+    property    bool loading:       false
+    property    bool drawBorders:   true
+    property    bool selecting:     false
 
     signal boxReleased()
     signal pressed()
@@ -25,6 +26,7 @@ Item {
             root.pressed();
             privates.startPoint = Qt.point(event.x, event.y);
             privates.endPoint = privates.startPoint;
+            root.selecting = true;
         }
 
         onPositionChanged: (event) => {
@@ -36,6 +38,7 @@ Item {
             privates.endPoint = Qt.point(event.x, event.y);
             root.box = privates.reformatRect(privates.rectFromPoints(privates.startPoint, privates.endPoint));
             root.boxReleased();
+            root.selecting = false;
         }
     }
 
