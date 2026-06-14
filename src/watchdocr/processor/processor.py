@@ -217,7 +217,7 @@ class WatchdOcrProcessor:
         self._runner.stop()
 
     def get_active(self):
-        self._runner.is_running()
+        return self._runner.is_running()
 
     def queue_pipeline(self, strategy: PipelineStrategy, context_data: dict):
         self._update_context_data(context_data)
