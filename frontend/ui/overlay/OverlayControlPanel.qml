@@ -10,7 +10,8 @@ Rectangle {
     id: root
 
     property alias selectionToolActive: btnToolSelection.checked
-    property alias visualHintsActive: btnVisualHints.checked
+    property alias visualHintsActive: menuVisualHints.showEnabled
+    property alias visualHintsAsOverlayActive: menuVisualHints.asOverlayEnabled
     property alias screensPreviewActive: btnScreensPreview.checked
     property TranslationSelector translationSelector: translationSelector
 
@@ -203,31 +204,11 @@ Rectangle {
 
         Divider {}
 
-        OButton {
-            id: btnVisualHints
+        VisualHintsToolButtonMenu {
+            id: menuVisualHints
 
             Layout.fillHeight: true
             Layout.preferredWidth: height
-
-            checkable: true
-
-            icon.source: "../../../resources/icons/selection.svg"
-            icon.color: hovered || checked ? "#94A3B8" : "#475569"
-            icon.width: 22
-            icon.height: 22
-
-            background: Rectangle {
-                color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
-                radius: 6
-            }
-
-            ToolTip.text: "Toggle visual hints"
-            ToolTip.visible: hovered
-            ToolTip.delay: 1000
-
-            onClicked: {
-                checked = !checked;
-            }
         }
 
         OButton {
