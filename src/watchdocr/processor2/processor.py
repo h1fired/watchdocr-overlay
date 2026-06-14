@@ -13,24 +13,6 @@ from src.common.event import EventSystem, IEvent
 from src.common.plugin import PluginManager
 
 
-class ProcessorActiveChanged(IEvent):
-    active: bool
-
-
-class ProcessorResultReceivedEvent(IEvent):
-    data: dict
-
-
-# class ProcessorStateChangeEvent(IEvent):
-#     status: RecognizerStatus
-
-
-class Events:
-    PROCESSOR_ACTIVE_CHANGED = ProcessorActiveChanged
-    PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
-    # PROCESSOR_STATUS_CHANGED = ProcessorStateChangeEvent
-
-
 @dataclass(slots=True)
 class WatchdOcrRuntimeContext:
     boundings: tuple = (0, 0, 0, 0)
@@ -82,6 +64,9 @@ class OcrPipelineStage(PipelineStage):
         self._ocr = ocr
 
     def execute(self, ctx):
+        image = grab_window_area(ctx.boundings)
+        ctx.image = image
+
         data = self._ocr.recognize(ctx.image)
         ctx.text = data.text
         ctx.translated_text = data.text
@@ -130,11 +115,9 @@ class WatchdOcrPipeline:
             case PipelineStrategy.OCR_TRANSLATION:
                 self._stages['ocr'].set_enabled(True)
                 self._stages['translation'].set_enabled(True)
+        self._strategy = strategy
 
     def execute(self):
-        image = grab_window_area(self._ctx.boundings)
-        self._ctx.image = image
-
         for stage in self._stages.values():
             if stage.enabled():
                 stage.execute(self._ctx)
@@ -186,7 +169,7 @@ class WatchdOcrRunner:
             if strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
                 self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
                 self._pipeline.execute()
-                self._send_status(WatchdOcrProcessorStatus.IDL)
+                self._send_status(WatchdOcrProcessorStatus.IDLE)
 
                 output = self.create_output_data()
                 if self._output_callback:
@@ -203,6 +186,9 @@ class WatchdOcrRunner:
 
     def register_output_callback(self, cb: Callable[[WatchdOcrOutput], None]):
         self._output_callback = cb
+
+    def register_status_callback(self, cb: Callable[[WatchdOcrProcessorStatus], None]):
+        self._status_callback = cb
 
     def _send_status(self, status: WatchdOcrProcessorStatus):
         if self._status_callback:
@@ -222,6 +208,7 @@ class WatchdOcrProcessor:
         self._pipeline = WatchdOcrPipeline(self._ctx, self._ocr, self._translator)
         self._runner = WatchdOcrRunner(self._ctx, self._pipeline)
         self._runner.register_output_callback(self._on_output)
+        self._runner.register_status_callback(self._on_status)
 
     def run(self):
         self._runner.start()
@@ -249,3 +236,28 @@ class WatchdOcrProcessor:
             event=Events.PROCESSOR_RESULT_RECEIVED,
             data={'data': data.to_dict()}
         )
+
+    def _on_status(self, status: WatchdOcrProcessorStatus):
+        self._eventsys.dispatch(
+            event=Events.PROCESSOR_STATUS_CHANGED,
+            data={'status': status}
+        )
+
+
+# Events
+class ProcessorActiveChanged(IEvent):
+    active: bool
+
+
+class ProcessorResultReceivedEvent(IEvent):
+    data: dict
+
+
+class ProcessorStateChangeEvent(IEvent):
+    status: WatchdOcrProcessorStatus
+
+
+class Events:
+    PROCESSOR_ACTIVE_CHANGED = ProcessorActiveChanged
+    PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
+    PROCESSOR_STATUS_CHANGED = ProcessorStateChangeEvent

@@ -118,6 +118,9 @@ TARGET_LANGUAGES = {
 
 class GoogleTranslatorPlugin(TranslatorPlugin):
     def translate(self, text, _from, to):
+        if text == '':
+            return TranslationData(text, text)
+
         from_language = self.source_languages()[_from]
         to_language = self.target_languages()[to]
 

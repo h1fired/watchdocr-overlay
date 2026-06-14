@@ -25,13 +25,13 @@ class TranslationAPI(KernelAPI):
     def set_source_language(self, code: str):
         processor = self.kernel.objects.pull('watchdocr-processor2')
         processor.queue_pipeline(
-            strategy=PipelineStrategy.ONLY_CONTEXT_CHANGE,
+            strategy=PipelineStrategy.TRANSLATION_ONLY,
             context_data={'source_language': code}
         )
 
     def set_target_language(self, code: str):
         processor = self.kernel.objects.pull('watchdocr-processor2')
         processor.queue_pipeline(
-            strategy=PipelineStrategy.ONLY_CONTEXT_CHANGE,
+            strategy=PipelineStrategy.TRANSLATION_ONLY,
             context_data={'target_language': code}
         )
