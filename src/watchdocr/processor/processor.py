@@ -4,12 +4,17 @@ from src.common.plugin import PluginManager
 from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import grab_window_area
+from src.watchdocr.processor.text import cleanup_text_simple
 from dataclasses import dataclass, asdict, fields
 from enum import IntEnum, auto
 from threading import Thread
 from PIL import Image
 from typing import Callable
 import queue
+
+
+BOXED_TEXT_SEPARATOR1 = ' ⟦S⟧ '
+BOXED_TEXT_SEPARATOR2 = '⟦S⟧'
 
 
 @dataclass(slots=True)
@@ -22,6 +27,7 @@ class WatchdOcrRuntimeContext:
     target_language: str = ''
     boxes: tuple = tuple()
     confidence: float = 0.
+    boxed_text: str = ''
 
 
 class PipelineStrategy(IntEnum):
@@ -71,6 +77,7 @@ class OcrPipelineStage(PipelineStage):
         ctx.translated_text = data.text
         ctx.confidence = data.confidence
         ctx.boxes = data.boxes
+        ctx.boxed_text = BOXED_TEXT_SEPARATOR1.join(b[0] for b in data.boxes)
 
 
 class TranslationPipelineStage(PipelineStage):
@@ -80,11 +87,18 @@ class TranslationPipelineStage(PipelineStage):
 
     def execute(self, ctx):
         data = self._translator.translate(
-            ctx.text,
+            ctx.boxed_text,
             ctx.source_language,
             ctx.target_language
         )
-        ctx.translated_text = data.translated_text
+
+        texts = data.translated_text.split(BOXED_TEXT_SEPARATOR2)
+        ctx.translated_text = cleanup_text_simple(' '.join(texts))
+
+        boxes = []
+        for i in range(len(ctx.boxes)):
+            boxes.append((texts[i], ctx.boxes[i][1], ctx.boxes[i][2]))
+        ctx.boxes = tuple(boxes)
 
 
 class WatchdOcrPipeline:

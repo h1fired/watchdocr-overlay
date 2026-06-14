@@ -1,4 +1,5 @@
 from src.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
+from src.watchdocr.plugins.ocr.filter import OcrImageFilter
 from PIL import Image
 from dataclasses import dataclass
 import re
@@ -26,3 +27,6 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
         ctext = re.sub(r'\n+', '\n', text)  # Clean newlines mid-sentence
         ctext = re.sub(r'\n{3,}', '\n\n', text)  # Clean excessive blank lines
         return ctext
+
+    def filter_image(self, image: Image.Image):
+        return OcrImageFilter.adjust(image)

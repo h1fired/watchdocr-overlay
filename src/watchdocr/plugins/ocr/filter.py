@@ -11,7 +11,6 @@ class OcrImageFilter:
         _image = OcrImageFilter.adjust_shadow_remove(_image)
         _image = OcrImageFilter.adjust_sigmoid_threshold(_image, 127, 0.03)
         _image = OcrImageFilter.adjust_levels(_image, 110, 255, 1.5)
-        _image = OcrImageFilter.adjust_borders(_image, 10)
         return _image
 
     @staticmethod
@@ -62,7 +61,3 @@ class OcrImageFilter:
         arr = np.array(image, dtype=np.float32)
         soft = 255 / (1 + np.exp(-steepness * (arr - threshold)))
         return Image.fromarray(soft.astype(np.uint8))
-
-    @staticmethod
-    def adjust_borders(image: Image.Image, size: int):
-        return ImageOps.expand(image, border=size, fill='white')
