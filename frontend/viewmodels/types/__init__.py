@@ -8,7 +8,10 @@ def registerUtilsQmlTypes():
 
 
 def registerQmlImageProviders(engine: QQmlApplicationEngine):
-    providers = {'preview_screens': ImageProvider()}
+    providers = {
+        'preview_screens': ImageProvider(),
+        'preview_area': ImageProvider()
+    }
 
     for name, provider in providers.items():
         engine.addImageProvider(name, provider)

@@ -4,7 +4,11 @@ import QtQuick
 Item {
     id: root
 
-    property string providerId: "" 
+    property string providerId: ""
+    readonly property Image image: image
+
+    width: image.sourceSize.width
+    height: image.sourceSize.height
 
     Image {
         id: image

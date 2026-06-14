@@ -23,8 +23,6 @@ class RapidOcrPlugin(OcrPlugin):
 
     def recognize(self, image: Image.Image):
         try:
-            image = self.filter_image(image)
-
             res = self._api(image)
             if not len(res.txts):
                 raise

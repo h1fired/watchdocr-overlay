@@ -158,6 +158,7 @@ class WatchdOcrRunner:
         self._running = False
         self._output_callback = None
         self._status_callback = None
+        self._area_preview_callback = None
 
     def put(self, strategy: PipelineStrategy):
         self._q.put(strategy)
@@ -189,6 +190,8 @@ class WatchdOcrRunner:
                 if self._output_callback:
                     self._output_callback(output)
 
+                self._send_area_preview(self._ctx.image)
+
     def create_output_data(self):
         return WatchdOcrOutput(
             strategy=self._pipeline.current_strategy(),
@@ -204,9 +207,16 @@ class WatchdOcrRunner:
     def register_status_callback(self, cb: Callable[[WatchdOcrProcessorStatus], None]):
         self._status_callback = cb
 
+    def register_area_preview_callback(self, cb: Callable[[Image.Image], None]):
+        self._area_preview_callback = cb
+
     def _send_status(self, status: WatchdOcrProcessorStatus):
         if self._status_callback:
             self._status_callback(status)
+
+    def _send_area_preview(self, image: Image.Image):
+        if self._area_preview_callback and self._ctx.image is not None:
+            self._area_preview_callback(image)
 
 
 class WatchdOcrProcessor:
@@ -223,6 +233,7 @@ class WatchdOcrProcessor:
         self._runner = WatchdOcrRunner(self._ctx, self._pipeline)
         self._runner.register_output_callback(self._on_output)
         self._runner.register_status_callback(self._on_status)
+        self._runner.register_area_preview_callback(self._on_area_preview)
 
     def run(self):
         self._runner.start()
@@ -257,6 +268,12 @@ class WatchdOcrProcessor:
             data={'status': status}
         )
 
+    def _on_area_preview(self, image: Image.Image):
+        self._eventsys.dispatch(
+            event=Events.PROCESSOR_AREA_IMAGE_CHANGED,
+            data={'image': image}
+        )
+
 
 # Events
 class ProcessorActiveChanged(IEvent):
@@ -271,7 +288,12 @@ class ProcessorStateChangeEvent(IEvent):
     status: WatchdOcrProcessorStatus
 
 
+class ProcessorAreaImageChangeEvent(IEvent):
+    image: Image.Image
+
+
 class Events:
     PROCESSOR_ACTIVE_CHANGED = ProcessorActiveChanged
     PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
     PROCESSOR_STATUS_CHANGED = ProcessorStateChangeEvent
+    PROCESSOR_AREA_IMAGE_CHANGED = ProcessorAreaImageChangeEvent
