@@ -1,7 +1,6 @@
 from tesserocr import PyTessBaseAPI, PSM, OEM, RIL, iterate_level
 from PIL import Image
 from src.watchdocr.plugins.ocr import OcrPlugin, OcrData
-from src.watchdocr.plugins.ocr.tesseract.filter import OcrImageFilter
 
 
 __plugin_meta__ = {
@@ -29,12 +28,9 @@ class TesseractOcrPlugin(OcrPlugin):
     def get_provider_name(self):
         return 'Tesseract'
 
-    def _optimize_image(self, image: Image.Image):
-        return OcrImageFilter.adjust(image)
-
     def recognize(self, image: Image.Image):
         try:
-            image = self._optimize_image(image)  # Prepare image
+            image = self.filter_image(image)  # Prepare image
 
             self._api.SetImage(image)
 
@@ -58,6 +54,3 @@ class TesseractOcrPlugin(OcrPlugin):
             return OcrData(text, tuple(boxes), global_conf)
         except Exception:
             return OcrData('', tuple(), 0)
-
-    def provided_offset(self):
-        return (-8, -8)
