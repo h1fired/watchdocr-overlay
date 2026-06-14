@@ -24,6 +24,8 @@ MenuItem {
         MouseArea {
             anchors.fill: parent
 
+            cursorShape: Qt.PointingHandCursor
+
             onClicked: switchControl.checked = !switchControl.checked
         }
 
