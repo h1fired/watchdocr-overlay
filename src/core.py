@@ -8,6 +8,8 @@ from src.watchdocr.api.processor import ProcessorAPI
 from src.watchdocr.api.translation import TranslationAPI
 from src.watchdocr.api.ocr import OcrAPI
 
+from src.watchdocr.processor2.processor import WatchdOcrProcessor as WOP2
+
 
 class WatchdOcrKernelObjectsRegistry:
     def __init__(self):
@@ -55,6 +57,14 @@ class WatchdOcrCore:
         )
         processor.start_loop()
         self._kernel.objects.set('watchdocr-processor', processor)
+
+        # Test processor2
+        processor2 = WOP2(
+            self._kernel.plugins,
+            self._kernel.event_system
+        )
+        processor2.run()
+        self._kernel.objects.set('watchdocr-processor2', processor2)
 
         # API
         processor_api = ProcessorAPI(self._kernel)

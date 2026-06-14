@@ -1,5 +1,6 @@
 from src.common.api import KernelAPI
 from src.watchdocr.plugins.translation import TranslatorPlugin
+from src.watchdocr.processor2.processor import PipelineStrategy
 
 
 class TranslationAPI(KernelAPI):
@@ -22,11 +23,15 @@ class TranslationAPI(KernelAPI):
         return plugin.target_languages()
 
     def set_source_language(self, code: str):
-        processor = self.kernel.objects.pull('watchdocr-processor')
-        translator = processor.recognizer().translator()
-        translator.set_source_language(code)
+        processor = self.kernel.objects.pull('watchdocr-processor2')
+        processor.queue_pipeline(
+            strategy=PipelineStrategy.ONLY_CONTEXT_CHANGE,
+            context_data={'source_language': code}
+        )
 
     def set_target_language(self, code: str):
-        processor = self.kernel.objects.pull('watchdocr-processor')
-        translator = processor.recognizer().translator()
-        translator.set_target_language(code)
+        processor = self.kernel.objects.pull('watchdocr-processor2')
+        processor.queue_pipeline(
+            strategy=PipelineStrategy.ONLY_CONTEXT_CHANGE,
+            context_data={'target_language': code}
+        )
