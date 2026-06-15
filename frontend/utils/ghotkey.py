@@ -83,8 +83,8 @@ def _hookProc(nCode, wParam, lParam):
 
             # Retrieve modifiers
             if (
-                user32.GetKeyState(VK_LSHIFT) < 0
-                or user32.GetKeyState(VK_RSHIFT) < 0
+                user32.GetAsyncKeyState(VK_LSHIFT) & 0x8000
+                or user32.GetAsyncKeyState(VK_RSHIFT) & 0x8000
             ):
                 keys.add('Shift')
             if (
@@ -119,13 +119,15 @@ def _callback(keys: set[str]):
 
 
 def _install_keyboard_hook_proc():
-    pointer = HOOKPROTYPE(_hookProc)
-    hooked = _installHookProc(pointer)
+    context['pointer'] = HOOKPROTYPE(_hookProc)
+    hooked = _installHookProc(context['pointer'])
     context['hook'] = hooked
     context['e'].set()
     if hooked:
         msg = ctypes.wintypes.MSG()
-        user32.GetMessageA(ctypes.byref(msg), 0, 0, 0)
+        while user32.GetMessageA(ctypes.byref(msg), 0, 0, 0) != 0:
+            user32.TranslateMessage(ctypes.byref(msg))
+            user32.DispatchMessageA(ctypes.byref(msg))
 
 
 def install_keyboard_hook_proc():
