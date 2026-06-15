@@ -59,6 +59,14 @@ Window {
         }
     }
 
+    Shortcut {
+        sequence: "Esc"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            System.visible = !System.visible;
+        }
+    }
+
     Connections {
         target: System
 
