@@ -99,7 +99,11 @@ Item {
     }
 
     Component.onCompleted: {
-        if (root.languages.count > 0 && root.current === "")
+        if (
+            root.languages.count > 0
+            && root.current === ""
+            && !root.languages.codeExists(root.current)
+        )
             root.current = root.languages.get(0).code;
     }
 }
