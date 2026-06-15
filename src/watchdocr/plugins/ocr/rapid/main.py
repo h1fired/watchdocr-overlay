@@ -1,6 +1,6 @@
 from src.watchdocr.plugins.ocr import OcrPlugin, OcrData
 from PIL import Image
-from rapidocr import RapidOCR
+from rapidocr import RapidOCR, EngineType, LangDet, ModelType, LangRec, OCRVersion
 
 
 __plugin_meta__ = {
@@ -13,7 +13,18 @@ __plugin_main__ = 'RapidOcrPlugin'
 
 class RapidOcrPlugin(OcrPlugin):
     def on_startup(self):
-        self._api = RapidOCR()
+        self._api = RapidOCR(
+            params={
+                "Det.engine_type": EngineType.ONNXRUNTIME,
+                "Det.lang_type": LangDet.EN,
+                "Det.model_type": ModelType.MOBILE,
+                "Det.ocr_version": OCRVersion.PPOCRV4,
+                "Rec.engine_type": EngineType.ONNXRUNTIME,
+                "Rec.lang_type": LangRec.EN,
+                "Rec.model_type": ModelType.MOBILE,
+                "Rec.ocr_version": OCRVersion.PPOCRV5,
+            }
+        )
 
     def get_priority(self):
         return 1
