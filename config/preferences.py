@@ -12,8 +12,14 @@ class UserSettings(BaseModel):
     visual_hints_show_as_overlay: bool = False
 
     model_config = {
-        "validate_assignment": True
+        'validate_assignment': True,
+        'strict': True
     }
+
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value)
+        if not name.startswith('_'):
+            self.save()
 
     def save(self, path: Path = CONFIG_PATH) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
