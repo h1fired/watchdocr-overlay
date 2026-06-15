@@ -10,6 +10,9 @@ CONFIG_PATH = Path('preferences.yaml')
 class UserSettings(BaseModel):
     visual_hints_show: bool = False
     visual_hints_show_as_overlay: bool = False
+    screens_preview_enabled: bool = False
+    source_language: str = 'AUTO'
+    target_language: str = 'ORIG'
 
     model_config = {
         'validate_assignment': True,

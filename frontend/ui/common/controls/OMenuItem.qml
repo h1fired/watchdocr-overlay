@@ -36,6 +36,8 @@ MenuItem {
             anchors.right: parent.right
             anchors.rightMargin: 12
 
+            checked: root.checked
+
             onCheckedChanged: {
                 root.checked = checked;
             }
