@@ -15,4 +15,11 @@ dependencies = [
     "pyyaml>=6.0.3",
     "rapidocr>=3.8.4",
     "tesserocr @ https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.10.0-tesseract-5.5.2/tesserocr-2.10.0-cp311-cp311-win_amd64.whl",
+    "winrt-windows-foundation>=3.2.1",
+    "winrt-windows-foundation-collections>=3.2.1",
+    "winrt-windows-globalization>=3.2.1",
+    "winrt-windows-graphics-imaging>=3.2.1",
+    "winrt-windows-media-ocr>=3.2.1",
+    "winrt-windows-storage>=3.2.1",
+    "winrt-windows-storage-streams>=3.2.1",
 ]
