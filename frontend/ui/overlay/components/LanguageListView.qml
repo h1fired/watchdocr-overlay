@@ -5,10 +5,9 @@ import QtQuick.Controls.Basic
 Item {
     id: root
 
-    property string selectedCode: ""
     property var languages: []
-    readonly property string current: selectedCode
-    readonly property string currentName: languages.getNameByCode(selectedCode) ?? "None"
+    property string current: ""
+    readonly property string currentName: languages.getNameByCode(current) ?? "None"
 
     ListView {
         id: listView
@@ -39,7 +38,7 @@ Item {
 
             color: mouse.containsMouse ? "#171A29" : "transparent"
 
-            readonly property bool isSelected: model.code === root.selectedCode
+            readonly property bool isSelected: model.code === root.current
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -94,13 +93,17 @@ Item {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
 
-                onClicked: root.selectedCode = model.code
+                onClicked: root.current = model.code
             }
         }
     }
 
     Component.onCompleted: {
-        if (root.languages.count > 0)
-            root.selectedCode = root.languages.get(0).code;
+        if (
+            root.languages.count > 0
+            && root.current === ""
+            && !root.languages.codeExists(root.current)
+        )
+            root.current = root.languages.get(0).code;
     }
 }

@@ -33,6 +33,7 @@ OButton {
 
             text: "Show"
             checkable: true
+            checked: root.showEnabled
         }
 
         OMenuItem {
@@ -40,6 +41,7 @@ OButton {
 
             text: "As overlay"
             checkable: true
+            checked: root.asOverlayEnabled
         }
     }
 }

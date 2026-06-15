@@ -4,6 +4,7 @@ from frontend.viewmodels.components.vm_utils import UtilsViewModel
 from frontend.viewmodels.components.vm_translation import TranslationViewModel
 from frontend.viewmodels.components.vm_ocr import OcrViewModel
 from frontend.viewmodels.components.vm_preview import PreviewViewModel
+from frontend.viewmodels.components.vm_settings import SettingsViewModel
 
 
 VIEWMODELS = (
@@ -11,7 +12,8 @@ VIEWMODELS = (
     TranslationViewModel,
     UtilsViewModel,
     OcrViewModel,
-    PreviewViewModel
+    PreviewViewModel,
+    SettingsViewModel
 )
 
 
