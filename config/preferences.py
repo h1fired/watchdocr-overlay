@@ -1,10 +1,7 @@
+from pydantic import BaseModel, ValidationError
 from pathlib import Path
-from typing import Literal
 import yaml
-from pydantic import BaseModel, Field, ValidationError
-
-
-CONFIG_PATH = Path('preferences.yaml')
+from config import config
 
 
 class UserSettings(BaseModel):
@@ -24,14 +21,14 @@ class UserSettings(BaseModel):
         if not name.startswith('_'):
             self.save()
 
-    def save(self, path: Path = CONFIG_PATH) -> None:
+    def save(self, path: Path = config.USER_SETTINGS_PATH) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         data = self.model_dump()
         with open(path, 'w', encoding='utf-8') as f:
             yaml.safe_dump(data, f, default_flow_style=False)
 
     @classmethod
-    def load(cls, path: Path = CONFIG_PATH) -> 'UserSettings':
+    def load(cls, path: Path = config.USER_SETTINGS_PATH) -> 'UserSettings':
         if not path.exists():
             # Automatically save defaults if no preferences file exists yet
             default_prefs = cls()
