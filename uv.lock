@@ -174,6 +174,12 @@ wheels = [
 ]
 
 [[package]]
+name = "nuitka"
+version = "4.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e6/2e/9ea398ca1a4fc458958fdf477ae18d3395bee8c9f8950ca6f0f039ea2585/nuitka-4.1.2.tar.gz", hash = "sha256:efc2359b171d7b63046ca8ec8dee57015c3466a9df74b68a049c2c1a7e93ecee", size = 4561050, upload-time = "2026-05-28T08:26:07.947Z" }
+
+[[package]]
 name = "numpy"
 version = "2.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -276,6 +282,11 @@ dependencies = [
     { name = "winrt-windows-storage-streams" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "nuitka" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "dotenv", specifier = ">=0.9.9" },
@@ -296,6 +307,9 @@ requires-dist = [
     { name = "winrt-windows-storage", specifier = ">=3.2.1" },
     { name = "winrt-windows-storage-streams", specifier = ">=3.2.1" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "nuitka", specifier = ">=4.1.2" }]
 
 [[package]]
 name = "omegaconf"
