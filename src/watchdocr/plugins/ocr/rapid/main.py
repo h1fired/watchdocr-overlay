@@ -27,7 +27,7 @@ class RapidOcrPlugin(OcrPlugin):
         )
 
     def get_priority(self):
-        return 1
+        return 2
 
     def get_provider_name(self):
         return 'Rapid'
