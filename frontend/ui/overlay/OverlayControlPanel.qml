@@ -23,11 +23,11 @@ Rectangle {
     border.color: "#21242D"
 
     onVisualHintsActiveChanged: {
-        Backend.Settings.set('visual_hints_show', visualHintsActive);
+        Backend.Settings.set("visual_hints_show", visualHintsActive);
     }
 
     onVisualHintsAsOverlayActiveChanged: {
-        Backend.Settings.set('visual_hints_show_as_overlay', visualHintsAsOverlayActive);
+        Backend.Settings.set("visual_hints_show_as_overlay", visualHintsAsOverlayActive);
     }
 
     component Divider: Rectangle {
@@ -255,9 +255,23 @@ Rectangle {
         }
     }
 
+    Connections {
+        target: translationSelector
+
+        function onSourceLanguageChanged() {
+            Backend.Settings.set("source_language", translationSelector.sourceLanguage);
+        }
+
+        function onTargetLanguageChanged() {
+            Backend.Settings.set("target_language", translationSelector.targetLanguage);
+        }
+    }
+
     Component.onCompleted: {
         visualHintsActive = Backend.Settings.values.visual_hints_show;
         visualHintsAsOverlayActive = Backend.Settings.values.visual_hints_show_as_overlay;
         btnScreensPreview.checked = Backend.Settings.values.screens_preview_enabled;
+        translationSelector.sourceLanguage = Backend.Settings.values.source_language;
+        translationSelector.targetLanguage = Backend.Settings.values.target_language;
     }
 }

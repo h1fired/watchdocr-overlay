@@ -16,10 +16,10 @@ OMessageBoxFrame {
 
     property var sourceLanguages: []
     property var targetLanguages: []
-    property string sourceLanguage: source.current
-    property string targetLanguage: target.current
-    property string sourceLanguageName: source.currentName
-    property string targetLanguageName: target.currentName
+    property alias sourceLanguage: source.current
+    property alias targetLanguage: target.current
+    readonly property string sourceLanguageName: source.currentName
+    readonly property string targetLanguageName: target.currentName
     readonly property string searchQuery: searchTextField.text
 
     ColumnLayout {
