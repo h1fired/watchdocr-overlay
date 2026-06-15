@@ -9,7 +9,7 @@ Item {
     property bool boxesVisible: true
     property point offset: Qt.point(0, 0)
     property var _boxes: ([])
-    property int _expand: 0
+    property int _expand: 3
 
     ImageProvider {
         id: areaPreview
@@ -63,7 +63,7 @@ Item {
             Rectangle {
                 x: modelData[1][0] - root._expand
                 y: modelData[1][1] - root._expand
-                width:  modelData[1][2] - modelData[1][0] + root._expand * 2
+                width:  modelData[1][2] - modelData[1][0]
                 height: modelData[1][3] - modelData[1][1] + root._expand * 2
                 color: "white"
             }
