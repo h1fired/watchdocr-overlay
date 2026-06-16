@@ -28,6 +28,7 @@ class WatchdOcrRuntimeContext:
     boxes: tuple = tuple()
     confidence: float = 0.
     boxed_text: str = ''
+    translated_boxes: tuple = tuple()
 
 
 class PipelineStrategy(IntEnum):
@@ -78,6 +79,7 @@ class OcrPipelineStage(PipelineStage):
         ctx.confidence = data.confidence
         ctx.boxes = data.boxes
         ctx.boxed_text = BOXED_TEXT_SEPARATOR1.join(b[0] for b in data.boxes)
+        ctx.translated_boxes = data.boxes
 
 
 class TranslationPipelineStage(PipelineStage):
@@ -101,7 +103,7 @@ class TranslationPipelineStage(PipelineStage):
         boxes = []
         for i, (_, t) in enumerate(zip(ctx.boxes, texts)):
             boxes.append((t, ctx.boxes[i][1], ctx.boxes[i][2]))
-        ctx.boxes = tuple(boxes)
+        ctx.translated_boxes = tuple(boxes)
 
 
 class WatchdOcrPipeline:
@@ -200,7 +202,7 @@ class WatchdOcrRunner:
             strategy=self._pipeline.current_strategy(),
             text=self._ctx.text,
             translated_text=self._ctx.translated_text,
-            boxes=self._ctx.boxes,
+            boxes=self._ctx.translated_boxes,
             confidence=self._ctx.confidence
         )
 
