@@ -128,6 +128,7 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
         from_language = self.source_languages()[_from]
         to_language = self.target_languages()[to]
 
+        err_msg = 'Translation error: Unknown request error'
         try:
             params = {
                 'client': 'gtx',
@@ -141,9 +142,14 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
 
             if not translated_text:
                 raise ValueError('No translation')
-        except Exception:
-            return TranslationData(text, '')
-        return TranslationData(text, translated_text)
+            return TranslationData(text, translated_text)
+        except requests.exceptions.Timeout:
+            err_msg = 'Translation error: Network timeout'
+        except requests.exceptions.ConnectionError:
+            err_msg = 'Translation error: Network unavailable'
+        except requests.exceptions.HTTPError:
+            err_msg = 'Translation error: Server returned an error response'
+        return TranslationData(err_msg, err_msg, False)
 
     def source_languages(self):
         return SOURCE_LANGUAGES

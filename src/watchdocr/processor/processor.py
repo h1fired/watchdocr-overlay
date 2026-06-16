@@ -94,6 +94,11 @@ class TranslationPipelineStage(PipelineStage):
             ctx.target_language
         )
 
+        if not data.success:
+            ctx.translated_text = data.translated_text
+            ctx.translated_boxes = tuple()
+            return
+
         if data.translated_text == '':
             texts = []
         else:

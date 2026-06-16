@@ -6,6 +6,7 @@ from dataclasses import dataclass
 class TranslationData:
     original_text: str
     translated_text: str
+    success: bool = True
 
 
 class TranslatorPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
