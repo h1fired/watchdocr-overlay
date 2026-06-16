@@ -10,8 +10,8 @@ Menu {
         implicitHeight: root.contentItem.implicitHeight
 
         radius: 12
-        color: "#070B14"
+        color: "#1A1A1A"
         border.width: 1
-        border.color: "#21242D"
+        border.color: "#353535"
     }
 }

@@ -193,17 +193,17 @@ OMessageBoxFrame {
     }
 
     function swap() {
-        let sCode = source.selectedCode;
-        let tCode = target.selectedCode;
+        let sCode = source.current;
+        let tCode = target.current;
 
         if (source.languages.codeExists(tCode))
-            source.selectedCode = tCode;
+            source.current = tCode;
         else
-            source.selectedCode = source.languages.get(0).code;
+            source.current = source.languages.get(0).code;
         
         if (target.languages.codeExists(sCode))
-            target.selectedCode = sCode;
+            target.current = sCode;
         else
-            target.selectedCode = target.languages.get(0).code;
+            target.current = target.languages.get(0).code;
     }
 }

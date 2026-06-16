@@ -14,7 +14,7 @@ OButton {
     font.family: "Segoe UI"
 
     background: Rectangle {
-        color: parent.hovered ? "#1B1E28" : "transparent"
+        color: parent.hovered ? "#2C2C2C" : "transparent"
         radius: 6
     }
 

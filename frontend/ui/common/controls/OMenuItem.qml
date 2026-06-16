@@ -15,7 +15,7 @@ MenuItem {
 
     background: Rectangle {
         radius: 6
-        color: highlighted ? "#1B1E28" : "transparent"
+        color: highlighted ? "#2C2C2C" : "transparent"
     }
 
     indicator: Item {

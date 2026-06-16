@@ -17,10 +17,10 @@ Rectangle {
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
-    radius: 12
-    color: "#070B14"
+    radius: 15
+    color: "#1A1A1A"
     border.width: 1
-    border.color: "#21242D"
+    border.color: "#353535"
 
     onVisualHintsActiveChanged: {
         Backend.Settings.set("visual_hints_show", visualHintsActive);
@@ -37,7 +37,7 @@ Rectangle {
         Layout.topMargin: 8
         Layout.bottomMargin: 8
 
-        color: "#1A1C26"
+        color: "#2F2F2F"
     }
 
     MouseArea {
@@ -170,12 +170,12 @@ Rectangle {
             checkable: true
 
             icon.source: "../../../resources/icons/selection.svg"
-            icon.color: hovered || checked ? "#94A3B8" : "#475569"
+            icon.color: "#E9E9E9"
             icon.width: 22
             icon.height: 22
 
             background: Rectangle {
-                color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
+                color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
                 radius: 6
             }
 
@@ -191,26 +191,26 @@ Rectangle {
 
         Divider {}
 
-        OButton {
-            Layout.fillHeight: true
-            Layout.preferredWidth: height
+        // OButton {
+        //     Layout.fillHeight: true
+        //     Layout.preferredWidth: height
 
-            icon.source: "../../../resources/icons/settings.svg"
-            icon.color: hovered ? "#94A3B8" : "#475569"
-            icon.width: 22
-            icon.height: 22
+        //     icon.source: "../../../resources/icons/settings.svg"
+        //     icon.color: "#E9E9E9"
+        //     icon.width: 24
+        //     icon.height: 24
 
-            background: Rectangle {
-                color: parent.hovered ? "#1B1E28" : "transparent"
-                radius: 6
-            }
+        //     background: Rectangle {
+        //         color: parent.hovered ? "#2C2C2C" : "transparent"
+        //         radius: 6
+        //     }
 
-            ToolTip.text: "Settings"
-            ToolTip.visible: hovered
-            ToolTip.delay: 1000
-        }
+        //     ToolTip.text: "Settings"
+        //     ToolTip.visible: hovered
+        //     ToolTip.delay: 1000
+        // }
 
-        Divider {}
+        // Divider {}
 
         VisualHintsToolButtonMenu {
             id: menuVisualHints
@@ -227,13 +227,13 @@ Rectangle {
 
             checkable: true
 
-            icon.source: "../../../resources/icons/selection.svg"
-            icon.color: hovered || checked ? "#94A3B8" : "#475569"
-            icon.width: 22
-            icon.height: 22
+            icon.source: "../../../resources/icons/eye.svg"
+            icon.color: "#E9E9E9"
+            icon.width: 20
+            icon.height: 20
 
             background: Rectangle {
-                color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
+                color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
                 radius: 6
             }
 
