@@ -23,7 +23,7 @@ Switch {
             radius: height / 2
             color: (
                 root.checked
-                ? root.enabled ? "#75a0ff" : Qt.darker("#75a0ff", 3.0)
+                ? root.enabled ? "#75A0FF" : Qt.darker("#75A0FF", 3.0)
                 : "transparent"
             )
 

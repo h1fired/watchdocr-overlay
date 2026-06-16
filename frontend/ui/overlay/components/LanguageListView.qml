@@ -23,7 +23,7 @@ Item {
 
             contentItem: Rectangle {
                 implicitWidth: 6
-                color: parent.pressed ? "#21242D" : "#21242D"
+                color: "#646464"
                 opacity: parent.active ? 1.0 : 0.5
 
                 Behavior on opacity {
@@ -36,7 +36,7 @@ Item {
             width: listView.width
             height: 36
 
-            color: mouse.containsMouse ? "#171A29" : "transparent"
+            color: mouse.containsMouse ? "#121c31" : "transparent"
 
             readonly property bool isSelected: model.code === root.current
 
@@ -47,8 +47,8 @@ Item {
 
                 text: model.code
                 color: (
-                    isSelected ? "#A78BFA" :
-                    mouse.containsMouse ? "#C8D3E8" : "#475569"
+                    isSelected ? "#75A0FF" :
+                    mouse.containsMouse ? "#DDDDDD" : "#9C9C9C"
                 )
 
                 font.family: "Segoe UI"
@@ -63,8 +63,8 @@ Item {
 
                 text: model.name
                 color: (
-                    isSelected ? "#A78BFA" :
-                    mouse.containsMouse ? "#C8D3E8" : "#798499"
+                    isSelected ? "#75A0FF" :
+                    mouse.containsMouse ? "#DDDDDD" : "#9C9C9C"
                 )
 
                 font.family: "Segoe UI"
@@ -82,7 +82,7 @@ Item {
                 anchors.rightMargin: 16
 
                 radius: height / 2
-                color: "#8B5CF6"
+                color: "#75A0FF"
             }
 
             MouseArea {
