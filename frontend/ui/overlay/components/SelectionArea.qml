@@ -5,11 +5,9 @@ import QtQuick.Controls
 Item {
     id: root
 
-    property    rect box:           Qt.rect(0, 0, 0, 0)
-    property    bool loading:       false
-    property    bool drawBorders:   true
-    property    bool selecting:     false
-
+    property            rect    box:           Qt.rect(0, 0, 0, 0)
+    property            bool    loading:       false
+    readonly property   bool    selecting:     privates.selecting || selectionBox.selecting
     signal boxReleased()
     signal pressed()
 
@@ -26,19 +24,27 @@ Item {
             root.pressed();
             privates.startPoint = Qt.point(event.x, event.y);
             privates.endPoint = privates.startPoint;
-            root.selecting = true;
+
+            privates.selecting = true;
         }
 
         onPositionChanged: (event) => {
             privates.endPoint = Qt.point(event.x, event.y);
             root.box = privates.reformatRect(privates.rectFromPoints(privates.startPoint, privates.endPoint));
+
+            selectionBox.x = root.box.x;
+            selectionBox.y = root.box.y;
+            selectionBox.width = root.box.width;
+            selectionBox.height = root.box.height;
         }
 
         onReleased: (event) => {
             privates.endPoint = Qt.point(event.x, event.y);
             root.box = privates.reformatRect(privates.rectFromPoints(privates.startPoint, privates.endPoint));
-            root.boxReleased();
-            root.selecting = false;
+
+            selectionBox.boxReleased();
+
+            privates.selecting = false;
         }
     }
 
@@ -68,17 +74,11 @@ Item {
         }
     }
 
-    Rectangle {
-        visible: root.drawBorders
-
+    Item {
         x: root.box.x-1
         y: root.box.y-1
         width: root.box.width+2
         height: root.box.height+2
-
-        color: "transparent"
-        border.color: "#696969"
-        border.width: 1
 
         Rectangle {
             id: selectionRectGradient
@@ -117,11 +117,39 @@ Item {
         }
     }
 
+    SelectionBox {
+        id: selectionBox
+
+        visible: root.enabled && width > 0
+
+        x: 0
+        y: 0
+        width: 0
+        height: 0
+
+        onBoxReleased: {
+            root.box.x = x;
+            root.box.y = y;
+            root.box.width = width;
+            root.box.height = height;
+
+            root.boxReleased();
+        }
+
+        onBoxChanged: {
+            root.box.x = x;
+            root.box.y = y;
+            root.box.width = width;
+            root.box.height = height;
+        }
+    }
+
     QtObject {
         id: privates
 
         property point startPoint: Qt.point(0, 0)
         property point endPoint: Qt.point(0, 0)
+        property bool selecting: false
 
         function reformatRect(rect) {
             if (rect.width <= 0) {
@@ -151,5 +179,7 @@ Item {
         privates.startPoint = Qt.point(0, 0);
         privates.endPoint = Qt.point(0, 0);
         root.box = Qt.rect(0, 0, 0, 0);
+        selectionBox.width = 0;
+        selectionBox.height = 0;
     }
 }
