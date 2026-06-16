@@ -77,7 +77,7 @@ Item {
         height: root.box.height+2
 
         color: "transparent"
-        border.color: "#8B5CF6"
+        border.color: "#696969"
         border.width: 1
 
         Rectangle {
@@ -94,15 +94,15 @@ Item {
 
                 GradientStop {
                     position: selectionRectGradient.gradientPos - 1.0;
-                    color: Qt.rgba(0.4, 0.298, 1.0, 0.0)
+                    color: Qt.rgba(1.0, 1.0, 1.0, 0.0)
                 }
                 GradientStop {
                     position: selectionRectGradient.gradientPos
-                    color: Qt.rgba(0.4, 0.298, 1.0, 0.3)
+                    color: Qt.rgba(1.0, 1.0, 1.0, 0.3)
                 }
                 GradientStop {
                     position: selectionRectGradient.gradientPos + 1.0;
-                    color: Qt.rgba(0.4, 0.298, 1.0, 0.0)
+                    color: Qt.rgba(1.0, 1.0, 1.0, 0.0)
                 }
             }
 
