@@ -10,9 +10,10 @@ OMessageBoxFrame {
 
     title: "Language pair"
 
-    radius: 12
+    color: "#1A1A1A"
+    radius: 15
     border.width: 1
-    border.color: "#21242D"
+    border.color: "#353535"
 
     property var sourceLanguages: []
     property var targetLanguages: []
@@ -40,11 +41,11 @@ OMessageBoxFrame {
             Layout.rightMargin: 16
 
             background: Rectangle {
-                color: "#12151E"
+                color: "#1A1A1A"
                 radius: 6
 
                 border.width: 1
-                border.color: "#23272F"
+                border.color: "#2C2C2C"
             }
 
             placeholderText: "Search languages"
@@ -54,7 +55,7 @@ OMessageBoxFrame {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
 
-            color: "#1A1C26"
+            color: "#2C2C2C"
         }
 
         RowLayout {
@@ -76,7 +77,7 @@ OMessageBoxFrame {
                 Layout.fillHeight: true
                 width: 1
 
-                color: "#1A1C26"
+                color: "#2C2C2C"
             }
 
             LanguageListView {
@@ -97,7 +98,7 @@ OMessageBoxFrame {
                 width: parent.width
                 height: 1
 
-                color: "#1A1C26"
+                color: "#2C2C2C"
             }
 
             Row {
@@ -114,7 +115,7 @@ OMessageBoxFrame {
                     font.family: "Segoe UI"
                     font.weight: 500
                     font.pixelSize: 10
-                    color: "#475569"
+                    color: "#676767"
                 }
 
                 Text {
@@ -125,7 +126,7 @@ OMessageBoxFrame {
                     font.family: "Segoe UI"
                     font.weight: 600
                     font.pixelSize: 12
-                    color: "#475569"
+                    color: "#999999"
                 }
 
                 Text {
@@ -135,7 +136,7 @@ OMessageBoxFrame {
 
                     font.family: "Segoe UI"
                     font.pixelSize: 12
-                    color: "#8B5CF6"
+                    color: "#f1f1f1"
                 }
 
                 Text {
@@ -146,7 +147,7 @@ OMessageBoxFrame {
                     font.family: "Segoe UI"
                     font.weight: 500
                     font.pixelSize: 10
-                    color: "#475569"
+                    color: "#676767"
                 }
 
                 Text {
@@ -157,7 +158,7 @@ OMessageBoxFrame {
                     font.family: "Segoe UI"
                     font.weight: 600
                     font.pixelSize: 12
-                    color: "#475569"
+                    color: "#999999"
                 }
             }
 
@@ -178,13 +179,13 @@ OMessageBoxFrame {
                 icon.width: 14
                 icon.height: 14
 
-                palette.buttonText: hovered ? "#A78BFA" :"#776BC5"
+                palette.buttonText: hovered ? "#f3f3f3" :"#c5c5c5"
                 background: Rectangle {
                     radius: 6
 
-                    color: parent.hovered ? "#292049" : "#1C1833"
+                    color: parent.hovered ? "#4d4d4d" : "#313131"
                     border.width: 1
-                    border.color: parent.hovered ? "#51388D" : "#35275D"
+                    border.color: parent.hovered ? "#929292" : "#616161"
                 }
 
                 onClicked: root.swap()
@@ -193,17 +194,17 @@ OMessageBoxFrame {
     }
 
     function swap() {
-        let sCode = source.selectedCode;
-        let tCode = target.selectedCode;
+        let sCode = source.current;
+        let tCode = target.current;
 
         if (source.languages.codeExists(tCode))
-            source.selectedCode = tCode;
+            source.current = tCode;
         else
-            source.selectedCode = source.languages.get(0).code;
+            source.current = source.languages.get(0).code;
         
         if (target.languages.codeExists(sCode))
-            target.selectedCode = sCode;
+            target.current = sCode;
         else
-            target.selectedCode = target.languages.get(0).code;
+            target.current = target.languages.get(0).code;
     }
 }

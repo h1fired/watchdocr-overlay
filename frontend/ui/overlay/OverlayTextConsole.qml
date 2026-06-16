@@ -16,10 +16,8 @@ Rectangle {
     width: 500
     height: 180
 
-    radius: 12
-    color: "#070B14"
-    border.width: 1
-    border.color: "#21242D"
+    radius: 15
+    color: "#060606"
 
     MouseArea {
         anchors.fill: parent
@@ -34,7 +32,7 @@ Rectangle {
 
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: 40
+            Layout.preferredHeight: 44
 
             RowLayout {
                 anchors.fill: parent
@@ -43,19 +41,14 @@ Rectangle {
 
                 spacing: 0
 
-                TextConsoleStatus {
-                    id: textConsoleStatus
+                TranslationInfo {
+                    id: translationInfo
+
+                    Layout.fillHeight: true
                 }
 
                 Item {
                     Layout.fillWidth: true
-                }
-
-                AccuracyBar {
-                    id: accuracyBar
-
-                    Layout.fillHeight: true
-                    Layout.rightMargin: 8
                 }
 
                 CopyButton {
@@ -75,17 +68,18 @@ Rectangle {
                         ? "../../../resources/icons/maximize.svg"
                         : "../../../resources/icons/minimize.svg"
                     )
-                    icon.color: hovered ? "#94A3B8" : "#475569"
-                    icon.width: 16
-                    icon.height: 16
+                    icon.color: "#D2D2D2"
+                    icon.width: 18
+                    icon.height: 18
 
                     background: Rectangle {
-                        color: parent.hovered ? "#1B1E28" : "transparent"
+                        color: parent.hovered ? "#292929" : "transparent"
                         radius: 6
                     }
 
                     onClicked: {
-                        root.height = (root.height === 180 ? 320 : 180);
+                        root.width = (root.width === 500 ? 720 : 500);
+                        root.height = (root.height === 180 ? 340 : 180);
                     } 
                 }
             }
@@ -105,12 +99,16 @@ Rectangle {
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
 
+                Behavior on contentY {
+                    SmoothedAnimation { velocity: 300; easing.type: Easing.InOutQuad }
+                }
+
                 ScrollBar.vertical: ScrollBar {
                     policy: ScrollBar.AlwaysOn
 
                     contentItem: Rectangle {
                         implicitWidth: 6
-                        color: parent.pressed ? "#21242D" : "#21242D"
+                        color: parent.pressed ? "#2c2c2c" : "#2c2c2c"
                         opacity: parent.active ? 1.0 : 0.5
 
                         Behavior on opacity {
@@ -131,45 +129,66 @@ Rectangle {
                     font.family: "Segoe UI"
                     font.weight: 600
                     font.pixelSize: 14
-                    color: "#FAF9FF"
+                    color: text !== "" ? "#FAF9FF" : "#060606"
                     wrapMode: Text.WordWrap
+
+                    TextConsoleResponseLoader {
+                        id: textConsoleResponseLoader
+
+                        visible: state === "processing"
+                        opacity: visible ? 1 : 0
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.InOutQuad
+                            }
+                        }
+                    }
+
+                    onVisibleChanged: {
+                        if (!visible) {
+                            root.width = 500;
+                            root.height = 180;
+                        }
+                    }
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+
+                    onCursorRectangleChanged: {
+                        // Auto-scroll Flickable to keep the selection cursor visible
+                        let cursorBottom = cursorRectangle.y + cursorRectangle.height;
+                        let cursorTop    = cursorRectangle.y;
+                        let visibleTop   = responseFlickable.contentY;
+                        let visibleBottom = visibleTop + responseFlickable.height;
+
+                        if (cursorBottom > visibleBottom) {
+                            responseFlickable.contentY = cursorBottom - responseFlickable.height;
+                        } else if (cursorTop < visibleTop) {
+                            responseFlickable.contentY = cursorTop;
+                        }
+                    }
+
+                    function isOverflowing() {
+                        return contentHeight > responseFlickable.height;
+                    }
                 }
 
             }
         }
+    }
 
-        Item {
-            Layout.fillWidth: true
-            height: 36
+    Behavior on width {
+        NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+    }
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 16
-                anchors.rightMargin: 16
-                anchors.bottomMargin: 4
-
-                TranslationInfo {
-                    id: translationInfo
-
-                    Layout.fillHeight: true
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Text {
-                    Layout.alignment: Qt.AlignVCenter
-
-                    text: root.ocrProvider + " · " + root.translatorProvider
-
-                    font.family: "Segoe UI"
-                    font.weight: 500
-                    font.pixelSize: 12
-                    color: "#475569"
-                }
-            }
-        }
+    Behavior on height {
+        NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
     }
 
     // Backend
@@ -178,15 +197,20 @@ Rectangle {
 
         function onResultReceived(json) {
             let data = JSON.parse(json);
-            accuracyBar.accuracy = data.confidence
             responseTextEdit.text = data.translated_text;
+
+            if (responseTextEdit.isOverflowing()) {
+                root.width = 720;
+                root.height = 340;
+            }
         }
 
         function onRecognizerStatusChanged(status) {
             if (status === 0) {
-                textConsoleStatus.state = "idle";
+                textConsoleResponseLoader.state = "idle";
             } else if (status === 1) {
-                textConsoleStatus.state = "processing";
+                textConsoleResponseLoader.state = "processing";
+                responseTextEdit.text = "";
             }
         }
     }

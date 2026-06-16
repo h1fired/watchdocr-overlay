@@ -12,37 +12,29 @@ Rectangle {
             name: "live"
             PropertyChanges {
                 target: root
-                color: "#0C191F"
+                color: "#0F3226"
             }
             PropertyChanges {
                 target: stateText
-                text: "live"
-                color: "#34D399"
-            }
-            PropertyChanges {
-                target: circle
-                color: "#34D399"
+                text: "Active"
+                color: "#82FFAC"
             }
         },
         State {
             name: "idle"
             PropertyChanges {
                 target: root
-                color: "#23272F"
+                color: "#2C2C2C"
             }
             PropertyChanges {
                 target: stateText
-                text: "idle"
-                color: "#94A3B8"
-            }
-            PropertyChanges {
-                target: circle
-                color: "#94A3B8"
+                text: "Idle"
+                color: "#B4B4B4"
             }
         },
     ]
 
-    radius: 6
+    radius: 9
 
     Row {
         id: row
@@ -51,17 +43,6 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
 
         spacing: 6
-
-        Rectangle {
-            id: circle
-
-            anchors.verticalCenter: parent.verticalCenter
-            
-            width: 4
-            height: 4
-
-            radius: height / 2
-        }
 
         Text {
             id: stateText

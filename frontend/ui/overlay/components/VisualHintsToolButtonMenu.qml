@@ -8,13 +8,13 @@ OButton {
     property alias showEnabled: optionShow.checked
     property alias asOverlayEnabled: optionAsOverlay.checked
 
-    icon.source: "../../../../resources/icons/selection.svg"
-    icon.color: hovered || checked ? "#94A3B8" : "#475569"
-    icon.width: 22
-    icon.height: 22
+    icon.source: "../../../../resources/icons/visual_hint.svg"
+    icon.color: "#E9E9E9"
+    icon.width: 20
+    icon.height: 20
 
     background: Rectangle {
-        color: parent.hovered || parent.checked ? "#1B1E28" : "transparent"
+        color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
         radius: 6
     }
 

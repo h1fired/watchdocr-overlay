@@ -32,7 +32,6 @@ Item {
             target: selectionArea.area
 
             function onBoxReleased() {
-                controlPanel.selectionToolActive = false;
                 visualHints.offset = Qt.point(selectionArea.area.box.x, selectionArea.area.box.y);
             }
         }
@@ -42,9 +41,9 @@ Item {
         id: visualHints
 
         anchors.fill: parent
-            
+        
         boxesVisible: (
-            !selectionArea.area.loading && !controlPanel.selectionToolActive &&
+            !selectionArea.area.loading && !selectionArea.area.selecting &&
             (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
             root.controlsVisible && controlPanel.visualHintsActive)
         )
@@ -76,7 +75,7 @@ Item {
         OverlayTextConsole {
             id: textConsole
 
-            visible: !controlPanel.selectionToolActive
+            visible: !selectionArea.area.selecting
 
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
@@ -84,8 +83,6 @@ Item {
 
             translationInfo.sourceLanguage: controlPanel.translationSelector.sourceLanguageName
             translationInfo.targetLanguage: controlPanel.translationSelector.targetLanguageName
-            translationInfo.sourceShortLanguage: controlPanel.translationSelector.sourceLanguage
-            translationInfo.targetShortLanguage: controlPanel.translationSelector.targetLanguage
         }
     }
 

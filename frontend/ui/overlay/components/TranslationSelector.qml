@@ -40,12 +40,12 @@ Item {
             height: root.height
 
             icon.source: "../../../../resources/icons/swap.svg"
-            icon.color: hovered ? "#94A3B8" : "#475569"
+            icon.color: "#E9E9E9"
             icon.width: 18
             icon.height: 18
 
             background: Rectangle {
-                color: parent.hovered ? "#1B1E28" : "transparent"
+                color: parent.hovered ? "#2C2C2C" : "transparent"
                 radius: 6
             }
 

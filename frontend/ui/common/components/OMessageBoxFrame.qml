@@ -13,9 +13,9 @@ Rectangle {
     implicitWidth: 100
     implicitHeight: column.implicitHeight
 
-    color: "#171A25"
+    color: "#1A1A1A"
     border.width: 1
-    border.color: "#292C37"
+    border.color: "#353535"
     radius: 12
 
     clip: true
@@ -33,7 +33,7 @@ Rectangle {
             width: parent.width
             height: 52
 
-            color: "#171A25"
+            color: "#1A1A1A"
             topLeftRadius: 12
             topRightRadius: 12
 
@@ -46,7 +46,7 @@ Rectangle {
                     text: root.title
                     font.weight: 700
                     font.pixelSize: 13
-                    color: "#E2E8F4"
+                    color: "#f1f1f1"
                 }
 
                 OButton {
@@ -57,7 +57,7 @@ Rectangle {
                     icon.source: "../../../../resources/icons/close.svg"
                     icon.width: 14
                     icon.height: 14
-                    icon.color: "#2d323b"
+                    icon.color: "#3f3f3f"
 
                     background: Item {}
 
@@ -70,7 +70,7 @@ Rectangle {
             width: parent.width
             height: 1
 
-            color: "#292C37"
+            color: "#1A1A1A"
         }
 
         Rectangle {
@@ -79,7 +79,7 @@ Rectangle {
             width: parent.width
             implicitHeight: children.length !== 0 ? children[0].implicitHeight : 0
 
-            color: "#0E101A"
+            color: "#1A1A1A"
             bottomLeftRadius: 12
             bottomRightRadius: 12
         }

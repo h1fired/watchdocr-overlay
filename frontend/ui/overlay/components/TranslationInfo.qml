@@ -5,9 +5,7 @@ Item {
     id: root
 
     property string sourceLanguage: "None"
-    property string sourceShortLanguage: "NN"
     property string targetLanguage: "None"
-    property string targetShortLanguage: "NN"
 
     implicitWidth: row.implicitWidth
 
@@ -21,23 +19,12 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
 
-            text: root.sourceShortLanguage
-
-            font.family: "Segoe UI"
-            font.weight: 500
-            font.pixelSize: 10
-            color: "#475569"
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-
             text: root.sourceLanguage
 
             font.family: "Segoe UI"
             font.weight: 600
-            font.pixelSize: 12
-            color: "#475569"
+            font.pixelSize: 13
+            color: "#9A9A9A"
         }
 
         Text {
@@ -46,19 +33,8 @@ Item {
             text: "→"
 
             font.family: "Segoe UI"
-            font.pixelSize: 12
-            color: "#8B5CF6"
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-
-            text: root.targetShortLanguage
-
-            font.family: "Segoe UI"
-            font.weight: 500
-            font.pixelSize: 10
-            color: "#475569"
+            font.pixelSize: 13
+            color: "#9A9A9A"
         }
 
         Text {
@@ -68,8 +44,8 @@ Item {
 
             font.family: "Segoe UI"
             font.weight: 600
-            font.pixelSize: 12
-            color: "#475569"
+            font.pixelSize: 13
+            color: "#9A9A9A"
         }
     }
 }

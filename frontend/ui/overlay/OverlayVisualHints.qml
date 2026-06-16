@@ -63,9 +63,10 @@ Item {
             Rectangle {
                 x: modelData[1][0] - root._expand
                 y: modelData[1][1] - root._expand
-                width:  modelData[1][2] - modelData[1][0]
-                height: modelData[1][3] - modelData[1][1] + root._expand * 2
+                width:  modelData[1][2] - modelData[1][0] + (root._expand * 2)
+                height: modelData[1][3] - modelData[1][1] + (root._expand * 2)
                 color: "white"
+                radius: 3
             }
         }
     }
@@ -97,10 +98,11 @@ Item {
             Rectangle {
                 x: modelData[1][0] - root._expand
                 y: modelData[1][1] - root._expand
-                width:  modelData[1][2] - modelData[1][0] + root._expand * 2
-                height: modelData[1][3] - modelData[1][1] + root._expand * 2
+                width:  modelData[1][2] - modelData[1][0] + (root._expand * 2)
+                height: modelData[1][3] - modelData[1][1] + (root._expand * 2)
 
-                color: Qt.rgba(0, 0, 0, 0.3)
+                color: Qt.rgba(0, 0, 0, 0.5)
+                radius: 3
 
                 Text {
                     anchors.fill: parent
