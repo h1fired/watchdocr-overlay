@@ -125,13 +125,32 @@ Rectangle {
                     font.family: "Segoe UI"
                     font.weight: 600
                     font.pixelSize: 14
-                    color: "#FAF9FF"
+                    color: text !== "" ? "#FAF9FF" : "#060606"
                     wrapMode: Text.WordWrap
 
                     TextConsoleResponseLoader {
                         id: textConsoleResponseLoader
 
                         visible: state === "processing"
+                        opacity: visible ? 1 : 0
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.InOutQuad
+                            }
+                        }
+                    }
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+
+                    function isOverflowing() {
+                        return contentHeight > responseFlickable.height;
                     }
                 }
 
@@ -154,6 +173,11 @@ Rectangle {
         function onResultReceived(json) {
             let data = JSON.parse(json);
             responseTextEdit.text = data.translated_text;
+
+            if (responseTextEdit.isOverflowing()) {
+                root.width = 720;
+                root.height = 340;
+            }
         }
 
         function onRecognizerStatusChanged(status) {
@@ -162,6 +186,8 @@ Rectangle {
             } else if (status === 1) {
                 textConsoleResponseLoader.state = "processing";
                 responseTextEdit.text = "";
+                root.width = 500;
+                root.height = 180;
             }
         }
     }
