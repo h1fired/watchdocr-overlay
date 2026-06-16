@@ -127,6 +127,12 @@ Rectangle {
                     font.pixelSize: 14
                     color: "#FAF9FF"
                     wrapMode: Text.WordWrap
+
+                    TextConsoleResponseLoader {
+                        id: textConsoleResponseLoader
+
+                        visible: state === "processing"
+                    }
                 }
 
             }
@@ -151,11 +157,12 @@ Rectangle {
         }
 
         function onRecognizerStatusChanged(status) {
-            // if (status === 0) {
-            //     textConsoleStatus.state = "idle";
-            // } else if (status === 1) {
-            //     textConsoleStatus.state = "processing";
-            // }
+            if (status === 0) {
+                textConsoleResponseLoader.state = "idle";
+            } else if (status === 1) {
+                textConsoleResponseLoader.state = "processing";
+                responseTextEdit.text = "";
+            }
         }
     }
 }

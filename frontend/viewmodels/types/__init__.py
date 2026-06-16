@@ -1,9 +1,10 @@
-from qt.qml import qmlRegisterSingletonType, QQmlApplicationEngine
+from qt.qml import qmlRegisterSingletonType, qmlRegisterType, QQmlApplicationEngine
 from frontend.viewmodels.types.screen import ScreenManager
-from frontend.viewmodels.types.image import ImageProvider
+from frontend.viewmodels.types.image import ImageProvider, AnimatedImage
 
 
 def registerUtilsQmlTypes():
+    qmlRegisterType(AnimatedImage, 'App.Utils', 1, 0, 'AnimatedImage')
     qmlRegisterSingletonType(ScreenManager, 'App.Utils', 1, 0, 'UtilsScreen')
 
 
