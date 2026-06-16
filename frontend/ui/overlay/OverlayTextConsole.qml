@@ -142,6 +142,13 @@ Rectangle {
                         }
                     }
 
+                    onVisibleChanged: {
+                        if (!visible) {
+                            root.width = 500;
+                            root.height = 180;
+                        }
+                    }
+
                     Behavior on color {
                         ColorAnimation {
                             duration: 200
@@ -186,8 +193,6 @@ Rectangle {
             } else if (status === 1) {
                 textConsoleResponseLoader.state = "processing";
                 responseTextEdit.text = "";
-                root.width = 500;
-                root.height = 180;
             }
         }
     }
