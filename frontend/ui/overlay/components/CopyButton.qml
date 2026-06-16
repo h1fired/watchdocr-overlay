@@ -6,22 +6,22 @@ OButton {
 
     signal copied()
 
-    implicitWidth: 28
+    implicitWidth: 32
     implicitHeight: 32
 
     leftPadding: 6
     rightPadding: 6
 
     text: "Copied to clipboard"
-    palette.buttonText: "#475569"
+    palette.buttonText: "#D2D2D2"
 
     icon.source: "../../../../resources/icons/copy.svg"
-    icon.color: hovered ? "#94A3B8" : "#475569"
-    icon.width: 16
-    icon.height: 16
+    icon.color: "#D2D2D2"
+    icon.width: 18
+    icon.height: 18
 
     background: Rectangle {
-        color: parent.hovered ? "#1B1E28" : "transparent"
+        color: parent.hovered ? "#292929" : "transparent"
         radius: 6
     }
 
@@ -37,7 +37,7 @@ OButton {
         interval: 2000
         repeat: false
 
-        onTriggered: root.implicitWidth = 28
+        onTriggered: root.implicitWidth = 32
     }
 
     Behavior on implicitWidth {

@@ -84,8 +84,6 @@ Item {
 
             translationInfo.sourceLanguage: controlPanel.translationSelector.sourceLanguageName
             translationInfo.targetLanguage: controlPanel.translationSelector.targetLanguageName
-            translationInfo.sourceShortLanguage: controlPanel.translationSelector.sourceLanguage
-            translationInfo.targetShortLanguage: controlPanel.translationSelector.targetLanguage
         }
     }
 
