@@ -99,6 +99,10 @@ Rectangle {
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
 
+                Behavior on contentY {
+                    SmoothedAnimation { velocity: 300; easing.type: Easing.InOutQuad }
+                }
+
                 ScrollBar.vertical: ScrollBar {
                     policy: ScrollBar.AlwaysOn
 
@@ -153,6 +157,20 @@ Rectangle {
                         ColorAnimation {
                             duration: 200
                             easing.type: Easing.InOutQuad
+                        }
+                    }
+
+                    onCursorRectangleChanged: {
+                        // Auto-scroll Flickable to keep the selection cursor visible
+                        let cursorBottom = cursorRectangle.y + cursorRectangle.height;
+                        let cursorTop    = cursorRectangle.y;
+                        let visibleTop   = responseFlickable.contentY;
+                        let visibleBottom = visibleTop + responseFlickable.height;
+
+                        if (cursorBottom > visibleBottom) {
+                            responseFlickable.contentY = cursorBottom - responseFlickable.height;
+                        } else if (cursorTop < visibleTop) {
+                            responseFlickable.contentY = cursorTop;
                         }
                     }
 
