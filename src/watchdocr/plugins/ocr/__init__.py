@@ -28,5 +28,24 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
         ctext = re.sub(r'\n{3,}', '\n\n', text)  # Clean excessive blank lines
         return ctext
 
-    def filter_image(self, image: Image.Image):
-        return OcrImageFilter.adjust(image)
+    def process_image(self, image: Image.Image):
+        # Change image mode to RGB if needed
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+
+        # Scale image based on image height
+        w, h = image.size
+
+        if h < 300:
+            scale_factor = 3.0
+        elif h < 600:
+            scale_factor = 2.0
+        else:
+            scale_factor = 1.0
+
+        if scale_factor != 1.0:
+            new_w = int(w * scale_factor)
+            new_h = int(h * scale_factor)
+            image = image.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+        return image, scale_factor

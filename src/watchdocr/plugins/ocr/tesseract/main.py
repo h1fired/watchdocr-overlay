@@ -30,7 +30,7 @@ class TesseractOcrPlugin(OcrPlugin):
 
     def recognize(self, image: Image.Image):
         try:
-            image = self.filter_image(image)  # Prepare image
+            image = self.process_image(image)  # Prepare image
 
             self._api.SetImage(image)
 

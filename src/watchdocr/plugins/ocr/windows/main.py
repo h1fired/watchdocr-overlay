@@ -28,9 +28,10 @@ class WindowsOcrPlugin(OcrPlugin):
 
     def recognize(self, image: Image.Image):
         try:
+            image, scale = self.process_image(image)
             res = self._async_loop.run_until_complete(self._recognize(image))
             text = res.text
-            boxes = self._parse_boxes(res.lines)
+            boxes = self._parse_boxes(res.lines, scale)
 
             return OcrData(text, tuple(boxes), 0.)
         except Exception:
@@ -56,7 +57,7 @@ class WindowsOcrPlugin(OcrPlugin):
         buf.close()
         return await engine.recognize_async(bitmap)
 
-    def _parse_boxes(self, rlines):
+    def _parse_boxes(self, rlines, scale: float):
         lines = []
         for line in self._winrt_to_list(rlines):
             words = self._winrt_to_list(line.words)
@@ -64,7 +65,16 @@ class WindowsOcrPlugin(OcrPlugin):
             y = min(w.bounding_rect.y for w in words)
             x2 = max(w.bounding_rect.x + w.bounding_rect.width for w in words)
             y2 = max(w.bounding_rect.y + w.bounding_rect.height for w in words)
-            lines.append((line.text, (int(x), int(y), int(x2), int(y2)), 0.))
+            lines.append((
+                line.text,
+                (
+                    int(x / scale),
+                    int(y / scale),
+                    int(x2 / scale),
+                    int(y2 / scale)
+                ),
+                0.
+            ))
         return lines
 
     def _winrt_to_list(self, vector):
