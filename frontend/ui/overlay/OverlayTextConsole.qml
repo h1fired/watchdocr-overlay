@@ -78,7 +78,8 @@ Rectangle {
                     }
 
                     onClicked: {
-                        root.height = (root.height === 180 ? 320 : 180);
+                        root.width = (root.width === 500 ? 720 : 500);
+                        root.height = (root.height === 180 ? 340 : 180);
                     } 
                 }
             }
@@ -130,6 +131,14 @@ Rectangle {
 
             }
         }
+    }
+
+    Behavior on width {
+        NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+    }
+
+    Behavior on height {
+        NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
     }
 
     // Backend
