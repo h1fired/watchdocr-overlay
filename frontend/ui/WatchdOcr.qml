@@ -44,7 +44,7 @@ Item {
         anchors.fill: parent
             
         boxesVisible: (
-            !selectionArea.area.loading && !selectionArea.area.selecting &&
+            !selectionArea.area.loading && !controlPanel.selectionToolActive &&
             (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
             root.controlsVisible && controlPanel.visualHintsActive)
         )
