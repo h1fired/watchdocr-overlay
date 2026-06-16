@@ -6,8 +6,8 @@ Item {
     width: 0
     height: 0
 
-    property int minWidth: 0
-    property int minHeight: 0
+    property int minWidth: 52
+    property int minHeight: 52
 
     property color borderColor: "#80FFFFFF"
     property int borderWidth: 1
@@ -72,7 +72,7 @@ Item {
             }
             y: {
                 if (handle.direction === "tl" || handle.direction === "tr") return 12;
-                if (handle.direction === "bl" || handle.direction === "br") return 12 - root.cornerLength + root.cornerThickness;
+                if (handle.direction === "bl" || handle.direction === "br") return 12 - root.cornerLength + root.cornerThickness - 3;
                 return 0;
             }
         }
