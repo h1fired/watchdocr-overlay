@@ -2,9 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import App.Backend
-import "../common/controls"
-import "components"
-
+import "qrc:/qml/ui/common/controls"
+import "qrc:/qml/ui/overlay/components"
 
 Rectangle {
     id: root

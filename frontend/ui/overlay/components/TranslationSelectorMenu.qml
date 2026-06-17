@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
-import "../../common/controls"
-import "../../common/components"
-
+import "qrc:/qml/ui/common/controls"
+import "qrc:/qml/ui/common/components"
 
 OMessageBoxFrame {
     id: root

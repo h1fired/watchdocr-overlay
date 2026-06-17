@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import "../controls"
-
+import "qrc:/qml/ui/common/controls"
 
 Rectangle {
     id: root

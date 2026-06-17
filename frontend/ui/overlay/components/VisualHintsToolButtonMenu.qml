@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
-import "../../common/controls"
+import "qrc:/qml/ui/common/controls"
 
 OButton {
     id: root

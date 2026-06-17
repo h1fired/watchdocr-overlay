@@ -1,7 +1,7 @@
 import QtQuick
 import Qt5Compat.GraphicalEffects
 import App.Backend
-import "components"
+import "qrc:/qml/ui/overlay/components"
 
 Item {
     id: root

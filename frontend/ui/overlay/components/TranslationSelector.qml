@@ -1,8 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import App.Gui
-import "../../common/controls"
-
+import "qrc:/qml/ui/common/controls"
 
 Item {
     id: root

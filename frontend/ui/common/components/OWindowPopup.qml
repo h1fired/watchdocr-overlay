@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
 
-
 Popup {
     id: root
 
