@@ -1,0 +1,4 @@
+
+
+class DebugError(Exception):
+    pass

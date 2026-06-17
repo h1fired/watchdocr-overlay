@@ -7,9 +7,11 @@ from common.utils.path import create_dir
 load_dotenv()
 
 
-DEBUG = True
+DEBUG = False
 
+APP_ID = '-'
 APP_NAME = 'WatchdOcr'
+APP_VERSION = '0.1.0'
 
 USER_SETTINGS_PATH = Path(
     create_dir(os.environ['APPDATA'], APP_NAME),

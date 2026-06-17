@@ -209,3 +209,5 @@ __marimo__/
 # Project
 /data
 qresources.py
+nuitka-crash-report.xml
+/compile*/
