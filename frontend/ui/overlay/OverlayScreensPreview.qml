@@ -1,7 +1,7 @@
 import QtQuick
 import App.Backend
 import App.System
-import "components"
+import "qrc:/qml/ui/overlay/components"
 
 Item {
     id: root

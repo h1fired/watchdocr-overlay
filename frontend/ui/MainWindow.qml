@@ -5,8 +5,8 @@ import App.Gui
 import App.Utils
 import App.System
 import App.Backend
-import "common/components"
-import "overlay/components"
+import "qrc:/qml/ui/common/components"
+import "qrc:/qml/ui/overlay/components"
 
 Window {
     id: window

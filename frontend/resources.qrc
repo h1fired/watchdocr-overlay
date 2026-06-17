@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='utf-8'?>
+<RCC>
+  <qresource prefix="/qml">
+    <file>ui/Gui.qml</file>
+    <file>ui/MainWindow.qml</file>
+    <file>ui/WatchdOcr.qml</file>
+    <file>ui/WindowHotReload.qml</file>
+    <file>ui/common/components/OMessageBoxFrame.qml</file>
+    <file>ui/common/components/OWindowPopup.qml</file>
+    <file>ui/common/controls/OButton.qml</file>
+    <file>ui/common/controls/OMenu.qml</file>
+    <file>ui/common/controls/OMenuItem.qml</file>
+    <file>ui/common/controls/OSwitch.qml</file>
+    <file>ui/common/controls/OText.qml</file>
+    <file>ui/overlay/OverlayControlPanel.qml</file>
+    <file>ui/overlay/OverlayScreensPreview.qml</file>
+    <file>ui/overlay/OverlaySelectionArea.qml</file>
+    <file>ui/overlay/OverlayTextConsole.qml</file>
+    <file>ui/overlay/OverlayVisualHints.qml</file>
+    <file>ui/overlay/components/AccuracyBar.qml</file>
+    <file>ui/overlay/components/ActivityBar.qml</file>
+    <file>ui/overlay/components/CopyButton.qml</file>
+    <file>ui/overlay/components/ImageProvider.qml</file>
+    <file>ui/overlay/components/LanguageListView.qml</file>
+    <file>ui/overlay/components/ModeSelector.qml</file>
+    <file>ui/overlay/components/ScreenArea.qml</file>
+    <file>ui/overlay/components/SelectionArea.qml</file>
+    <file>ui/overlay/components/SelectionBox.qml</file>
+    <file>ui/overlay/components/TextConsoleResponseLoader.qml</file>
+    <file>ui/overlay/components/TextConsoleStatus.qml</file>
+    <file>ui/overlay/components/TranslationInfo.qml</file>
+    <file>ui/overlay/components/TranslationSelector.qml</file>
+    <file>ui/overlay/components/TranslationSelectorButton.qml</file>
+    <file>ui/overlay/components/TranslationSelectorMenu.qml</file>
+    <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
+  </qresource>
+  <qresource prefix="/qml">
+    <file>resources\icons/a_loading.svg</file>
+    <file>resources\icons/a_loading2.svg</file>
+    <file>resources\icons/close.svg</file>
+    <file>resources\icons/copy.svg</file>
+    <file>resources\icons/eye.svg</file>
+    <file>resources\icons/fullscreen.svg</file>
+    <file>resources\icons/maximize.svg</file>
+    <file>resources\icons/minimize.svg</file>
+    <file>resources\icons/pause.svg</file>
+    <file>resources\icons/play.svg</file>
+    <file>resources\icons/preferences_dots.svg</file>
+    <file>resources\icons/selection.svg</file>
+    <file>resources\icons/settings.svg</file>
+    <file>resources\icons/swap.svg</file>
+    <file>resources\icons/tray.svg</file>
+    <file>resources\icons/visual_hint.svg</file>
+  </qresource>
+</RCC>

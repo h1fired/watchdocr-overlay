@@ -1,8 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import App.Gui
-import "../../common/controls"
-
+import "qrc:/qml/ui/common/controls"
 
 Item {
     id: root
@@ -39,7 +38,7 @@ Item {
             width: height
             height: root.height
 
-            icon.source: "../../../../resources/icons/swap.svg"
+            icon.source: "qrc:/qml/resources/icons/swap.svg"
             icon.color: "#E9E9E9"
             icon.width: 18
             icon.height: 18

@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import "../controls"
-
+import "qrc:/qml/ui/common/controls"
 
 Rectangle {
     id: root
@@ -54,7 +53,7 @@ Rectangle {
                     Layout.preferredHeight: 40
                     Layout.alignment: Qt.AlignRight
 
-                    icon.source: "../../../../resources/icons/close.svg"
+                    icon.source: "qrc:/qml/resources/icons/close.svg"
                     icon.width: 14
                     icon.height: 14
                     icon.color: "#3f3f3f"

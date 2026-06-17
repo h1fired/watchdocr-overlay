@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
-import "../../common/controls"
+import "qrc:/qml/ui/common/controls"
 
 OButton {
     id: root
@@ -8,7 +8,7 @@ OButton {
     property alias showEnabled: optionShow.checked
     property alias asOverlayEnabled: optionAsOverlay.checked
 
-    icon.source: "../../../../resources/icons/visual_hint.svg"
+    icon.source: "qrc:/qml/resources/icons/visual_hint.svg"
     icon.color: "#E9E9E9"
     icon.width: 20
     icon.height: 20

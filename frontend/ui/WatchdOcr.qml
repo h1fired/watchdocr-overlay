@@ -1,8 +1,8 @@
 import QtQuick
 import App.Backend
-import "overlay"
-import "overlay/components"
-import "common/components"
+import "qrc:/qml/ui/overlay"
+import "qrc:/qml/ui/overlay/components"
+import "qrc:/qml/ui/common/components"
 
 Item {
     id: root

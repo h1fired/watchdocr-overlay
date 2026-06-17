@@ -2,9 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
 import App.Backend
-import "../common/controls"
-import "components"
-
+import "qrc:/qml/ui/common/controls"
+import "qrc:/qml/ui/overlay/components"
 
 Rectangle {
     id: root
@@ -65,8 +64,8 @@ Rectangle {
 
                     icon.source: (
                         root.height === 180
-                        ? "../../../resources/icons/maximize.svg"
-                        : "../../../resources/icons/minimize.svg"
+                        ? "qrc:/qml/resources/icons/maximize.svg"
+                        : "qrc:/qml/resources/icons/minimize.svg"
                     )
                     icon.color: "#D2D2D2"
                     icon.width: 18

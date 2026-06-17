@@ -2,9 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import App.Backend
-import "../common/controls"
-import "components"
-
+import "qrc:/qml/ui/common/controls"
+import "qrc:/qml/ui/overlay/components"
 
 Rectangle {
     id: root
@@ -146,7 +145,7 @@ Rectangle {
                     PropertyChanges {
                         target: btnPlayPause
                         text: "Pause"
-                        icon.source: "../../../resources/icons/pause.svg"
+                        icon.source: "qrc:/qml/resources/icons/pause.svg"
                         background.color: "#1E293B"
                     }
                 }
@@ -169,7 +168,7 @@ Rectangle {
 
             checkable: true
 
-            icon.source: "../../../resources/icons/selection.svg"
+            icon.source: "qrc:/qml/resources/icons/selection.svg"
             icon.color: "#E9E9E9"
             icon.width: 22
             icon.height: 22
@@ -227,7 +226,7 @@ Rectangle {
 
             checkable: true
 
-            icon.source: "../../../resources/icons/eye.svg"
+            icon.source: "qrc:/qml/resources/icons/eye.svg"
             icon.color: "#E9E9E9"
             icon.width: 20
             icon.height: 20

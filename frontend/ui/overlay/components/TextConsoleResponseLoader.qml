@@ -1,5 +1,5 @@
 import QtQuick
-import "../../common/controls"
+import "qrc:/qml/ui/common/controls"
 
 Item {
     id: root

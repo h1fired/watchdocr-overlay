@@ -1,5 +1,5 @@
 import QtQuick
-import "../../common/controls"
+import "qrc:/qml/ui/common/controls"
 
 OButton {
     id: root
@@ -15,7 +15,7 @@ OButton {
     text: "Copied to clipboard"
     palette.buttonText: "#D2D2D2"
 
-    icon.source: "../../../../resources/icons/copy.svg"
+    icon.source: "qrc:/qml/resources/icons/copy.svg"
     icon.color: "#D2D2D2"
     icon.width: 18
     icon.height: 18

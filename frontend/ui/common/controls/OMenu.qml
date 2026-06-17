@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
 
-
 Menu {
     id: root
 

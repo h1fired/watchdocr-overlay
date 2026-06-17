@@ -1,7 +1,6 @@
 import QtQuick
 import App.Utils
 
-
 Item {
     id: root
 

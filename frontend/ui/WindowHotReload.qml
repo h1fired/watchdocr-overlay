@@ -1,6 +1,5 @@
 import QtQuick
 
-
 MainWindow {
     id: window
 

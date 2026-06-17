@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
-import "../../common/controls"
-import "../../common/components"
-
+import "qrc:/qml/ui/common/controls"
+import "qrc:/qml/ui/common/components"
 
 OMessageBoxFrame {
     id: root
@@ -175,7 +174,7 @@ OMessageBoxFrame {
                 font.family: "Segoe UI"
                 font.weight: 600
 
-                icon.source: "../../../../resources/icons/swap.svg"
+                icon.source: "qrc:/qml/resources/icons/swap.svg"
                 icon.width: 14
                 icon.height: 14
 

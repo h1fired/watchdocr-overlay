@@ -1,6 +1,5 @@
 import QtQuick
-import "../../common/controls"
-
+import "qrc:/qml/ui/common/controls"
 
 OText {
     id: root
