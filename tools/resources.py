@@ -64,11 +64,11 @@ def generate_resources(
         for dirpath, _, filenames in os.walk(r.directory):
             for filename in filenames:
                 if filename.endswith(r.extensions):
-                    # relative path inside resources
+                    # Relative path inside resources
                     full_path = os.path.join(dirpath, filename)
                     rel_path = os.path.relpath(full_path, r.directory).replace('\\', '/')
                     file_tag = ET.SubElement(sub, 'file')
-                    file_tag.text = r.path_prefix + '/' + rel_path if r.path_prefix else rel_path
+                    file_tag.text = os.path.join(r.path_prefix, rel_path)
 
     # Save XML to file
     tree = ET.ElementTree(RCC)
@@ -131,7 +131,6 @@ def build_resources(
     img_resource = ResourceModel(
         'frontend/resources',
         ('.svg', '.png', '.ttf'),
-        prefix='resource',
         path_prefix='resources'
     )
     resources = ResourceModelCollection([qml_resource, img_resource])

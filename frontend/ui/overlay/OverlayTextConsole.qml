@@ -65,8 +65,8 @@ Rectangle {
 
                     icon.source: (
                         root.height === 180
-                        ? "qrc:/qml/resource/resources/icons/maximize.svg"
-                        : "qrc:/qml/resource/resources/icons/minimize.svg"
+                        ? "qrc:/qml/resources/icons/maximize.svg"
+                        : "qrc:/qml/resources/icons/minimize.svg"
                     )
                     icon.color: "#D2D2D2"
                     icon.width: 18

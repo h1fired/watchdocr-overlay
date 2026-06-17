@@ -146,7 +146,7 @@ Rectangle {
                     PropertyChanges {
                         target: btnPlayPause
                         text: "Pause"
-                        icon.source: "qrc:/qml/resource/resources/icons/pause.svg"
+                        icon.source: "qrc:/qml/resources/icons/pause.svg"
                         background.color: "#1E293B"
                     }
                 }
@@ -169,7 +169,7 @@ Rectangle {
 
             checkable: true
 
-            icon.source: "qrc:/qml/resource/resources/icons/selection.svg"
+            icon.source: "qrc:/qml/resources/icons/selection.svg"
             icon.color: "#E9E9E9"
             icon.width: 22
             icon.height: 22
@@ -227,7 +227,7 @@ Rectangle {
 
             checkable: true
 
-            icon.source: "qrc:/qml/resource/resources/icons/eye.svg"
+            icon.source: "qrc:/qml/resources/icons/eye.svg"
             icon.color: "#E9E9E9"
             icon.width: 20
             icon.height: 20

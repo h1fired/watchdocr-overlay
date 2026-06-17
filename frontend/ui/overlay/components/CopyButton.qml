@@ -15,7 +15,7 @@ OButton {
     text: "Copied to clipboard"
     palette.buttonText: "#D2D2D2"
 
-    icon.source: "qrc:/qml/resource/resources/icons/copy.svg"
+    icon.source: "qrc:/qml/resources/icons/copy.svg"
     icon.color: "#D2D2D2"
     icon.width: 18
     icon.height: 18

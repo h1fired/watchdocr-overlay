@@ -175,7 +175,7 @@ OMessageBoxFrame {
                 font.family: "Segoe UI"
                 font.weight: 600
 
-                icon.source: "qrc:/qml/resource/resources/icons/swap.svg"
+                icon.source: "qrc:/qml/resources/icons/swap.svg"
                 icon.width: 14
                 icon.height: 14
 

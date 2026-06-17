@@ -8,7 +8,7 @@ OButton {
     property alias showEnabled: optionShow.checked
     property alias asOverlayEnabled: optionAsOverlay.checked
 
-    icon.source: "qrc:/qml/resource/resources/icons/visual_hint.svg"
+    icon.source: "qrc:/qml/resources/icons/visual_hint.svg"
     icon.color: "#E9E9E9"
     icon.width: 20
     icon.height: 20
