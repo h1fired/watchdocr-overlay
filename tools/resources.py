@@ -120,8 +120,7 @@ def log(text: str, *styles: Styles):
 
 def build_resources(
     generate: bool,
-    compile: bool,
-    noautoinit: bool
+    compile: bool
 ):
     qml_resource = ResourceModel(
         'frontend/ui',
@@ -144,8 +143,7 @@ def build_resources(
 
     if compile:
         compile_resources(
-            os.path.abspath('frontend/resources.qrc'),
-            no_init=noautoinit
+            os.path.abspath('frontend/resources.qrc')
         )
 
     log('Resources compiled!', Styles.GREEN)
@@ -165,15 +163,9 @@ if __name__ == '__main__':
         action='store_true',
         help='Compile QRC resources files'
     )
-    parser.add_argument(
-        '--noautoinit',
-        action='store_true',
-        help='Prevent QRC file init on import'
-    )
     args = parser.parse_args()
 
     build_resources(
         args.generate,
-        args.compile,
-        args.noautoinit
+        args.compile
     )
