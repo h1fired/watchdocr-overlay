@@ -7,7 +7,7 @@ class SystemTray(QObject):
     def __init__(self, window, app):
         super().__init__(window)
 
-        self.tray = QSystemTrayIcon(QIcon('resources/icons/tray.svg'), app)
+        self.tray = QSystemTrayIcon(QIcon(':/qml/resource/resources/icons/tray.svg'), app)
 
         self.menu = QMenu()
         self.show_action = QAction('Show')

@@ -54,7 +54,7 @@ Rectangle {
                     Layout.preferredHeight: 40
                     Layout.alignment: Qt.AlignRight
 
-                    icon.source: "../../../../resources/icons/close.svg"
+                    icon.source: "qrc:/qml/resource/resources/icons/close.svg"
                     icon.width: 14
                     icon.height: 14
                     icon.color: "#3f3f3f"

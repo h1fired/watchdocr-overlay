@@ -39,7 +39,7 @@ Item {
             width: height
             height: root.height
 
-            icon.source: "../../../../resources/icons/swap.svg"
+            icon.source: "qrc:/qml/resource/resources/icons/swap.svg"
             icon.color: "#E9E9E9"
             icon.width: 18
             icon.height: 18
