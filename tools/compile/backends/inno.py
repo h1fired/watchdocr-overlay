@@ -95,7 +95,6 @@ class InnoBackend(InstallerBackend):
             app_id=params.app_id,
             output_dir=output_dir,
         )
-        print(script)
         inno_file = f'{save_dir}/{INNO_SCRIPT_NAME}.iss'
 
         with open(inno_file, 'w') as f:
