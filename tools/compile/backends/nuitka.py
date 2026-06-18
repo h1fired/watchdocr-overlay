@@ -3,7 +3,7 @@ import subprocess
 
 
 class NuitkaBackend(CompilerBackend):
-    def build(self, module: str, output_dir: str):
+    def build(self, module, output_dir, exe_name):
         # Add plugins
         s_plugins = []
         for plugin in self.params.plugins:
@@ -27,6 +27,7 @@ class NuitkaBackend(CompilerBackend):
             *s_hidden_packages,
             *s_custom_flags,
             f'--output-dir={output_dir}',
+            f'--output-filename={exe_name}.exe',
             module
         ])
         subprocess.run(cmd, check=True)
