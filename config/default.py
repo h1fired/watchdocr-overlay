@@ -7,7 +7,7 @@ from common.utils.path import create_dir
 load_dotenv()
 
 
-DEBUG = True
+DEBUG = False
 
 APP_ID = '-'
 APP_NAME = 'WatchdOcr'
