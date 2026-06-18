@@ -3,6 +3,7 @@ from qt.core import Signal, Slot, QRect, Property
 from src.common.event import IEvent, EventData
 from src.watchdocr.api.processor import ProcessorAPI
 from src.watchdocr.api.workflow import WorkflowAPI
+from src.watchdocr.workflow.workflows import OnetimeWorkflow, LiveWorkflow
 from src.watchdocr.processor.processor import Events
 import json
 
@@ -39,11 +40,14 @@ class ProcessorViewModel(QmlViewModel):
 
     @Slot(str)
     def onModeChanged(self, mode: str):
-        # if mode == 'onetime':
-        #     self._api.queue_command(ProcessorCommandType.ONETIME_MODE_ENABLE)
-        # elif mode == 'live':
-        #     self._api.queue_command(ProcessorCommandType.LIVE_MODE_ENABLE)
-        pass
+        workflow = None
+        if mode == 'onetime':
+            workflow = OnetimeWorkflow
+        elif mode == 'live':
+            workflow = LiveWorkflow
+
+        if workflow:
+            self._workflow_api.switch_to(workflow)
 
     @Slot(QRect)
     def onSelectionAreaBoxReleased(self, box: QRect):

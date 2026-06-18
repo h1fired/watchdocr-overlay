@@ -3,7 +3,7 @@
 from . import WatchdOcrWorkflow
 from src.watchdocr.processor.processor import PipelineStrategy
 import time
-from threading import Thread
+from threading import Thread, Event
 from config import config
 
 
@@ -12,8 +12,10 @@ class LiveWorkflow(WatchdOcrWorkflow):
         super().__init__(processor)
         self._running = False
         self._th = None
+        self._e = Event()
 
     def run(self):
+        self._e.clear()
         self._running = True
         self._th = Thread(target=self._run, daemon=True)
         self._th.start()
@@ -25,10 +27,11 @@ class LiveWorkflow(WatchdOcrWorkflow):
                     strategy=PipelineStrategy.OCR_TRANSLATION,
                     context_data={}
                 )
-            time.sleep(config.LIVE_MANAGE_MODE_FREQ)
+            self._e.wait(config.LIVE_MANAGE_MODE_FREQ)
 
     def close(self):
         self._running = False
+        self._e.set()
         if self._th and self._th.is_alive():
             self._th.join()
 

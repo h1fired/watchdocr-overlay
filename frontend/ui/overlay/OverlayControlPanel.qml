@@ -93,8 +93,6 @@ Rectangle {
         ModeSelector {
             id: modeSelector
 
-            visible: false
-
             Layout.fillHeight: true
             Layout.topMargin: 2
             Layout.bottomMargin: 2
