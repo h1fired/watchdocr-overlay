@@ -87,13 +87,13 @@ class InnoBackend(InstallerBackend):
             title=params.title,
             version=params.version,
             publisher=params.publisher,
-            exe_name=os.path.join(exe_dir, f'{params.exe_name}'),
+            exe_name=os.path.normpath(os.path.join(exe_dir, f'{params.exe_name}')),
             exe_dir=exe_dir,
-            icon=os.path.abspath(params.icon),
+            icon=os.path.normpath(os.path.abspath(params.icon)),
             installer_fn=params.get_installer_name(),
             install_dir_name=params.install_dir_name,
             app_id=params.app_id,
-            output_dir=output_dir,
+            output_dir=os.path.normpath(output_dir),
         )
         inno_file = f'{save_dir}/{INNO_SCRIPT_NAME}.iss'
 

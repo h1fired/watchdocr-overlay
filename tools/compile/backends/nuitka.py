@@ -32,5 +32,5 @@ class NuitkaBackend(CompilerBackend):
         ])
         subprocess.run(cmd, check=True)
 
-    def dist_folder(self):
-        return 'main.dist'
+    def dist_folder(self, module_name: str):
+        return f'{module_name}.dist'

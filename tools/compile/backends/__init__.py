@@ -19,7 +19,7 @@ class CompilerBackend:
     def build(self, module: str, output_dir: str, exe_name: str):
         raise NotImplementedError
 
-    def dist_folder(self):
+    def dist_folder(self, module_name: str):
         raise NotImplementedError
 
 

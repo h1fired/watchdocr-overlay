@@ -12,8 +12,10 @@ from config import default
 from enum import Enum, IntFlag
 from datetime import datetime
 from PIL import Image
+from pathlib import Path
 import shutil
 import argparse
+import subprocess
 
 
 COMPILE_DIR_NAME = 'compile'
@@ -44,6 +46,7 @@ class AppConfig:
     app_id: str = default.APP_ID
 
     def __post_init__(self):
+        self.icon = os.path.normpath(self.icon)
         self.installer_fn = f'{self.exe_name}_{self.version}_win64'
         self.portable_fn = f'{self.exe_name}_{self.version}_win64-portable'
 
@@ -64,6 +67,15 @@ class AppBuilder:
         return self._compiler.params
 
     def build(self, module: str, options: BuildOption):
+        # Build resources
+        cmd = ' '.join([
+            'uv run tools/resources.py',
+            '--generate',
+            '--compile',
+        ])
+        subprocess.run(cmd, check=True)
+
+        # Build app
         datestamp = datetime.strftime(datetime.now(), "%d-%m-%Y-%H-%M-%S")
         compile_dir = f'{COMPILE_DIR_NAME}_{datestamp}'
 
@@ -86,20 +98,17 @@ class AppBuilder:
             self._config.exe_name
         )
 
-        # Clean up
         shutil.move(
-            f'{compile_dir}/build/{self._compiler.dist_folder()}',
+            f'{compile_dir}/build/{self._compiler.dist_folder(Path(module).stem)}',
             f'{compile_dir}/dist'
         )
-        os.remove(f'{compile_dir}/logo.ico')
-        shutil.rmtree(f'{compile_dir}/build')
 
         if options & BuildOption.BUILD_INSTALLER:
             params = InstallerParams(
                 title=self._config.title,
                 version=self._config.version,
                 publisher=self._config.publisher,
-                icon=self._config.icon,
+                icon=os.path.normpath(f'{compile_dir}/logo.ico'),
                 exe_name=self._config.exe_name,
                 install_dir_name=self._config.install_dir_name,
                 app_id=self._config.app_id
@@ -107,9 +116,24 @@ class AppBuilder:
             self._installer.build(
                 params=params,
                 output_dir=OUTPUT_DIR_NAME,
-                exe_dir='dist/',
+                exe_dir='dist',
                 save_dir=compile_dir
             )
+        if options & BuildOption.BUILD_PORTABLE:
+            # Create portable version
+            print('Create portable version...')
+            shutil.make_archive(
+                f'{compile_dir}/{OUTPUT_DIR_NAME}/{self._config.portable_fn}',
+                'zip',
+                f'{compile_dir}/dist'
+            )
+
+        # Clean up
+        logo_path = f'{compile_dir}/logo.ico'
+        if os.path.exists(logo_path):
+            os.remove(logo_path)
+
+        shutil.rmtree(f'{compile_dir}/build')
 
         print('Compiling completed!')
 
@@ -142,10 +166,11 @@ if __name__ == '__main__':
     )
 
     builder.compiler_params.plugins.append('pyside6')
-    builder.compiler_params.custom_flags.append('--include-qt-plugins=qml')
-    builder.compiler_params.custom_flags.append('--include-windows-runtime-dlls=yes')
     builder.compiler_params.hidden_packages.append('src.watchdocr.plugins')
     builder.compiler_params.hidden_packages.append('winrt')
+    builder.compiler_params.custom_flags.append('--include-qt-plugins=qml')
+    builder.compiler_params.custom_flags.append('--include-windows-runtime-dlls=yes')
+    builder.compiler_params.custom_flags.append('--windows-disable-console')
 
     options = 0
     if args.installer:

@@ -7,7 +7,7 @@ from common.utils.path import create_dir
 load_dotenv()
 
 
-DEBUG = False
+DEBUG = True
 
 APP_ID = '-'
 APP_NAME = 'WatchdOcr'
@@ -18,5 +18,5 @@ USER_SETTINGS_PATH = Path(
     'user_settings.yaml'
 )
 
-QML_WINDOW_FILE = 'frontend/ui/MainWindow.qml'
+QML_WINDOW_FILE = ':/qml/ui/MainWindow.qml'
 WINDOW_TOGGLE_HOTKEY = 'Alt+B'
