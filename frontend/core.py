@@ -19,7 +19,7 @@ from config import config
 
 _qmlLinkerCore = WatchdOcrLinkerCore()
 qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.Backend', 1, 0, 'Backend', _qmlLinkerCore)
-qmlRegisterSingletonType(QUrl.fromLocalFile('frontend/ui/Gui.qml'), 'App.Gui', 1, 0, 'Gui')
+qmlRegisterSingletonType(QUrl('qrc:/qml/ui/Gui.qml'), 'App.Gui', 1, 0, 'Gui')
 registerUtilsQmlTypes()
 
 
