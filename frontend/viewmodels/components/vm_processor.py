@@ -2,13 +2,14 @@ from frontend.viewmodels.common.mvvm import QmlViewModel
 from qt.core import Signal, Slot, QRect, Property
 from src.common.event import IEvent, EventData
 from src.watchdocr.api.processor import ProcessorAPI
-from src.watchdocr.processor.processor import PipelineStrategy, Events
+from src.watchdocr.api.workflow import WorkflowAPI
+from src.watchdocr.processor.processor import Events
 import json
 
 
 class ProcessorViewModel(QmlViewModel):
     _name = 'Processor'
-    _needed_api = (ProcessorAPI,)
+    _needed_api = (ProcessorAPI, WorkflowAPI)
 
     resultReceived = Signal(str)
     activeChanged = Signal()
@@ -16,6 +17,7 @@ class ProcessorViewModel(QmlViewModel):
 
     def onLoaded(self):
         self._api = self.getApi(ProcessorAPI)
+        self._workflow_api = self.getApi(WorkflowAPI)
         self.getEventSystem().listen(self.onEvent)
 
     def onEvent(self, event: IEvent, data: EventData):
@@ -45,12 +47,10 @@ class ProcessorViewModel(QmlViewModel):
 
     @Slot(QRect)
     def onSelectionAreaBoxReleased(self, box: QRect):
-        self._api.queue_pipeline(
-            strategy=PipelineStrategy.OCR_TRANSLATION,
-            context_data={
-                'boundings': (box.x(), box.y(), box.width(), box.height())
-            }
-        )
+        self._workflow_api.provide_context_data({
+            'boundings': (box.x(), box.y(), box.width(), box.height())
+        })
+        self._workflow_api.execute()
 
     def getActive(self):
         return self._api.get_active()

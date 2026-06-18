@@ -258,6 +258,9 @@ class WatchdOcrProcessor:
         self._update_context_data(context_data)
         self._runner.put(strategy)
 
+    def context(self):
+        return self._ctx
+
     def _update_context_data(self, data: dict):
         field_names = {f.name for f in fields(self._ctx)}
         for key, value in data.items():
