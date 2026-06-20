@@ -1,7 +1,7 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
 from qt.core import Signal, Slot
 from src.common.event import IEvent, EventData
-from src.watchdocr.processor.image import grab_all_screens
+from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.processor import Events
 
 
@@ -22,7 +22,9 @@ class PreviewViewModel(QmlViewModel):
 
     @Slot()
     def requestAllScreensPreview(self):
-        image = grab_all_screens()
+        image = ScreenGrabber.grab_all_screens()
+        if not image:
+            return
 
         from frontend.core import GuiCoreApplication
         providers = GuiCoreApplication().image_providers()

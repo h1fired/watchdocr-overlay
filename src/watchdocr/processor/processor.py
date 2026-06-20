@@ -3,7 +3,7 @@ from src.common.event import EventSystem, IEvent
 from src.common.plugin import PluginManager
 from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
-from src.watchdocr.processor.image import grab_window_area
+from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.text import cleanup_text_simple
 from dataclasses import dataclass, asdict, fields
 from enum import IntEnum, auto
@@ -70,7 +70,16 @@ class OcrPipelineStage(PipelineStage):
         self._ocr = ocr
 
     def execute(self, ctx):
-        image = grab_window_area(ctx.boundings)
+        image = ScreenGrabber.grab_screen_area(ctx.boundings)
+        if not image:
+            ctx.text = ''
+            ctx.translated_text = ''
+            ctx.confidence = 0.
+            ctx.boxes = tuple()
+            ctx.boxed_text = ''
+            ctx.translated_boxes = []
+            return
+
         ctx.image = image
 
         data = self._ocr.recognize(ctx.image)
