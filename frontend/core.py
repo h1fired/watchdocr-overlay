@@ -16,6 +16,8 @@ from frontend.viewmodels.types import (
 )
 from config import config
 
+import ctypes
+
 
 _qmlLinkerCore = WatchdOcrLinkerCore()
 qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.Backend', 1, 0, 'Backend', _qmlLinkerCore)
@@ -92,6 +94,8 @@ class GuiCoreApplication(metaclass=Singleton):
 
         self._image_providers = registerQmlImageProviders(engine)
 
+        self._set_window_affinity()
+
     def destroy(self):
         _qmlLinkerCore.destroyContent()
 
@@ -113,3 +117,9 @@ class GuiCoreApplication(metaclass=Singleton):
 
     def image_providers(self):
         return self._image_providers
+
+    def _set_window_affinity(self):
+        user32 = ctypes.windll.user32
+        hwnd = self._window.winId()
+        WDA_EXCLUDEFROMCAPTURE = 0x00000011
+        user32.SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE)

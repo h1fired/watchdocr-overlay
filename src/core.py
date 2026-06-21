@@ -5,8 +5,12 @@ from src.common.api import KernelAPICollection
 from src.watchdocr.processor.processor import WatchdOcrProcessor
 
 from src.watchdocr.api.processor import ProcessorAPI
+from src.watchdocr.api.workflow import WorkflowAPI
 from src.watchdocr.api.translation import TranslationAPI
 from src.watchdocr.api.ocr import OcrAPI
+from src.watchdocr.workflow import WatchdOcrWorkflowManager
+from src.watchdocr.workflow.workflows import WORKFLOWS
+from src.watchdocr.workflow.onetime import OnetimeWorkflow
 
 from typing import Any
 
@@ -58,9 +62,18 @@ class WatchdOcrCore:
         processor.run()
         self._kernel.objects.set('watchdocr-processor', processor)
 
+        workflow_manager = WatchdOcrWorkflowManager(
+            workflows=tuple([w(processor) for w in WORKFLOWS])
+        )
+        workflow_manager.switch_to(OnetimeWorkflow)
+        self._kernel.objects.set('watchdocr-workflows', workflow_manager)
+
         # API
         processor_api = ProcessorAPI(self._kernel)
         self._kernel_apis.add(processor_api)
+
+        workflow_api = WorkflowAPI(self._kernel)
+        self._kernel_apis.add(workflow_api)
 
         ocr_api = OcrAPI(self._kernel)
         self._kernel_apis.add(ocr_api)

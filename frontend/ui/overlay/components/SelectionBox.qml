@@ -236,4 +236,11 @@ Item {
 
         property bool selecting: false
     }
+
+    function updateArea(rect) {
+        root.x = rect.x;
+        root.y = rect.y;
+        root.width = rect.width;
+        root.height = rect.height;
+    }
 }

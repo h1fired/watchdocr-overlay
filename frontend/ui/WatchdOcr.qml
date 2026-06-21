@@ -8,6 +8,7 @@ Item {
     id: root
 
     property bool controlsVisible: true
+    readonly property string mode: controlPanel.mode
 
     MouseArea {
         anchors.fill: parent
@@ -26,13 +27,19 @@ Item {
 
         anchors.fill: parent
 
-        area.enabled: controlPanel.selectionToolActive
+        area.mouseSelectionActive: controlPanel.selectionToolActive
 
         Connections {
             target: selectionArea.area
 
-            function onBoxReleased() {
-                visualHints.offset = Qt.point(selectionArea.area.box.x, selectionArea.area.box.y);
+            function onBoxSelected() {
+                visualHints.offset = Qt.point(
+                    selectionArea.area.box.x,
+                    selectionArea.area.box.y
+                );
+                visualHints.clear();
+
+                controlPanel.selectionToolActive = false;
             }
         }
     }
@@ -41,12 +48,6 @@ Item {
         id: visualHints
 
         anchors.fill: parent
-        
-        boxesVisible: (
-            !selectionArea.area.loading && !selectionArea.area.selecting &&
-            (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
-            root.controlsVisible && controlPanel.visualHintsActive)
-        )
     }
 
     ScreenArea {
@@ -75,7 +76,7 @@ Item {
         OverlayTextConsole {
             id: textConsole
 
-            visible: !selectionArea.area.selecting
+            opacity: controlPanel.selectionToolActive ? 0.5 : 1.0
 
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
@@ -86,18 +87,77 @@ Item {
         }
     }
 
-    function cleanUp() {
-        selectionArea.cleanUp();
-        controlPanel.selectionToolActive = true;
-    }
-
     onControlsVisibleChanged: {
         if (controlsVisible) {
-            cleanUp();
+            modeController.cleanUp();
+        }
+    }
+
+    Item {
+        id: modeController
+
+        state: "onetime"
+        states: [
+            State {
+                name: "onetime"
+                when: root.mode === "onetime"
+
+                PropertyChanges {
+                    target: visualHints
+                    boxesVisible: (
+                        !selectionArea.area.loading && !selectionArea.area.selecting &&
+                        (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
+                        root.controlsVisible && controlPanel.visualHintsActive)
+                    )
+                }
+
+                PropertyChanges {
+                    target: selectionArea
+                    loading: Backend.Processor.recognizerStatus === 1
+                }
+
+                PropertyChanges {
+                    target: textConsole
+                    visible: !selectionArea.selecting && !selectionArea.loading
+                    enableSizeAdaptivity: true
+                }
+            },
+            State {
+                name: "live"
+                when: root.mode === "live"
+
+                PropertyChanges {
+                    target: visualHints
+                    boxesVisible: (
+                        !selectionArea.area.selecting &&
+                        (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
+                        root.controlsVisible && controlPanel.visualHintsActive)
+                    )
+                }
+
+                PropertyChanges {
+                    target: selectionArea
+                    loading: true
+                }
+
+                PropertyChanges {
+                    target: textConsole
+                    visible: !selectionArea.selecting
+                    enableSizeAdaptivity: false
+                }
+            },
+        ]
+
+        function cleanUp() {
+            if (state == "onetime") {
+                selectionArea.cleanUp();
+                controlPanel.selectionToolActive = true;
+                visualHints.clear();
+            }
         }
     }
 
     Component.onCompleted: {
-        cleanUp();
+        modeController.cleanUp();
     }
 }

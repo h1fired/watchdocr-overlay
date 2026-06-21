@@ -24,8 +24,8 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
 
     def cleanup_text(self, text: str):
         ctext = re.sub(r'[ \t]+', ' ', text)  # Clean multiple whitespaces
-        ctext = re.sub(r'\n+', '\n', text)  # Clean newlines mid-sentence
-        ctext = re.sub(r'\n{3,}', '\n\n', text)  # Clean excessive blank lines
+        ctext = re.sub(r'\n+', '\n', ctext)  # Clean newlines mid-sentence
+        ctext = re.sub(r'\n{3,}', '\n\n', ctext)  # Clean excessive blank lines
         return ctext
 
     def process_image(self, image: Image.Image):
@@ -36,16 +36,11 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
         # Scale image based on image height
         w, h = image.size
 
-        if h < 300:
-            scale_factor = 3.0
-        elif h < 600:
-            scale_factor = 2.0
-        else:
-            scale_factor = 1.0
+        scale = 4.0 if h < 150 else 3.0 if h < 300 else 2.0 if h < 600 else 1.0
 
-        if scale_factor != 1.0:
-            new_w = int(w * scale_factor)
-            new_h = int(h * scale_factor)
+        if scale != 1.0:
+            new_w = int(w * scale)
+            new_h = int(h * scale)
             image = image.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-        return image, scale_factor
+        return image, scale

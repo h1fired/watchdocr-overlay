@@ -8,6 +8,7 @@ import "qrc:/qml/ui/overlay/components"
 Rectangle {
     id: root
 
+    property bool enableSizeAdaptivity: false
     property TranslationInfo translationInfo: translationInfo
     property string ocrProvider: Backend.Ocr.providerName
     property string translatorProvider: Backend.Translation.providerName
@@ -198,7 +199,7 @@ Rectangle {
             let data = JSON.parse(json);
             responseTextEdit.text = data.translated_text;
 
-            if (responseTextEdit.isOverflowing()) {
+            if (root.enableSizeAdaptivity && responseTextEdit.isOverflowing()) {
                 root.width = 720;
                 root.height = 340;
             }

@@ -13,6 +13,7 @@ Rectangle {
     property alias visualHintsAsOverlayActive: menuVisualHints.asOverlayEnabled
     property alias screensPreviewActive: btnScreensPreview.checked
     property TranslationSelector translationSelector: translationSelector
+    readonly property string mode: modeSelector.currentMode
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
@@ -93,66 +94,12 @@ Rectangle {
         ModeSelector {
             id: modeSelector
 
-            visible: false
-
             Layout.fillHeight: true
             Layout.topMargin: 2
             Layout.bottomMargin: 2
 
             onCurrentModeChanged: {
                 Backend.Processor.onModeChanged(currentMode);
-                btnPlayPause.visible = currentMode == "live";
-            }
-        }
-
-        Divider {
-            visible: modeSelector.currentMode == "live";
-        }
-
-        OButton {
-            id: btnPlayPause
-
-            Layout.preferredWidth: 80
-            Layout.fillHeight: true
-
-            text: "Play"
-            font.family: "Segoe UI"
-            font.weight: 700
-            font.pixelSize: 12
-
-            icon.color: "#FAF9FF"
-            icon.width: 12
-            icon.height: 12
-
-            background: Rectangle {
-                color: parent.hovered ? "#7C3AED" : "#8B5CF6"
-                radius: 6
-            }
-
-            state: Backend.Processor.active ? "pause" : "run"
-            states: [
-                State {
-                    name: "run"
-                    PropertyChanges {
-                        target: btnPlayPause
-                        text: "Run"
-                        icon.source: "../../../resources/icons/play.svg"
-                        background.color: btnPlayPause.hovered ? "#7C3AED" : "#8B5CF6"
-                    }
-                },
-                State {
-                    name: "pause"
-                    PropertyChanges {
-                        target: btnPlayPause
-                        text: "Pause"
-                        icon.source: "qrc:/qml/resources/icons/pause.svg"
-                        background.color: "#1E293B"
-                    }
-                }
-            ]
-
-            onClicked: {
-                Backend.Processor.onPlayPauseButtonClick(state);
             }
         }
 
