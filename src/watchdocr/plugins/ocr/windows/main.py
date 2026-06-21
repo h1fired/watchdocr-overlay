@@ -21,7 +21,7 @@ class WindowsOcrPlugin(OcrPlugin):
         self._async_loop = asyncio.new_event_loop()
 
     def get_priority(self):
-        return 1
+        return 2
 
     def get_provider_name(self):
         return 'Windows'

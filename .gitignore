@@ -211,3 +211,5 @@ __marimo__/
 qresources.py
 nuitka-crash-report.xml
 /compile*/
+*.dll
+*.onemodel
