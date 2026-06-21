@@ -119,6 +119,7 @@ Item {
                 PropertyChanges {
                     target: textConsole
                     visible: !selectionArea.selecting && !selectionArea.loading
+                    enableSizeAdaptivity: true
                 }
             },
             State {
@@ -142,6 +143,7 @@ Item {
                 PropertyChanges {
                     target: textConsole
                     visible: !selectionArea.selecting
+                    enableSizeAdaptivity: false
                 }
             },
         ]
