@@ -8,6 +8,7 @@ Item {
     id: root
 
     property bool controlsVisible: true
+    readonly property string mode: controlPanel.mode
 
     MouseArea {
         anchors.fill: parent
@@ -33,6 +34,7 @@ Item {
 
             function onBoxReleased() {
                 visualHints.offset = Qt.point(selectionArea.area.box.x, selectionArea.area.box.y);
+                visualHints.clear()
             }
         }
     }
@@ -41,7 +43,7 @@ Item {
         id: visualHints
 
         anchors.fill: parent
-        
+
         boxesVisible: (
             !selectionArea.area.loading && !selectionArea.area.selecting &&
             (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||

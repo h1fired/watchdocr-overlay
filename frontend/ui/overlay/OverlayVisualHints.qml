@@ -130,6 +130,10 @@ Item {
         }
     }
 
+    function clear() {
+        root._boxes = ([]);
+    }
+
     Connections {
         target: Backend.Processor
         function onResultReceived(json) {

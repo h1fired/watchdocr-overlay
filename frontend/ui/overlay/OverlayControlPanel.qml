@@ -13,6 +13,7 @@ Rectangle {
     property alias visualHintsAsOverlayActive: menuVisualHints.asOverlayEnabled
     property alias screensPreviewActive: btnScreensPreview.checked
     property TranslationSelector translationSelector: translationSelector
+    readonly property string mode: modeSelector.currentMode
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
