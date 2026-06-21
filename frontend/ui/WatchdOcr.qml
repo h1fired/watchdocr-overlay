@@ -32,8 +32,11 @@ Item {
         Connections {
             target: selectionArea.area
 
-            function onBoxReleased() {
-                visualHints.offset = Qt.point(selectionArea.area.box.x, selectionArea.area.box.y);
+            function onBoxSelected() {
+                visualHints.offset = Qt.point(
+                    selectionArea.area.box.x,
+                    selectionArea.area.box.y
+                );
                 visualHints.clear()
             }
         }

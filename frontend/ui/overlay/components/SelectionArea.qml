@@ -4,89 +4,25 @@ import QtQuick.Controls
 Item {
     id: root
 
-    property            rect    box:           Qt.rect(0, 0, 0, 0)
-    property            bool    loading:       false
-    readonly property   bool    selecting:     privates.selecting || selectionBox.selecting
-    signal boxReleased()
-    signal pressed()
-
-    onBoxChanged: {
-        canvas.requestPaint();
-    }
-
-    MouseArea {
-        anchors.fill: parent
-
-        cursorShape: Qt.CrossCursor
-
-        onPressed: (event) => {
-            root.pressed();
-            privates.startPoint = Qt.point(event.x, event.y);
-            privates.endPoint = privates.startPoint;
-
-            privates.selecting = true;
-        }
-
-        onPositionChanged: (event) => {
-            privates.endPoint = Qt.point(event.x, event.y);
-            root.box = privates.reformatRect(privates.rectFromPoints(privates.startPoint, privates.endPoint));
-
-            selectionBox.x = root.box.x;
-            selectionBox.y = root.box.y;
-            selectionBox.width = root.box.width;
-            selectionBox.height = root.box.height;
-        }
-
-        onReleased: (event) => {
-            privates.endPoint = Qt.point(event.x, event.y);
-            root.box = privates.reformatRect(privates.rectFromPoints(privates.startPoint, privates.endPoint));
-
-            selectionBox.boxReleased();
-
-            privates.selecting = false;
-        }
-    }
-
-    Canvas {
-        id: canvas
-
-        anchors.fill: parent
-
-        opacity: root.enabled ? 0.3 : 0.35
-
-        onPaint: {
-            let ctx = getContext("2d");
-            ctx.fillStyle = "black";
-
-            // Draw a rectangle with a transparent box
-            ctx.beginPath();
-            ctx.fillRect(0, 0, parent.width, parent.height);
-            ctx.globalCompositeOperation = "destination-out";
-            ctx.fillStyle = "black";
-            ctx.fillRect(
-                root.box.x,
-                root.box.y,
-                root.box.width,
-                root.box.height,
-            );
-            ctx.globalCompositeOperation = "source-over";
-        }
-    }
+    readonly property alias box: objects.box
+    property bool loading: false
+    property bool selecting: selectionMouseArea.selecting && selectionBox.selecting
+    signal boxSelected()
 
     Item {
-        x: root.box.x-1
-        y: root.box.y-1
-        width: root.box.width+2
-        height: root.box.height+2
+        x: objects.box.x - 1
+        y: objects.box.y - 1
+        width: objects.box.width + 2
+        height: objects.box.height + 2
 
         Rectangle {
             id: selectionRectGradient
 
-            anchors.fill: parent
+            property var gradientPos: 0.0
 
             visible: root.loading
 
-            property var gradientPos: 0.0
+            anchors.fill: parent
 
             gradient: Gradient {
                 orientation: Qt.Horizontal
@@ -116,47 +52,71 @@ Item {
         }
     }
 
-    SelectionBox {
-        id: selectionBox
+    Canvas {
+        id: canvas
 
-        visible: root.enabled && width > 0
+        anchors.fill: parent
 
-        x: 0
-        y: 0
-        width: 0
-        height: 0
+        opacity: 0.3
 
-        onBoxReleased: {
-            root.box.x = x;
-            root.box.y = y;
-            root.box.width = width;
-            root.box.height = height;
+        onPaint: {
+            let ctx = getContext("2d");
+            ctx.fillStyle = "black";
 
-            root.boxReleased();
-        }
-
-        onBoxChanged: {
-            root.box.x = x;
-            root.box.y = y;
-            root.box.width = width;
-            root.box.height = height;
+            // Draw a rectangle with a transparent box
+            ctx.beginPath();
+            ctx.fillRect(0, 0, parent.width, parent.height);
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.fillStyle = "black";
+            ctx.fillRect(
+                objects.box.x,
+                objects.box.y,
+                objects.box.width,
+                objects.box.height,
+            );
+            ctx.globalCompositeOperation = "source-over";
         }
     }
 
-    QtObject {
-        id: privates
+    MouseArea {
+        id: selectionMouseArea
 
         property point startPoint: Qt.point(0, 0)
         property point endPoint: Qt.point(0, 0)
         property bool selecting: false
 
+        anchors.fill: parent
+
+        cursorShape: Qt.CrossCursor
+
+        onPressed: (event) => {
+            startPoint = Qt.point(event.x, event.y);
+            endPoint = startPoint;
+
+            selecting = true;
+        }
+
+        onPositionChanged: (event) => {
+            endPoint = Qt.point(event.x, event.y);
+            objects.box = reformatRect(rectFromPoints(startPoint, endPoint));
+            objects.boxUpdated();
+   
+            // Update selection box area
+            selectionBox.updateArea(objects.box)
+        }
+
+        onReleased: (event) => {
+            endPoint = Qt.point(event.x, event.y);
+            root.boxSelected();
+
+            selecting = false;
+        }
+
         function reformatRect(rect) {
-            if (rect.width <= 0) {
+            if (rect.width <= 0)
                 rect.width = 10;
-            }
-            if (rect.height <= 0) {
+            if (rect.height <= 0)
                 rect.height = 10;
-            }
             return rect;
         }
 
@@ -169,16 +129,52 @@ Item {
         }
     }
 
+    SelectionBox {
+        id: selectionBox
+
+        x: 0
+        y: 0
+        width: 0
+        height: 0
+
+        onBoxReleased: {
+            objects.box.x = x;
+            objects.box.y = y;
+            objects.box.width = width;
+            objects.box.height = height;
+
+            root.boxSelected();
+        }
+
+        onBoxChanged: {
+            objects.box.x = x;
+            objects.box.y = y;
+            objects.box.width = width;
+            objects.box.height = height;
+
+            objects.boxUpdated();
+        }
+    }
+
+    QtObject {
+        id: objects
+
+        signal boxUpdated()
+        property rect box: Qt.rect(0, 0, 0, 0)
+
+        onBoxUpdated: {
+            canvas.requestPaint();
+        }
+    }
+
     function relativeToAbsoluteBox(box) {
         var p = root.mapToGlobal(box.x, box.y);
         return Qt.rect(p.x, p.y, box.width, box.height);
     }
 
     function clear() {
-        privates.startPoint = Qt.point(0, 0);
-        privates.endPoint = Qt.point(0, 0);
-        root.box = Qt.rect(0, 0, 0, 0);
-        selectionBox.width = 0;
-        selectionBox.height = 0;
+        objects.box = Qt.rect(0, 0, 0, 0);
+        selectionBox.updateArea(objects.box);
+        canvas.requestPaint();
     }
 }
