@@ -43,12 +43,6 @@ Item {
         id: visualHints
 
         anchors.fill: parent
-
-        boxesVisible: (
-            !selectionArea.area.loading && !selectionArea.area.selecting &&
-            (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
-            root.controlsVisible && controlPanel.visualHintsActive)
-        )
     }
 
     ScreenArea {
@@ -88,18 +82,55 @@ Item {
         }
     }
 
-    function cleanUp() {
-        selectionArea.cleanUp();
-        controlPanel.selectionToolActive = true;
-    }
-
     onControlsVisibleChanged: {
         if (controlsVisible) {
-            cleanUp();
+            modeController.cleanUp();
+        }
+    }
+
+    Item {
+        id: modeController
+
+        state: "onetime"
+        states: [
+            State {
+                name: "onetime"
+                when: root.mode === "onetime"
+
+                PropertyChanges {
+                    target: visualHints
+                    boxesVisible: (
+                        !selectionArea.area.loading && !selectionArea.area.selecting &&
+                        (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
+                        root.controlsVisible && controlPanel.visualHintsActive)
+                    )
+                }
+            },
+            State {
+                name: "live"
+                when: root.mode === "live"
+
+                PropertyChanges {
+                    target: visualHints
+                    boxesVisible: (
+                        !selectionArea.area.selecting &&
+                        (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
+                        root.controlsVisible && controlPanel.visualHintsActive)
+                    )
+                }
+            },
+        ]
+
+        function cleanUp() {
+            if (state == "onetime") {
+                selectionArea.cleanUp();
+                controlPanel.selectionToolActive = true;
+                visualHints.clear();
+            }
         }
     }
 
     Component.onCompleted: {
-        cleanUp();
+        modeController.cleanUp();
     }
 }
