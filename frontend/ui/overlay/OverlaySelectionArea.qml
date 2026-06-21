@@ -8,6 +8,7 @@ Item {
 
     property SelectionArea area: area
     property alias loading: area.loading
+    property alias selecting: area.selecting
 
     SelectionArea {
         id: area

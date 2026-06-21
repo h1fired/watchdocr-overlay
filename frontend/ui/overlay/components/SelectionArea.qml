@@ -6,7 +6,8 @@ Item {
 
     readonly property alias box: objects.box
     property bool loading: false
-    property bool selecting: selectionMouseArea.selecting && selectionBox.selecting
+    property bool selecting: selectionMouseArea.selecting || selectionBox.selecting
+    property bool mouseSelectionActive: false
     signal boxSelected()
 
     Item {
@@ -81,6 +82,9 @@ Item {
     MouseArea {
         id: selectionMouseArea
 
+        visible: root.mouseSelectionActive
+        enabled: root.mouseSelectionActive
+
         property point startPoint: Qt.point(0, 0)
         property point endPoint: Qt.point(0, 0)
         property bool selecting: false
@@ -107,7 +111,19 @@ Item {
 
         onReleased: (event) => {
             endPoint = Qt.point(event.x, event.y);
+            let box = reformatRect(rectFromPoints(startPoint, endPoint));
+            
+            // Normalize box to minimun recognizable size
+            if (box.width < selectionBox.minWidth)
+                box.width = selectionBox.minWidth;
+            if (box.height < selectionBox.minHeight)
+                box.height = selectionBox.minHeight;
+
+            objects.box = box
             root.boxSelected();
+
+            // Update selection box area
+            selectionBox.updateArea(objects.box)
 
             selecting = false;
         }
