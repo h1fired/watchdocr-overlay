@@ -7,7 +7,7 @@ from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.text import cleanup_text_simple
 from dataclasses import dataclass, asdict, fields
 from enum import IntEnum, auto
-from threading import Thread
+from threading import Thread, Event
 from PIL import Image
 from typing import Callable
 import queue
@@ -178,6 +178,8 @@ class WatchdOcrRunner:
         self._output_callback = None
         self._status_callback = None
         self._area_preview_callback = None
+        self._e = Event()
+        self._e.set()
 
     def put(self, strategy: PipelineStrategy):
         self._q.put(strategy)
@@ -202,7 +204,9 @@ class WatchdOcrRunner:
 
             if strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
                 self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
+                self._e.clear()
                 self._pipeline.execute()
+                self._e.set()
                 self._send_status(WatchdOcrProcessorStatus.IDLE)
 
                 output = self.create_output_data()
@@ -210,6 +214,9 @@ class WatchdOcrRunner:
                     self._output_callback(output)
 
                 self._send_area_preview(self._ctx.image)
+
+    def wait_for_exec_finish(self):
+        self._e.wait()
 
     def create_output_data(self):
         return WatchdOcrOutput(
@@ -269,6 +276,9 @@ class WatchdOcrProcessor:
 
     def context(self):
         return self._ctx
+
+    def wait_for_pipeline_finish(self):
+        return self._runner.wait_for_exec_finish()
 
     def _update_context_data(self, data: dict):
         field_names = {f.name for f in fields(self._ctx)}

@@ -27,6 +27,7 @@ class LiveWorkflow(WatchdOcrWorkflow):
                     strategy=PipelineStrategy.OCR_TRANSLATION,
                     context_data={}
                 )
+                self._processor.wait_for_pipeline_finish()
             self._e.wait(config.LIVE_MANAGE_MODE_FREQ)
 
     def close(self):
