@@ -95,8 +95,6 @@ Rectangle {
             id: modeSelector
 
             Layout.fillHeight: true
-            Layout.topMargin: 2
-            Layout.bottomMargin: 2
 
             onCurrentModeChanged: {
                 Backend.Processor.onModeChanged(currentMode);

@@ -21,7 +21,7 @@ Item {
 
             property var gradientPos: 0.0
 
-            visible: root.loading
+            visible: root.loading && !root.selecting
 
             anchors.fill: parent
 

@@ -26,9 +26,7 @@ Rectangle {
 
     radius: 6
 
-    color: "#12151E"
-    border.width: 1
-    border.color: "#23272F"
+    color: "#2C2C2C"
 
     RowLayout {
         id: row
@@ -48,7 +46,7 @@ Rectangle {
                 checked: root._currentMode === model.name
 
                 background: Rectangle {
-                    color: checked ? "#23272F" : "transparent"
+                    color: checked ? "#414141" : "transparent"
                     radius: 4
                 }
 
@@ -56,8 +54,8 @@ Rectangle {
                 font.family: "Segoe UI"
                 font.weight: 600
                 font.pixelSize: 12
-                palette.buttonText: hovered ? "#94A3B8" :"#475569"
-                palette.brightText : "#94A3B8"
+                palette.buttonText: hovered ? "#E7E7E7" : "#ADADAD"
+                palette.brightText : "#E7E7E7"
 
                 onClicked: {
                     root._currentMode = model.name;

@@ -34,7 +34,7 @@ OButton {
                 font.family: root.font.family
                 font.weight: 600
                 font.pixelSize: 10
-                color: '#E4E3E9'
+                color: '#E7E7E7'
             }
 
             Text {
@@ -44,7 +44,7 @@ OButton {
                 font.family: root.font.family
                 font.weight: 600
                 font.pixelSize: 12
-                color: "#FAF9FF"
+                color: "#F1F1F1"
             }
         }
     }
