@@ -108,6 +108,11 @@ Item {
                         root.controlsVisible && controlPanel.visualHintsActive)
                     )
                 }
+
+                PropertyChanges {
+                    target: selectionArea
+                    loading: Backend.Processor.recognizerStatus === 1
+                }
             },
             State {
                 name: "live"
@@ -120,6 +125,11 @@ Item {
                         (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
                         root.controlsVisible && controlPanel.visualHintsActive)
                     )
+                }
+
+                PropertyChanges {
+                    target: selectionArea
+                    loading: true
                 }
             },
         ]

@@ -7,6 +7,7 @@ Item {
     id: root
 
     property SelectionArea area: area
+    property alias loading: area.loading
 
     SelectionArea {
         id: area
@@ -16,14 +17,6 @@ Item {
         onBoxSelected: {
             let absoluteBox = area.relativeToAbsoluteBox(area.box);
             Backend.Processor.onSelectionAreaBoxReleased(absoluteBox);
-        }
-    }
-
-    Connections {
-        target: Backend.Processor
-
-        function onRecognizerStatusChanged(status) {
-            area.loading = status === 1;
         }
     }
 
