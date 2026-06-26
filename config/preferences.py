@@ -36,7 +36,7 @@ class UserSettings(BaseModel):
         default=False,
         json_schema_extra=SettingField(
             label='Visual hints as overlay',
-            description='Render hints as a transparent overlay instead of inline.',
+            description='Render hints even if overlay is hidden',
             group='Visual',
         ).as_dict(),
     )
@@ -44,7 +44,7 @@ class UserSettings(BaseModel):
         default=False,
         json_schema_extra=SettingField(
             label='Screens preview',
-            description='Show a live preview thumbnail of captured screen areas.',
+            description='Show a preview thumbnail of captured screen areas.',
             group='General',
         ).as_dict(),
     )
