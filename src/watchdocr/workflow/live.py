@@ -2,7 +2,6 @@
 
 from . import WatchdOcrWorkflow
 from src.watchdocr.processor.processor import PipelineStrategy
-import time
 from threading import Thread, Event
 from config import config
 

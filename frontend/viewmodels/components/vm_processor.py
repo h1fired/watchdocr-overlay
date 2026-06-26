@@ -22,6 +22,7 @@ class ProcessorViewModel(QmlViewModel):
         self.getEventSystem().listen(self.onEvent)
 
         self._recognizer_status = 0
+        self._current_mode = ''
 
     def onEvent(self, event: IEvent, data: EventData):
         match event:
@@ -34,14 +35,6 @@ class ProcessorViewModel(QmlViewModel):
                 self.recognizerStatusChanged.emit()
 
     @Slot(str)
-    def onPlayPauseButtonClick(self, state: str):
-        # if state == 'run':
-        #     self._api.queue_command(ProcessorCommandType.START)
-        # elif state == 'pause':
-        #     self._api.queue_command(ProcessorCommandType.STOP)
-        pass
-
-    @Slot(str)
     def onModeChanged(self, mode: str):
         workflow = None
         if mode == 'onetime':
@@ -51,13 +44,20 @@ class ProcessorViewModel(QmlViewModel):
 
         if workflow:
             self._workflow_api.switch_to(workflow)
+            self._current_mode = mode
 
     @Slot(QRect)
     def onSelectionAreaBoxReleased(self, box: QRect):
-        self._workflow_api.provide_context_data({
-            'boundings': (box.x(), box.y(), box.width(), box.height())
-        })
-        self._workflow_api.execute()
+        if box.isEmpty():
+            self._workflow_api.switch_to(None)
+        else:
+            workflow = self.convertModeStrToType(self._current_mode)
+            self._workflow_api.switch_to(workflow)
+
+            self._workflow_api.provide_context_data({
+                'boundings': (box.x(), box.y(), box.width(), box.height())
+            })
+            self._workflow_api.execute()
 
     def getActive(self):
         return self._api.get_active()
@@ -68,3 +68,11 @@ class ProcessorViewModel(QmlViewModel):
         return self._recognizer_status
 
     recognizerStatus = Property(int, getRecognizerStatus, notify=recognizerStatusChanged)
+
+    def convertModeStrToType(self, mode: str):
+        workflow = None
+        if mode == 'onetime':
+            workflow = OnetimeWorkflow
+        elif mode == 'live':
+            workflow = LiveWorkflow
+        return workflow

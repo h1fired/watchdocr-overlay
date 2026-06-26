@@ -7,7 +7,7 @@ class WorkflowAPI(KernelAPI):
         super().__init__(kernel)
         self._manager: WatchdOcrWorkflowManager = self.kernel.objects.pull('watchdocr-workflows')
 
-    def switch_to(self, workflow: type[WatchdOcrWorkflow]):
+    def switch_to(self, workflow: type[WatchdOcrWorkflow] | None):
         self._manager.switch_to(workflow)
 
     def provide_context_data(self, data: dict):
@@ -17,3 +17,6 @@ class WorkflowAPI(KernelAPI):
     def execute(self):
         workflow = self._manager.get_current_workflow()
         workflow.execute()
+
+    def get_current_workflow_type(self):
+        return type(self._manager.get_current_workflow())
