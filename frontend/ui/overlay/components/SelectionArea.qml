@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import "qrc:/qml/ui/common/controls"
 
 Item {
     id: root
@@ -169,6 +170,34 @@ Item {
             objects.box.height = height;
 
             objects.boxUpdated();
+        }
+    }
+
+    OButton {
+        x: selectionBox.x + selectionBox.width - width + 4
+        y: selectionBox.y - height - 6
+
+        width: 20
+        height: 20
+
+        visible: (
+            selectionBox.width >= selectionBox.minWidth &&
+            selectionBox.height >= selectionBox.minHeight
+        )
+
+        background: Rectangle {
+            color: "transparent"
+            border.width: 1
+            border.color: "#FFFFFF"
+        }
+        icon.source: "qrc:/qml/resources/icons/close.svg"
+        icon.width: 12
+        icon.height: 12
+        display: AbstractButton.IconOnly
+
+        onClicked: {
+            root.clear();
+            root.boxSelected();
         }
     }
 
