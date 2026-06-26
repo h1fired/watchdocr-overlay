@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import App.Backend
+import App.Gui
 import "qrc:/qml/ui/common/controls"
 import "qrc:/qml/ui/overlay/components"
 
@@ -9,8 +10,6 @@ Rectangle {
     id: root
 
     property alias selectionToolActive: btnToolSelection.checked
-    property alias visualHintsActive: menuVisualHints.showEnabled
-    property alias visualHintsAsOverlayActive: menuVisualHints.asOverlayEnabled
     property alias screensPreviewActive: btnScreensPreview.checked
     property TranslationSelector translationSelector: translationSelector
     readonly property string mode: modeSelector.currentMode
@@ -22,13 +21,7 @@ Rectangle {
     border.width: 1
     border.color: "#353535"
 
-    onVisualHintsActiveChanged: {
-        Backend.Settings.set("visual_hints_show", visualHintsActive);
-    }
 
-    onVisualHintsAsOverlayActiveChanged: {
-        Backend.Settings.set("visual_hints_show_as_overlay", visualHintsAsOverlayActive);
-    }
 
     component Divider: Rectangle {
         width: 2
@@ -135,33 +128,32 @@ Rectangle {
 
         Divider {}
 
-        // OButton {
-        //     Layout.fillHeight: true
-        //     Layout.preferredWidth: height
-
-        //     icon.source: "../../../resources/icons/settings.svg"
-        //     icon.color: "#E9E9E9"
-        //     icon.width: 24
-        //     icon.height: 24
-
-        //     background: Rectangle {
-        //         color: parent.hovered ? "#2C2C2C" : "transparent"
-        //         radius: 6
-        //     }
-
-        //     ToolTip.text: "Settings"
-        //     ToolTip.visible: hovered
-        //     ToolTip.delay: 1000
-        // }
-
-        // Divider {}
-
-        VisualHintsToolButtonMenu {
-            id: menuVisualHints
+        OButton {
+            id: btnSettings
 
             Layout.fillHeight: true
             Layout.preferredWidth: height
+
+            icon.source: "qrc:/qml/resources/icons/settings.svg"
+            icon.color: "#E9E9E9"
+            icon.width: 22
+            icon.height: 22
+
+            background: Rectangle {
+                color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
+                radius: 6
+            }
+
+            ToolTip.text: "Settings"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
+
+            onClicked: {
+                Gui.showWindowPopup(settingsMenu);
+            }
         }
+
+
 
         OButton {
             id: btnScreensPreview
@@ -199,6 +191,12 @@ Rectangle {
         }
     }
 
+    SettingsMenu {
+        id: settingsMenu
+
+        visible: false
+    }
+
     Connections {
         target: translationSelector
 
@@ -211,9 +209,16 @@ Rectangle {
         }
     }
 
+    // Sync screensPreview button from settings when changed externally (e.g. SettingsMenu).
+    Connections {
+        target: Backend.Settings
+
+        function onSettingsChanged() {
+            btnScreensPreview.checked = Backend.Settings.values.screens_preview_enabled;
+        }
+    }
+
     Component.onCompleted: {
-        visualHintsActive = Backend.Settings.values.visual_hints_show;
-        visualHintsAsOverlayActive = Backend.Settings.values.visual_hints_show_as_overlay;
         btnScreensPreview.checked = Backend.Settings.values.screens_preview_enabled;
         translationSelector.sourceLanguage = Backend.Settings.values.source_language;
         translationSelector.targetLanguage = Backend.Settings.values.target_language;

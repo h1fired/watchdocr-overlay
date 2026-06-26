@@ -106,8 +106,8 @@ Item {
                     target: visualHints
                     boxesVisible: (
                         !selectionArea.area.loading && !selectionArea.area.selecting &&
-                        (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
-                        root.controlsVisible && controlPanel.visualHintsActive)
+                        (!root.controlsVisible && Backend.Settings.values.visual_hints_show_as_overlay ||
+                        root.controlsVisible && Backend.Settings.values.visual_hints_show)
                     )
                 }
 
@@ -130,8 +130,8 @@ Item {
                     target: visualHints
                     boxesVisible: (
                         !selectionArea.area.selecting &&
-                        (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
-                        root.controlsVisible && controlPanel.visualHintsActive)
+                        (!root.controlsVisible && Backend.Settings.values.visual_hints_show_as_overlay ||
+                        root.controlsVisible && Backend.Settings.values.visual_hints_show)
                     )
                 }
 

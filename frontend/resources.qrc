@@ -26,6 +26,7 @@
     <file>ui/overlay/components/ScreenArea.qml</file>
     <file>ui/overlay/components/SelectionArea.qml</file>
     <file>ui/overlay/components/SelectionBox.qml</file>
+    <file>ui/overlay/components/SettingsMenu.qml</file>
     <file>ui/overlay/components/TextConsoleResponseLoader.qml</file>
     <file>ui/overlay/components/TextConsoleStatus.qml</file>
     <file>ui/overlay/components/TranslationInfo.qml</file>
