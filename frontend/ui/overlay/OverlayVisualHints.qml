@@ -40,7 +40,7 @@ Item {
         anchors.fill: areaPreview
 
         source: previewTex
-        radius: 24
+        radius: 64
         visible: false
         layer.enabled: true
     }

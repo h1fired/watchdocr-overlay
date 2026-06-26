@@ -118,6 +118,11 @@ TARGET_LANGUAGES = {
 
 
 class GoogleTranslatorPlugin(TranslatorPlugin):
+    def on_startup(self):
+        self.session = requests.Session()
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        self.session.headers.update(headers)
+
     def translate(self, text, _from, to):
         if text == '':
             return TranslationData(text, text)
@@ -137,7 +142,7 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
                 'dt': 't',
                 'q': text
             }
-            response = requests.get(URL, params=params)
+            response = self.session.get(URL, params=params, timeout=5)
             translated_text = ''.join(t[0] for t in response.json()[0])
 
             if not translated_text:

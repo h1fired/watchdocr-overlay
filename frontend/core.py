@@ -87,12 +87,12 @@ class GuiCoreApplication(metaclass=Singleton):
                     _qmlSystemObj.setVisible(True)
             self._tray.showTriggered.connect(onTrayShowTriggered)
 
+        self._image_providers = registerQmlImageProviders(engine)
+
         if load_viewmodels:
             _qmlLinkerCore.initialize(self._window, api_collection, eventsys)
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
-
-        self._image_providers = registerQmlImageProviders(engine)
 
         self._set_window_affinity()
 
