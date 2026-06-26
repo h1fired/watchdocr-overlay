@@ -19,6 +19,5 @@ USER_SETTINGS_PATH = Path(
 )
 
 QML_WINDOW_FILE = ':/qml/ui/MainWindow.qml'
-WINDOW_TOGGLE_HOTKEY = 'Alt+B'
 
 LIVE_MANAGE_MODE_FREQ = 2

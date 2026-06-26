@@ -21,6 +21,7 @@
     <file>ui/overlay/components/ActivityBar.qml</file>
     <file>ui/overlay/components/CopyButton.qml</file>
     <file>ui/overlay/components/ImageProvider.qml</file>
+    <file>ui/overlay/components/KeySequenceField.qml</file>
     <file>ui/overlay/components/LanguageListView.qml</file>
     <file>ui/overlay/components/ModeSelector.qml</file>
     <file>ui/overlay/components/ScreenArea.qml</file>

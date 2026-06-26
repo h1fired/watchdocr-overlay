@@ -20,6 +20,10 @@ OMessageBoxFrame {
     border.width: 1
     border.color: "#353535"
 
+    onVisibleChanged: {
+        Backend.General.blockOverlayToggleHotkey(visible);
+    }
+
     ColumnLayout {
         id: column
 
@@ -155,8 +159,8 @@ OMessageBoxFrame {
                         }
 
                         TextField {
-                            visible: fieldRow.modelData.type !== "bool"
-                            enabled: fieldRow.modelData.type !== "bool"
+                            visible: fieldRow.modelData.type !== "bool" && fieldRow.modelData.type !== "hotkey"
+                            enabled: fieldRow.modelData.type !== "bool" && fieldRow.modelData.type !== "hotkey"
 
                             implicitWidth: 100
                             implicitHeight: 28
@@ -185,6 +189,22 @@ OMessageBoxFrame {
                                 if (fieldRow.modelData.type === "int") val = parseInt(val) || 0;
                                 if (fieldRow.modelData.type === "float") val = parseFloat(val) || 0.0;
                                 Backend.Settings.set(fieldRow.modelData.key, val);
+                            }
+                        }
+
+                        KeySequenceField {
+                            visible: fieldRow.modelData.type === "hotkey"
+                            enabled: fieldRow.modelData.type === "hotkey"
+
+                            implicitWidth: 140
+                            implicitHeight: 28
+
+                            value: fieldRow.modelData.type === "hotkey"
+                                ? String(Backend.Settings.values[fieldRow.modelData.key] ?? "")
+                                : ""
+
+                            onSequenceCaptured: function(newSequence) {
+                                Backend.Settings.set(fieldRow.modelData.key, newSequence);
                             }
                         }
                     }

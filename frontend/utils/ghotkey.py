@@ -145,3 +145,7 @@ def bind(shortcut: str, callback: Callable):
 
 def unbind(shortcut: str, callback: Callable):
     context['hotkeys'][shortcut].remove(callback)
+
+
+def unbind_all():
+    context['hotkeys'].clear()

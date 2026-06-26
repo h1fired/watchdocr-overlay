@@ -157,6 +157,20 @@ Item {
         }
     }
 
+    Connections {
+        target: Backend.Settings
+
+        property string previousHotkey: ""
+
+        function onSettingsChanged() {
+            let hotkey = Backend.Settings.values.overlay_toggle_hotkey;
+            if (hotkey !== previousHotkey) {
+                Backend.General.changeOverlayToggleHotkey(hotkey);
+                previousHotkey = hotkey;
+            }
+        }
+    }
+
     Component.onCompleted: {
         modeController.cleanUp();
     }

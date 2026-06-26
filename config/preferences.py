@@ -11,6 +11,7 @@ class SettingField:
     description: str = ''
     modifiable: bool = True
     group: str = 'General'
+    field_type: str | None = None
 
     def as_dict(self) -> dict:
         return {
@@ -18,6 +19,7 @@ class SettingField:
             'description': self.description,
             'modifiable': self.modifiable,
             'group': self.group,
+            'field_type': self.field_type,
         }
 
 
@@ -62,6 +64,18 @@ class UserSettings(BaseModel):
             group='Translation',
         ).as_dict(),
     )
+    overlay_toggle_hotkey: str = Field(
+        default='[',
+        json_schema_extra=SettingField(
+            label='Overlay toggle hotkey',
+            description=(
+                'Trigger an overlay visibility. '
+                'Doesn\'t work when settings are visible'
+            ),
+            group='Hotkeys',
+            field_type='hotkey',
+        ).as_dict(),
+    )
 
     model_config = {
         'validate_assignment': True,
@@ -96,14 +110,6 @@ class UserSettings(BaseModel):
 
     @classmethod
     def modifiable_fields(cls) -> list[dict]:
-        """
-        Return metadata for all fields where modifiable=True, suitable for
-        direct serialisation to QML as a QVariantList.
-
-        Each dict has the shape:
-            { key, label, description, group, type, value }
-        where `type` is one of 'bool' | 'str' | 'int' | 'float'.
-        """
         instance = settings  # use the live singleton so values are current
         result: list[dict] = []
         for field_name, field_info in cls.model_fields.items():
@@ -111,7 +117,9 @@ class UserSettings(BaseModel):
             if not extra.get('modifiable', False):
                 continue
             annotation = field_info.annotation
-            if annotation is bool:
+            if extra.get('field_type'):
+                field_type = extra['field_type']
+            elif annotation is bool:
                 field_type = 'bool'
             elif annotation is int:
                 field_type = 'int'
