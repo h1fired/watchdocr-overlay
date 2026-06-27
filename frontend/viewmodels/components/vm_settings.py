@@ -13,7 +13,7 @@ class SettingsViewModel(QmlViewModel):
     def values(self) -> dict:
         return settings.model_dump()
 
-    @Property('QVariantList', notify=settingsChanged)
+    @Property('QVariantList', constant=True)
     def fields(self) -> list:
         return UserSettings.modifiable_fields()
 
@@ -22,7 +22,3 @@ class SettingsViewModel(QmlViewModel):
         if hasattr(settings, key):
             setattr(settings, key, value)
             self.settingsChanged.emit()
-
-    @Slot()
-    def refresh(self) -> None:
-        self.settingsChanged.emit()
