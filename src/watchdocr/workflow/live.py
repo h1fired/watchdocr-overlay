@@ -34,6 +34,7 @@ class LiveWorkflow(WatchdOcrWorkflow):
         self._e.set()
         if self._th and self._th.is_alive():
             self._th.join()
+        self._processor.clean_current_pipelines()
 
     def execute(self):
         pass

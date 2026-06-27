@@ -7,7 +7,7 @@ class OnetimeWorkflow(WatchdOcrWorkflow):
         pass
 
     def close(self):
-        pass
+        self._processor.clean_current_pipelines()
 
     def execute(self):
         self._processor.queue_pipeline(
