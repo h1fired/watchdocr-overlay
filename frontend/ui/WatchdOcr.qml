@@ -106,8 +106,8 @@ Item {
                     target: visualHints
                     boxesVisible: (
                         !selectionArea.area.loading && !selectionArea.area.selecting &&
-                        (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
-                        root.controlsVisible && controlPanel.visualHintsActive)
+                        (!root.controlsVisible && Backend.Settings.values.visual_hints_show_as_overlay ||
+                        root.controlsVisible && Backend.Settings.values.visual_hints_show)
                     )
                 }
 
@@ -130,8 +130,8 @@ Item {
                     target: visualHints
                     boxesVisible: (
                         !selectionArea.area.selecting &&
-                        (!root.controlsVisible && controlPanel.visualHintsAsOverlayActive ||
-                        root.controlsVisible && controlPanel.visualHintsActive)
+                        (!root.controlsVisible && Backend.Settings.values.visual_hints_show_as_overlay ||
+                        root.controlsVisible && Backend.Settings.values.visual_hints_show)
                     )
                 }
 
@@ -153,6 +153,20 @@ Item {
                 selectionArea.cleanUp();
                 controlPanel.selectionToolActive = true;
                 visualHints.clear();
+            }
+        }
+    }
+
+    Connections {
+        target: Backend.Settings
+
+        property string previousHotkey: ""
+
+        function onSettingsChanged() {
+            let hotkey = Backend.Settings.values.overlay_toggle_hotkey;
+            if (hotkey !== previousHotkey) {
+                Backend.General.changeOverlayToggleHotkey(hotkey);
+                previousHotkey = hotkey;
             }
         }
     }

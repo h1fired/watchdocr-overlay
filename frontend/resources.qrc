@@ -21,11 +21,13 @@
     <file>ui/overlay/components/ActivityBar.qml</file>
     <file>ui/overlay/components/CopyButton.qml</file>
     <file>ui/overlay/components/ImageProvider.qml</file>
+    <file>ui/overlay/components/KeySequenceField.qml</file>
     <file>ui/overlay/components/LanguageListView.qml</file>
     <file>ui/overlay/components/ModeSelector.qml</file>
     <file>ui/overlay/components/ScreenArea.qml</file>
     <file>ui/overlay/components/SelectionArea.qml</file>
     <file>ui/overlay/components/SelectionBox.qml</file>
+    <file>ui/overlay/components/SettingsMenu.qml</file>
     <file>ui/overlay/components/TextConsoleResponseLoader.qml</file>
     <file>ui/overlay/components/TextConsoleStatus.qml</file>
     <file>ui/overlay/components/TranslationInfo.qml</file>
