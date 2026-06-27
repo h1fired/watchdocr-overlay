@@ -58,6 +58,7 @@ OMessageBoxFrame {
                     // Top divider (skip for the very first group)
                     Rectangle {
                         Layout.fillWidth: true
+                        Layout.topMargin: 4
                         height: 1
                         color: "#2C2C2C"
                         visible: fieldRow.index !== 0
@@ -90,10 +91,6 @@ OMessageBoxFrame {
                         anchors.rightMargin: 8
                         radius: 6
                         color: fieldHover.containsMouse ? "#222222" : "transparent"
-
-                        Behavior on color {
-                            ColorAnimation { duration: 120 }
-                        }
                     }
 
                     MouseArea {

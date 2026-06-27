@@ -68,10 +68,7 @@ class UserSettings(BaseModel):
         default='[',
         json_schema_extra=SettingField(
             label='Overlay toggle hotkey',
-            description=(
-                'Trigger an overlay visibility. '
-                'Doesn\'t work when settings are visible'
-            ),
+            description='Trigger an overlay visibility.',
             group='Hotkeys',
             field_type='hotkey',
         ).as_dict(),
