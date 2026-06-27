@@ -136,8 +136,8 @@ Rectangle {
 
             icon.source: "qrc:/qml/resources/icons/settings.svg"
             icon.color: "#E9E9E9"
-            icon.width: 22
-            icon.height: 22
+            icon.width: 24
+            icon.height: 24
 
             background: Rectangle {
                 color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
