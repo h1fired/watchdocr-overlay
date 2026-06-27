@@ -13,8 +13,8 @@ from typing import Callable
 import queue
 
 
-BOXED_TEXT_SEPARATOR1 = ' ⟦$⟧ '
-BOXED_TEXT_SEPARATOR2 = '⟦$⟧'
+BOXED_TEXT_SEPARATOR1 = '\n\n'
+BOXED_TEXT_SEPARATOR2 = '\n\n'
 
 
 @dataclass(slots=True)
