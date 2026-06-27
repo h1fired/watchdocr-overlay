@@ -48,6 +48,13 @@ class UserSettings(BaseModel):
             group='General',
         ).as_dict(),
     )
+    live_mode_recognition_frequency: int = Field(
+        default=2,
+        json_schema_extra=SettingField(
+            label='Live mode recognition frequency',
+            group='General',
+        ).as_dict(),
+    )
     source_language: str = Field(
         default='AUTO',
         json_schema_extra=SettingField(
@@ -76,7 +83,6 @@ class UserSettings(BaseModel):
 
     model_config = {
         'validate_assignment': True,
-        'strict': True
     }
 
     def __setattr__(self, name, value):

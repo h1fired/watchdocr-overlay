@@ -3,7 +3,7 @@
 from . import WatchdOcrWorkflow
 from src.watchdocr.processor.processor import PipelineStrategy
 from threading import Thread, Event
-from config import config
+from config.preferences import settings
 
 
 class LiveWorkflow(WatchdOcrWorkflow):
@@ -27,7 +27,7 @@ class LiveWorkflow(WatchdOcrWorkflow):
                     context_data={}
                 )
                 self._processor.wait_for_pipeline_finish()
-            self._e.wait(config.LIVE_MANAGE_MODE_FREQ)
+            self._e.wait(settings.live_mode_recognition_frequency)
 
     def close(self):
         self._running = False
