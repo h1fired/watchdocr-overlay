@@ -13,8 +13,7 @@ from typing import Callable
 import queue
 
 
-BOXED_TEXT_SEPARATOR1 = '\n\n'
-BOXED_TEXT_SEPARATOR2 = '\n\n'
+BOXED_TEXT_SEPARATOR = '\n\n'
 
 
 @dataclass(slots=True)
@@ -87,7 +86,7 @@ class OcrPipelineStage(PipelineStage):
         ctx.translated_text = data.text
         ctx.confidence = data.confidence
         ctx.boxes = data.boxes
-        ctx.boxed_text = BOXED_TEXT_SEPARATOR1.join(b[0] for b in data.boxes)
+        ctx.boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in data.boxes)
         ctx.translated_boxes = data.boxes
 
 
@@ -111,7 +110,7 @@ class TranslationPipelineStage(PipelineStage):
         if data.translated_text == '':
             texts = []
         else:
-            texts = data.translated_text.split(BOXED_TEXT_SEPARATOR2)
+            texts = data.translated_text.split(BOXED_TEXT_SEPARATOR)
         ctx.translated_text = cleanup_text_simple(' '.join(texts))
 
         boxes = []
