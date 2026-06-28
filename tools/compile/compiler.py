@@ -35,6 +35,59 @@ class BuildOption(IntFlag):
     BUILD_PORTABLE = 2
 
 
+class PluginPackageFinder:
+    def __init__(self, base_package: str, exclude: list[str] = None):
+        self.base_package = base_package
+        self.exclude = set(exclude) if exclude else set()
+
+    def find_packages(self) -> list[str]:
+        base_path = Path(self.base_package.replace('.', '/'))
+        if not base_path.is_dir():
+            return [self.base_package]
+
+        packages = [self.base_package]
+        for sub_dir in base_path.iterdir():
+            if not sub_dir.is_dir() or sub_dir.name == '__pycache__':
+                continue
+            category_package = f'{self.base_package}.{sub_dir.name}'
+            packages.append(category_package)
+            for child in sub_dir.iterdir():
+                if child.is_dir() and child.name != '__pycache__':
+                    if child.name not in self.exclude:
+                        packages.append(f'{category_package}.{child.name}')
+        return packages
+
+    def find_data_dirs(self) -> list[str]:
+        base_path = Path(self.base_package.replace('.', '/'))
+        if not base_path.is_dir():
+            return []
+
+        data_dirs = []
+        for sub_dir in base_path.iterdir():
+            if not sub_dir.is_dir() or sub_dir.name == '__pycache__':
+                continue
+            for child in sub_dir.iterdir():
+                if child.is_dir() and child.name != '__pycache__':
+                    if child.name not in self.exclude:
+                        data_folder = child / 'data'
+                        if data_folder.is_dir():
+                            data_dirs.append(data_folder.as_posix())
+        return data_dirs
+
+    def find_data_files(self, extensions: list[str] = None) -> list[str]:
+        if extensions is None:
+            extensions = ['.dll', '.pyd', '.so']
+        extensions = {ext.lower() for ext in extensions}
+ 
+        files = []
+        for data_dir in self.find_data_dirs():
+            data_path = Path(data_dir)
+            for file_path in data_path.rglob('*'):
+                if file_path.is_file() and file_path.suffix.lower() in extensions:
+                    files.append(file_path.as_posix())
+        return files
+
+
 @dataclass
 class AppConfig:
     title: str
@@ -166,7 +219,23 @@ if __name__ == '__main__':
     )
 
     builder.compiler_params.plugins.append('pyside6')
-    builder.compiler_params.hidden_packages.append('src.watchdocr.plugins')
+    
+    # Exclude plugins if needed by listing their folder names in the exclude parameter
+    finder = PluginPackageFinder(
+        base_package='src.watchdocr.plugins',
+        exclude=[
+            'tesseract',
+            'rapid'
+        ]
+    )
+    builder.compiler_params.hidden_packages.extend(finder.find_packages())
+
+    for data_dir in finder.find_data_dirs():
+        builder.compiler_params.custom_flags.append(f'--include-data-dir={data_dir}={data_dir}')
+
+    for data_file in finder.find_data_files():
+        builder.compiler_params.custom_flags.append(f'--include-data-files={data_file}={data_file}')
+    
     builder.compiler_params.hidden_packages.append('winrt')
     builder.compiler_params.custom_flags.append('--include-qt-plugins=qml')
     builder.compiler_params.custom_flags.append('--include-windows-runtime-dlls=yes')

@@ -12,7 +12,7 @@ __plugin_meta__ = {
 __plugin_main__ = 'WindowsOneOcrPlugin'
 
 
-DLLS_PATH = os.path.normpath('src/watchdocr/plugins/ocr/windows_one/dlls/')
+DLLS_PATH = os.path.normpath('src/watchdocr/plugins/ocr/windows_one/data/')
 
 
 class WindowsOneOcrPlugin(OcrPlugin):
