@@ -128,15 +128,6 @@ Item {
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
                     color: "white"
-
-                    layer.enabled: true
-                    layer.effect: DropShadow {
-                        radius: 5
-                        samples: radius * 2
-                        color: Qt.rgba(0, 0, 0, 1.0)
-                        horizontalOffset: 0
-                        verticalOffset: 1
-                    }
                 }
 
                 Blend {
