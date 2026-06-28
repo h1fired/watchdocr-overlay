@@ -1,10 +1,14 @@
 from frontend.core import GuiCoreApplication
 from frontend.utils import ghotkey
 from src.core import WatchdOcrCore
+from src.utils.sysbehavior import SingleInstance
 from config import config
 import subprocess
 import sys
-from src.utils.sysbehavior import SingleInstance
+import ctypes
+
+
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('company.app.1')
 
 
 def show_overlay():
