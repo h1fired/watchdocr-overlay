@@ -80,12 +80,16 @@ class EventSystem:
             raise TypeError('Only dict is supported for event data')
 
         if not validate_event_data(event, data):
+            log.error('Event data is invalid for %s: %s', event.__name__, data, extra={'title': 'Events'})
             raise ValueError(f'Event data is not valid -> {event.__name__}')
 
         namespace = EventData(**data)
 
         for listener in self._listeners:
-            listener(event, namespace)
+            try:
+                listener(event, namespace)
+            except Exception as e:
+                log.exception('[EVENT LISTENER ERROR] %s', e, extra={'title': 'Events'})
 
         entities = self._events[event]
         for e in entities:
@@ -94,13 +98,13 @@ class EventSystem:
                     try:
                         e.handler(namespace)
                     except Exception as e:
-                        log.exception(f'[EVENT CALLBACK] {e}')
+                        log.exception(f'[EVENT CALLBACK] {e}', extra={'title': 'Events'})
             elif type(e) is _DisposableBusEvent:
                 if e.condition(namespace):
                     try:
                         e.handler(namespace)
                     except Exception as e:
-                        log.exception(f'[EVENT CALLBACK] {e}')
+                        log.exception(f'[EVENT CALLBACK] {e}', extra={'title': 'Events'})
                     finally:
                         entities.remove(e)
 

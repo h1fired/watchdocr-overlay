@@ -2,6 +2,7 @@ from src.watchdocr.processor.processor import (
     WatchdOcrProcessor,
     PipelineStrategy
 )
+from src.common.utils.logging import log
 
 
 class WatchdOcrWorkflow:
@@ -34,13 +35,16 @@ class WatchdOcrWorkflowManager:
             return
 
         if self._current:
+            log.info('Closing current workflow: %s', self._current.__class__.__name__, extra={'title': 'Workflow'})
             self._current.close()
 
         if workflow is None:
             self._current = None
+            log.info('Workflow manager disabled (no active workflow)', extra={'title': 'Workflow'})
             return
 
         new = self._workflows[workflow]
+        log.info('Switching to workflow: %s', new.__class__.__name__, extra={'title': 'Workflow'})
         new.run()
         self._current = new
 

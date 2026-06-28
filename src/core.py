@@ -1,3 +1,4 @@
+from src.common.utils.logging import log
 from src.common.event import EventSystem
 from src.common.plugin import PluginManager
 from src.common.api import KernelAPICollection
@@ -49,12 +50,15 @@ class WatchdOcrKernel:
 
 class WatchdOcrCore:
     def initialize(self):
+        log.info('Initializing WatchdOcr core...', extra={'title': 'Core'})
         self._kernel = WatchdOcrKernel()
         self._kernel_apis = KernelAPICollection()
 
+        log.info('Discovering and initializing plugins...', extra={'title': 'Core'})
         self._kernel.plugins.add_entry_point('src.watchdocr.plugins')
         self._kernel.plugins.init()
 
+        log.info('Starting WatchdOcr processor...', extra={'title': 'Core'})
         processor = WatchdOcrProcessor(
             self._kernel.plugins,
             self._kernel.event_system
@@ -62,13 +66,16 @@ class WatchdOcrCore:
         processor.run()
         self._kernel.objects.set('watchdocr-processor', processor)
 
+        log.info('Initializing workflow manager...', extra={'title': 'Core'})
         workflow_manager = WatchdOcrWorkflowManager(
             workflows=tuple([w(processor) for w in WORKFLOWS])
         )
+        log.info('Switching default workflow to OnetimeWorkflow...', extra={'title': 'Core'})
         workflow_manager.switch_to(OnetimeWorkflow)
         self._kernel.objects.set('watchdocr-workflows', workflow_manager)
 
         # API
+        log.info('Registering APIs...', extra={'title': 'Core'})
         processor_api = ProcessorAPI(self._kernel)
         self._kernel_apis.add(processor_api)
 
@@ -80,13 +87,17 @@ class WatchdOcrCore:
 
         translation_api = TranslationAPI(self._kernel)
         self._kernel_apis.add(translation_api)
+        log.success('WatchdOcr Core initialized successfully!', extra={'title': 'Core'})
 
     def destroy(self):
+        log.info('Destroying WatchdOcr core...', extra={'title': 'Core'})
         processor = self._kernel.objects.pull('watchdocr-processor')
         processor.stop()
+        log.info('WatchdOcr processor stopped.', extra={'title': 'Core'})
 
     def api_collection(self):
         return self._kernel_apis
 
     def event_system(self):
         return self._kernel.event_system
+

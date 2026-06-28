@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any, Type, TypeVar
 from .event import IEvent, EventSystem, EventData
+from .utils.logging import log
 import pkgutil
 import importlib
 
@@ -13,13 +14,20 @@ class PluginDiscovery:
         self._p_entries = []
 
     def add_entry_point(self, dir: str):
+        log.info('Adding entry point directory: %s', dir, extra={'title': 'Plugins'})
         self._p_entries.append(dir)
 
     def discover(self):
         modules = []
 
+        log.info('Starting plugin discovery...', extra={'title': 'Plugins'})
         for module_path in self._p_entries:
-            package = importlib.import_module(module_path)
+            try:
+                package = importlib.import_module(module_path)
+            except Exception as e:
+                log.error('Failed to import plugin entry point %s: %s', module_path, e, extra={'title': 'Plugins'})
+                continue
+
             for _, name, _ in pkgutil.walk_packages(
                 path=package.__path__,
                 prefix=package.__name__ + '.',
@@ -27,12 +35,20 @@ class PluginDiscovery:
                 if not name.endswith('.main'):
                     continue
 
-                module = importlib.import_module(name)
+                try:
+                    module = importlib.import_module(name)
+                except Exception as e:
+                    log.error('Failed to import discovered plugin module %s: %s', name, e, extra={'title': 'Plugins'})
+                    continue
 
                 if not hasattr(module, '__plugin_meta__'):
+                    log.warning('Module %s is missing __plugin_meta__. Skipping.', name, extra={'title': 'Plugins'})
                     continue
                 elif not hasattr(module, '__plugin_main__'):
+                    log.warning('Module %s is missing __plugin_main__. Skipping.', name, extra={'title': 'Plugins'})
                     continue
+
+                log.info('Discovered plugin module: %s (id: %s)', name, module.__plugin_meta__.get('id'), extra={'title': 'Plugins'})
                 modules.append(name)
 
         return tuple(modules)
@@ -73,6 +89,7 @@ class PluginManager:
         self._discovery = PluginDiscovery()
 
     def init(self):
+        log.info('Initializing plugins...', extra={'title': 'Plugins'})
         for name in self._discovery.discover():
             module = importlib.import_module(name)
 
@@ -89,6 +106,7 @@ class PluginManager:
                 instance=instance
             )
             self._plugins.append(meta)
+            log.success('Successfully loaded plugin: %s v%s', meta.name(), '.'.join(map(str, meta.version())), extra={'title': 'Plugins'})
 
         # Register on_event callback for event system
         def on_event(event: IEvent, data: EventData):
@@ -97,6 +115,7 @@ class PluginManager:
                 if isinstance(instance, EventPlugin):
                     instance.on_event(event, data)
         self._eventsys.listen(on_event)
+        self._initialized = True
 
     def add_entry_point(self, dir: str):
         if self._initialized:
@@ -104,10 +123,11 @@ class PluginManager:
         self._discovery.add_entry_point(dir)
 
     def get_realizations(self, plugin: Type[T]) -> tuple[T, ...]:
-        return tuple([
+        realizations = tuple([
             p.instance() for p in self._plugins
             if isinstance(p.instance(), plugin)
         ])
+        return realizations
 
 
 class Plugin:
@@ -135,3 +155,4 @@ class EventPlugin(Plugin):
 class PriorityPlugin(Plugin):
     def get_priority(self):
         return 0
+

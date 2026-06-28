@@ -69,8 +69,10 @@ class OcrPipelineStage(PipelineStage):
         self._ocr = ocr
 
     def execute(self, ctx):
+        log.info('Starting OCR Pipeline Stage...', extra={'title': 'Processor'})
         image = ScreenGrabber.grab_screen_area(ctx.boundings)
         if not image:
+            log.warning('Screen grabber returned no image for boundings %s', ctx.boundings, extra={'title': 'Processor'})
             ctx.text = ''
             ctx.translated_text = ''
             ctx.confidence = 0.
@@ -80,6 +82,7 @@ class OcrPipelineStage(PipelineStage):
             return
 
         ctx.image = image
+        log.info('Screen grabbed successfully (%dx%d). Running recognition...', image.width, image.height, extra={'title': 'Processor'})
 
         data = self._ocr.recognize(ctx.image)
         ctx.text = data.text
@@ -88,6 +91,7 @@ class OcrPipelineStage(PipelineStage):
         ctx.boxes = data.boxes
         ctx.boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in data.boxes)
         ctx.translated_boxes = data.boxes
+        log.info('OCR Stage complete. Recognized text length: %d characters, confidence: %d%%', len(ctx.text), ctx.confidence, extra={'title': 'Processor'})
 
 
 class TranslationPipelineStage(PipelineStage):
@@ -103,6 +107,7 @@ class TranslationPipelineStage(PipelineStage):
         )
 
         if not data.success:
+            log.error('Translation failed. Reusing original text.', extra={'title': 'Processor'})
             ctx.translated_text = data.translated_text
             ctx.translated_boxes = tuple()
             return
@@ -182,18 +187,22 @@ class WatchdOcrRunner:
         self._lock = Lock()
 
     def put(self, strategy: PipelineStrategy):
+        log.debug('Queueing strategy: %s', strategy.name, extra={'title': 'Processor'})
         self._q.put(strategy)
 
     def start(self):
+        log.info('Starting WatchdOcrRunner background thread...', extra={'title': 'Processor'})
         self._running = True
         self._th = Thread(target=self._run, daemon=True)
         self._th.start()
 
     def stop(self):
+        log.info('Stopping WatchdOcrRunner background thread...', extra={'title': 'Processor'})
         self._running = False
         if self._th and self._th.is_alive():
             self._th.join()
         self._q.queue.clear()
+        log.info('WatchdOcrRunner background thread stopped.', extra={'title': 'Processor'})
 
     def is_running(self):
         return self._running
@@ -267,15 +276,18 @@ class WatchdOcrProcessor:
         self._runner.register_area_preview_callback(self._on_area_preview)
 
     def run(self):
+        log.info('Starting WatchdOcrProcessor...', extra={'title': 'Processor'})
         self._runner.start()
 
     def stop(self):
+        log.info('Stopping WatchdOcrProcessor...', extra={'title': 'Processor'})
         self._runner.stop()
 
     def get_active(self):
         return self._runner.is_running()
 
     def queue_pipeline(self, strategy: PipelineStrategy, context_data: dict):
+        log.info('Queueing pipeline execution with strategy: %s', strategy.name, extra={'title': 'Processor'})
         self._update_context_data(context_data)
         self._runner.put(strategy)
 
@@ -291,7 +303,7 @@ class WatchdOcrProcessor:
             if key in field_names:
                 setattr(self._ctx, key, value)
             else:
-                log.warning('Invalid context field provided (%s). Ignore', key)
+                log.warning('Invalid context field provided (%s). Ignore', key, extra={'title': 'Processor'})
 
     def _on_output(self, data: WatchdOcrOutput):
         self._eventsys.dispatch(
@@ -312,6 +324,7 @@ class WatchdOcrProcessor:
         )
 
     def clean_current_pipelines(self):
+        log.info('Cleaning current runner pipelines queue...', extra={'title': 'Processor'})
         self._runner.clean_current_pipelines()
 
 
