@@ -109,7 +109,7 @@ Item {
                     sourceItem: blurred
                     sourceRect: Qt.rect(boxItem.x, boxItem.y, boxItem.width, boxItem.height)
                     live: true
-                    hideSource: false
+                    hideSource: true
                     visible: false
                 }
 
