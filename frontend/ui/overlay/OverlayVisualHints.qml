@@ -23,67 +23,6 @@ Item {
         layer.enabled: true
     }
 
-    ShaderEffectSource {
-        // Explicit texture capture of the image
-        id: previewTex
-
-        visible: false
-
-        sourceItem: areaPreview
-        live: true
-    }
-
-    // 3. Blur the captured texture
-    FastBlur {
-        id: blurred
-
-        anchors.fill: areaPreview
-
-        source: previewTex
-        radius: 64
-        visible: false
-        layer.enabled: true
-    }
-
-    Item {
-        id: maskShape
-
-        visible: false
-
-        x: areaPreview.x
-        y: areaPreview.y
-        width: areaPreview.width
-        height: areaPreview.height
-
-        layer.enabled: true
-
-        Repeater {
-            model: root._boxes
-
-            Rectangle {
-                x: modelData[1][0] - root._expand
-                y: modelData[1][1] - root._expand
-                width:  modelData[1][2] - modelData[1][0] + (root._expand * 2)
-                height: modelData[1][3] - modelData[1][1] + (root._expand * 2)
-                color: "white"
-                radius: 6
-            }
-        }
-    }
-
-    OpacityMask {
-        // Final composited result
-        x: areaPreview.x
-        y: areaPreview.y
-        width: areaPreview.width
-        height: areaPreview.height
-
-        visible: root.boxesVisible
-
-        source: blurred
-        maskSource: maskShape
-    }
-
     Item {
         x: areaPreview.x
         y: areaPreview.y
@@ -104,15 +43,45 @@ Item {
                 height: modelData[1][3] - modelData[1][1] + (root._expand * 2)
 
                 ShaderEffectSource {
-                    id: bgCrop
+                    id: rawBoxCapture
 
-                    sourceItem: blurred
-                    sourceRect: Qt.rect(boxItem.x, boxItem.y, boxItem.width, boxItem.height)
-                    live: true
-                    hideSource: true
                     visible: false
+                    live: true
+
+                    sourceItem: areaPreview
+                    sourceRect: Qt.rect(boxItem.x, boxItem.y, boxItem.width, boxItem.height)
                 }
 
+                ShaderEffect {
+                    id: cleanBackgroundBox
+
+                    property variant source: rawBoxCapture
+                    property vector2d pixelSize: Qt.vector2d(4, 4)
+
+                    visible: false
+                    
+                    anchors.fill: parent
+                    
+                    fragmentShader: "qrc:/qml/ui/shaders/average.frag.qsb" 
+                }
+
+                Rectangle {
+                    id: boxMask
+
+                    visible: false
+
+                    anchors.fill: parent
+                    radius: 6
+                    color: "black"
+                }
+
+                OpacityMask {
+                    anchors.fill: parent
+                    source: cleanBackgroundBox
+                    maskSource: boxMask
+                }
+
+                // Text
                 Text {
                     id: ttext
 
@@ -132,7 +101,7 @@ Item {
 
                 Blend {
                     anchors.fill: parent
-                    source: bgCrop
+                    source: cleanBackgroundBox
                     foregroundSource: ttext
                     mode: "exclusion"
                 }

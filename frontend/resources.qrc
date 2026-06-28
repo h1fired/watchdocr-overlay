@@ -21,6 +21,7 @@
     <file>ui/overlay/components/ActivityBar.qml</file>
     <file>ui/overlay/components/CopyButton.qml</file>
     <file>ui/overlay/components/ImageProvider.qml</file>
+    <file>ui/overlay/components/InPaintEffect.qml</file>
     <file>ui/overlay/components/KeySequenceField.qml</file>
     <file>ui/overlay/components/LanguageListView.qml</file>
     <file>ui/overlay/components/ModeSelector.qml</file>
@@ -54,5 +55,11 @@
     <file>resources\icons/tray.svg</file>
     <file>resources\icons/visual_hint.svg</file>
     <file>resources\icons/app/app.ico</file>
+  </qresource>
+  <qresource prefix="/qml">
+    <file>ui/shaders\average.frag.qsb</file>
+    <file>ui/shaders\composite.frag.qsb</file>
+    <file>ui/shaders\diffuse.frag.qsb</file>
+    <file>ui/shaders\mask.frag.qsb</file>
   </qresource>
 </RCC>
