@@ -76,7 +76,10 @@ Item {
                 }
 
                 OpacityMask {
+                    id: maskedBackground
+
                     anchors.fill: parent
+
                     source: cleanBackgroundBox
                     maskSource: boxMask
                 }
@@ -101,7 +104,7 @@ Item {
 
                 Blend {
                     anchors.fill: parent
-                    source: cleanBackgroundBox
+                    source: maskedBackground
                     foregroundSource: ttext
                     mode: "exclusion"
                 }
