@@ -129,10 +129,15 @@ def build_resources(
     )
     img_resource = ResourceModel(
         'frontend/resources',
-        ('.svg', '.png', '.ttf'),
+        ('.svg', '.png', '.ico', '.ttf'),
         path_prefix='resources'
     )
-    resources = ResourceModelCollection([qml_resource, img_resource])
+    shaders_resource = ResourceModel(
+        'frontend/ui/shaders',
+        ('.qsb',),
+        path_prefix='ui/shaders'
+    )
+    resources = ResourceModelCollection([qml_resource, img_resource, shaders_resource])
 
     if generate:
         generate_resources(
