@@ -53,10 +53,6 @@
     <file>resources\icons/swap.svg</file>
     <file>resources\icons/tray.svg</file>
     <file>resources\icons/visual_hint.svg</file>
-    <file>resources\icons/app/128x128.png</file>
-    <file>resources\icons/app/16x16.png</file>
-    <file>resources\icons/app/256x256.png</file>
-    <file>resources\icons/app/32x32.png</file>
-    <file>resources\icons/app/48x48.png</file>
+    <file>resources\icons/app/app.ico</file>
   </qresource>
 </RCC>

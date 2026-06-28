@@ -129,7 +129,7 @@ def build_resources(
     )
     img_resource = ResourceModel(
         'frontend/resources',
-        ('.svg', '.png', '.ttf'),
+        ('.svg', '.png', '.ico', '.ttf'),
         path_prefix='resources'
     )
     resources = ResourceModelCollection([qml_resource, img_resource])
