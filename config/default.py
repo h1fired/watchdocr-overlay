@@ -9,7 +9,7 @@ load_dotenv()
 
 DEBUG = True
 
-APP_ID = '-'
+APP_ID = 'F450F02A-C03F-4937-B932-B0EE0CD93BE7'
 APP_NAME = 'WatchdOcr'
 APP_VERSION = '0.1.0'
 

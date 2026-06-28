@@ -4,6 +4,12 @@ from src.core import WatchdOcrCore
 from config import config
 import subprocess
 import sys
+from src.utils.sysbehavior import SingleInstance
+
+
+def show_overlay():
+    gui = GuiCoreApplication()
+    gui.system_obj().setVisible(True)
 
 
 if __name__ == '__main__':
@@ -32,6 +38,15 @@ if __name__ == '__main__':
     core.initialize()
 
     gui = GuiCoreApplication()
+
+    # Check for single application instance
+    guard = SingleInstance(config.APP_ID)
+    if not guard.try_run():
+        sys.exit(0)
+
+    guard.activate_requested.connect(show_overlay)
+
+    # Load GUI core
     gui.load(core.api_collection(), core.event_system())
 
     # Install global keyboard events hook
