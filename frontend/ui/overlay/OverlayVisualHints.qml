@@ -9,7 +9,7 @@ Item {
     property bool boxesVisible: true
     property point offset: Qt.point(0, 0)
     property var _boxes: ([])
-    property int _expand: 3
+    property int _expand: 2
 
     ImageProvider {
         id: areaPreview
@@ -66,7 +66,7 @@ Item {
                 width:  modelData[1][2] - modelData[1][0] + (root._expand * 2)
                 height: modelData[1][3] - modelData[1][1] + (root._expand * 2)
                 color: "white"
-                radius: 3
+                radius: 6
             }
         }
     }
@@ -95,16 +95,29 @@ Item {
         Repeater {
             model: root._boxes
 
-            Rectangle {
+            Item {
+                id: boxItem
+
                 x: modelData[1][0] - root._expand
                 y: modelData[1][1] - root._expand
                 width:  modelData[1][2] - modelData[1][0] + (root._expand * 2)
                 height: modelData[1][3] - modelData[1][1] + (root._expand * 2)
 
-                color: Qt.rgba(0, 0, 0, 0.5)
-                radius: 3
+                ShaderEffectSource {
+                    id: bgCrop
+
+                    sourceItem: blurred
+                    sourceRect: Qt.rect(boxItem.x, boxItem.y, boxItem.width, boxItem.height)
+                    live: true
+                    hideSource: false
+                    visible: false
+                }
 
                 Text {
+                    id: ttext
+
+                    visible: false
+
                     anchors.fill: parent
                     
                     text: modelData[0]
@@ -124,6 +137,13 @@ Item {
                         horizontalOffset: 0
                         verticalOffset: 1
                     }
+                }
+
+                Blend {
+                    anchors.fill: parent
+                    source: bgCrop
+                    foregroundSource: ttext
+                    mode: "exclusion"
                 }
             }
 
