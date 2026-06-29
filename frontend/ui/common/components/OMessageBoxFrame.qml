@@ -21,6 +21,8 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
+
+        onPressed: root.forceActiveFocus();
     }
 
     Column {

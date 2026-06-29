@@ -7,7 +7,7 @@ FocusScope {
     property string value: ""
     signal sequenceCaptured(string sequence)
 
-    property bool capturing: false
+    readonly property bool capturing: activeFocus
     property var pressedKeys: []
 
     implicitWidth: 140
@@ -37,8 +37,9 @@ FocusScope {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
+
         onClicked: {
-            root.capturing = true;
+            // root.capturing = true;
             root.pressedKeys = [];
             root.forceActiveFocus();
         }
@@ -50,7 +51,7 @@ FocusScope {
 
         // Escape cancels capture without changing the value
         if (event.key === Qt.Key_Escape) {
-            root.capturing = false;
+            root.focus = false;
             return;
         }
 
@@ -74,7 +75,7 @@ FocusScope {
         const sequence = parts.join("+");
 
         root.value = sequence;
-        root.capturing = false;
+        root.focus = false;
         root.sequenceCaptured(sequence);
     }
 
