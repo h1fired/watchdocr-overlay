@@ -227,7 +227,6 @@ class WatchdOcrRunner:
                 self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
                 self._e.clear()
                 self._pipeline.execute()
-                self._e.set()
                 self._send_status(WatchdOcrProcessorStatus.IDLE)
 
                 output = self.create_output_data()
@@ -235,6 +234,7 @@ class WatchdOcrRunner:
                     self._output_callback(output)
 
                 self._send_area_preview(self._ctx.image)
+                self._e.set()
 
     def wait_for_exec_finish(self):
         self._e.wait()
