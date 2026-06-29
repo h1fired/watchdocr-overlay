@@ -78,7 +78,7 @@ class PluginPackageFinder:
         if extensions is None:
             extensions = ['.dll', '.pyd', '.so']
         extensions = {ext.lower() for ext in extensions}
- 
+
         files = []
         for data_dir in self.find_data_dirs():
             data_path = Path(data_dir)
@@ -219,7 +219,7 @@ if __name__ == '__main__':
     )
 
     builder.compiler_params.plugins.append('pyside6')
-    
+
     # Exclude plugins if needed by listing their folder names in the exclude parameter
     finder = PluginPackageFinder(
         base_package='src.watchdocr.plugins',
@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
     for data_file in finder.find_data_files():
         builder.compiler_params.custom_flags.append(f'--include-data-files={data_file}={data_file}')
-    
+
     builder.compiler_params.hidden_packages.append('winrt')
     builder.compiler_params.custom_flags.append('--include-qt-plugins=qml')
     builder.compiler_params.custom_flags.append('--include-windows-runtime-dlls=yes')
