@@ -123,12 +123,12 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
         headers = {'User-Agent': 'Mozilla/5.0'}
         self.session.headers.update(headers)
 
-    def translate(self, text, _from, to):
+    def on_translate(self, text, _from, to):
         if text == '':
-            return TranslationData(text, text)
+            return TranslationData(True, text, text)
 
         if to == 'ORIG':
-            return TranslationData(text, text)
+            return TranslationData(True, text, text)
 
         from_language = self.source_languages()[_from]
         to_language = self.target_languages()[to]
@@ -147,14 +147,14 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
 
             if not translated_text:
                 raise ValueError('No translation')
-            return TranslationData(text, translated_text)
+            return TranslationData(True, text, translated_text)
         except requests.exceptions.Timeout:
             err_msg = 'Translation error: Network timeout'
         except requests.exceptions.ConnectionError:
             err_msg = 'Translation error: Network unavailable'
         except requests.exceptions.HTTPError:
             err_msg = 'Translation error: Server returned an error response'
-        return TranslationData(err_msg, err_msg, False)
+        return TranslationData(False, err_msg, err_msg)
 
     def source_languages(self):
         return SOURCE_LANGUAGES

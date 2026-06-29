@@ -25,16 +25,11 @@ class WindowsOneOcrPlugin(OcrPlugin):
     def get_provider_name(self):
         return 'WindowsOne'
 
-    def recognize(self, image: Image.Image):
-        try:
-            image, scale = self.process_image(image)
-            res = self._api.recognize(image)
-
-            boxes = self._parse_boxes(res.lines, scale)
-
-            return OcrData(res.text, tuple(boxes), 0.)
-        except Exception:
-            return OcrData('', tuple(), 0.)
+    def recognizable(self, image: Image.Image):
+        image, scale = self.process_image(image)
+        res = self._api.recognize(image)
+        boxes = self._parse_boxes(res.lines, scale)
+        return OcrData(True, res.text, tuple(boxes), 0.)
 
     def _parse_boxes(self, rlines: tuple[OcrLine, ...], scale: float):
         boxes = []
