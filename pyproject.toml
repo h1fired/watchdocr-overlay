@@ -14,7 +14,6 @@ dependencies = [
     "pyside6>=6.11.1",
     "pyyaml>=6.0.3",
     "rapidocr>=3.8.4",
-    "tesserocr @ https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.10.0-tesseract-5.5.2/tesserocr-2.10.0-cp311-cp311-win_amd64.whl",
     "winrt-windows-foundation>=3.2.1",
     "winrt-windows-foundation-collections>=3.2.1",
     "winrt-windows-globalization>=3.2.1",

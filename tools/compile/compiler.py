@@ -221,13 +221,7 @@ if __name__ == '__main__':
     builder.compiler_params.plugins.append('pyside6')
 
     # Exclude plugins if needed by listing their folder names in the exclude parameter
-    finder = PluginPackageFinder(
-        base_package='src.watchdocr.plugins',
-        exclude=[
-            'tesseract',
-            'rapid'
-        ]
-    )
+    finder = PluginPackageFinder('src.watchdocr.plugins')
     builder.compiler_params.hidden_packages.extend(finder.find_packages())
 
     for data_dir in finder.find_data_dirs():
