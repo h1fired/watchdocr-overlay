@@ -88,7 +88,7 @@ Item {
     }
 
     onControlsVisibleChanged: {
-        if (controlsVisible) {
+        if (!controlsVisible) {
             modeController.cleanUp();
         }
     }
@@ -154,8 +154,8 @@ Item {
             if (state == "onetime") {
                 selectionArea.cleanUp();
                 controlPanel.selectionToolActive = true;
-                visualHints.clear();
             }
+            visualHints.clear();
         }
     }
 
