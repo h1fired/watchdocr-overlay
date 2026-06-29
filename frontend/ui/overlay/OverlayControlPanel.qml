@@ -102,6 +102,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.preferredWidth: height
 
+            checkable: true
             icon.source: "qrc:/qml/resources/icons/selection.svg"
 
             ToolTip.text: "Selection tool"

@@ -104,7 +104,7 @@ Item {
 
                 PropertyChanges {
                     target: visualHints
-                    boxesVisible: (
+                    visible: (
                         !selectionArea.area.loading && !selectionArea.area.selecting &&
                         (!root.controlsVisible && Backend.Settings.values.visual_hints_show_as_overlay ||
                         root.controlsVisible && Backend.Settings.values.visual_hints_show)
@@ -129,7 +129,7 @@ Item {
 
                 PropertyChanges {
                     target: visualHints
-                    boxesVisible: (
+                    visible: (
                         !selectionArea.area.selecting &&
                         (!root.controlsVisible && Backend.Settings.values.visual_hints_show_as_overlay ||
                         root.controlsVisible && Backend.Settings.values.visual_hints_show)

@@ -1,10 +1,9 @@
 import QtQuick
-
+import QtQuick.Controls
+import "qrc:/qml/ui/common/controls"
 
 OButton {
     id: root
-
-    checkable: true
 
     icon.color: "#E9E9E9"
     icon.width: 22
@@ -17,8 +16,4 @@ OButton {
 
     ToolTip.visible: hovered
     ToolTip.delay: 1000
-
-    onClicked: {
-        checked = !checked;
-    }
 }

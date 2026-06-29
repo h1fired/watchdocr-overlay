@@ -35,6 +35,8 @@
     <file>ui/overlay/components/TranslationSelector.qml</file>
     <file>ui/overlay/components/TranslationSelectorButton.qml</file>
     <file>ui/overlay/components/TranslationSelectorMenu.qml</file>
+    <file>ui/overlay/components/VisualHintBox.qml</file>
+    <file>ui/overlay/components/VisualHintContainer.qml</file>
     <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
   </qresource>
   <qresource prefix="/qml">
