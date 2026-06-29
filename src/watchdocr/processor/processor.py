@@ -20,13 +20,19 @@ BOXED_TEXT_SEPARATOR = '\n\n'
 class WatchdOcrRuntimeContext:
     boundings: tuple = (0, 0, 0, 0)
     image: Image.Image | None = None
+
+    # OCR
+    ocr_success: bool = False
     text: str = ''
+    boxes: tuple = tuple()
+    confidence: float = 0.
+
+    # Translation
+    translation_success: bool = False
+    boxed_text: str = ''
     translated_text: str = ''
     source_language: str = ''
     target_language: str = ''
-    boxes: tuple = tuple()
-    confidence: float = 0.
-    boxed_text: str = ''
     translated_boxes: tuple = tuple()
 
 
@@ -73,6 +79,7 @@ class OcrPipelineStage(PipelineStage):
         image = ScreenGrabber.grab_screen_area(ctx.boundings)
         if not image:
             log.warning('Screen grabber returned no image for boundings %s', ctx.boundings, extra={'title': 'Processor'})
+            ctx.ocr_success = False
             ctx.text = ''
             ctx.translated_text = ''
             ctx.confidence = 0.
@@ -85,13 +92,13 @@ class OcrPipelineStage(PipelineStage):
         log.info('Screen grabbed successfully (%dx%d). Running recognition...', image.width, image.height, extra={'title': 'Processor'})
 
         data = self._ocr.recognize(ctx.image)
+        ctx.ocr_success = data.success
         ctx.text = data.text
         ctx.translated_text = data.text
         ctx.confidence = data.confidence
         ctx.boxes = data.boxes
         ctx.boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in data.boxes)
         ctx.translated_boxes = data.boxes
-        log.info('OCR Stage complete. Recognized text length: %d characters, confidence: %d%%', len(ctx.text), ctx.confidence, extra={'title': 'Processor'})
 
 
 class TranslationPipelineStage(PipelineStage):
@@ -100,6 +107,10 @@ class TranslationPipelineStage(PipelineStage):
         self._translator = translator
 
     def execute(self, ctx):
+        if not ctx.ocr_success:
+            ctx.translation_success = False
+            return
+
         data = self._translator.translate(
             ctx.boxed_text,
             ctx.source_language,

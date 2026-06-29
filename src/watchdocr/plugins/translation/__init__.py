@@ -14,7 +14,7 @@ class TranslatorPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
         try:
             return self.on_translate(text, _from, to)
         except Exception as e:
-            text = f'Failed to translate text! Error: {e}',
+            text = f'Failed to translate text! Error: {e}'
             return TranslationData(
                 success=False,
                 original_text=text,
