@@ -129,33 +129,6 @@ Rectangle {
         Divider {}
 
         OButton {
-            id: btnSettings
-
-            Layout.fillHeight: true
-            Layout.preferredWidth: height
-
-            icon.source: "qrc:/qml/resources/icons/settings.svg"
-            icon.color: "#E9E9E9"
-            icon.width: 24
-            icon.height: 24
-
-            background: Rectangle {
-                color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
-                radius: 6
-            }
-
-            ToolTip.text: "Settings"
-            ToolTip.visible: hovered
-            ToolTip.delay: 1000
-
-            onClicked: {
-                Gui.showWindowPopup(settingsMenu);
-            }
-        }
-
-
-
-        OButton {
             id: btnScreensPreview
 
             Layout.fillHeight: true
@@ -183,6 +156,33 @@ Rectangle {
 
             onCheckedChanged: {
                 Backend.Settings.set("screens_preview_enabled", checked);
+            }
+        }
+
+        Divider {}
+
+        OButton {
+            id: btnSettings
+
+            Layout.fillHeight: true
+            Layout.preferredWidth: height
+
+            icon.source: "qrc:/qml/resources/icons/settings.svg"
+            icon.color: "#E9E9E9"
+            icon.width: 24
+            icon.height: 24
+
+            background: Rectangle {
+                color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
+                radius: 6
+            }
+
+            ToolTip.text: "Settings"
+            ToolTip.visible: hovered
+            ToolTip.delay: 1000
+
+            onClicked: {
+                Gui.showWindowPopup(settingsMenu);
             }
         }
 
