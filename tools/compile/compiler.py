@@ -115,9 +115,14 @@ class AppBuilder:
         self._compiler: CompilerBackend = compiler_backend.value()
         self._installer: InstallerBackend = installer_backend.value()
 
+        self._removable_files: list[str] = []
+
     @property
     def compiler_params(self):
         return self._compiler.params
+
+    def add_removable_file(self, file: str):
+        self._removable_files.append(file)
 
     def build(self, module: str, options: BuildOption):
         # Build resources
@@ -155,6 +160,10 @@ class AppBuilder:
             f'{compile_dir}/build/{self._compiler.dist_folder(Path(module).stem)}',
             f'{compile_dir}/dist'
         )
+
+        for file in self._removable_files:
+            full_path = os.path.join(compile_dir, 'dist', file)
+            os.remove(full_path)
 
         if options & BuildOption.BUILD_INSTALLER:
             params = InstallerParams(
@@ -234,6 +243,8 @@ if __name__ == '__main__':
     builder.compiler_params.custom_flags.append('--include-qt-plugins=qml')
     builder.compiler_params.custom_flags.append('--include-windows-runtime-dlls=yes')
     builder.compiler_params.custom_flags.append('--windows-disable-console')
+
+    builder.add_removable_file('qt6webenginecore.dll')
 
     options = 0
     if args.installer:

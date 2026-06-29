@@ -7,6 +7,7 @@ import re
 
 @dataclass(slots=True, frozen=True)
 class OcrData:
+    success: bool
     text: str
     boxes: tuple
     confidence: float
@@ -14,6 +15,17 @@ class OcrData:
 
 class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
     def recognize(self, image: Image.Image) -> OcrData:
+        try:
+            return self.recognizable(image)
+        except Exception as e:
+            return OcrData(
+                success=False,
+                text=f'Failed to recognize text! Error: {e}',
+                boxes=tuple(),
+                confidence=0.
+            )
+
+    def recognizable(self, image: Image.Image) -> OcrData:
         raise NotImplementedError
 
     def get_provider_name(self):
@@ -35,7 +47,6 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
 
         # Scale image based on image height
         w, h = image.size
-
         scale = 4.0 if h < 150 else 3.0 if h < 300 else 2.0 if h < 600 else 1.0
 
         if scale != 1.0:

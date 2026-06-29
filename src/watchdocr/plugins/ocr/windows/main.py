@@ -26,16 +26,13 @@ class WindowsOcrPlugin(OcrPlugin):
     def get_provider_name(self):
         return 'Windows'
 
-    def recognize(self, image: Image.Image):
-        try:
-            image, scale = self.process_image(image)
-            res = self._async_loop.run_until_complete(self._recognize(image))
-            text = res.text
-            boxes = self._parse_boxes(res.lines, scale)
+    def recognizable(self, image: Image.Image):
+        image, scale = self.process_image(image)
+        res = self._async_loop.run_until_complete(self._recognize(image))
+        text = res.text
+        boxes = self._parse_boxes(res.lines, scale)
 
-            return OcrData(text, tuple(boxes), 0.)
-        except Exception:
-            return OcrData('', tuple(), 0)
+        return OcrData(True, text, tuple(boxes), 0.)
 
     async def _recognize(self, image: Image.Image):
         buf = io.BytesIO()

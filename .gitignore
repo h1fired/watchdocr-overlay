@@ -213,3 +213,7 @@ nuitka-crash-report.xml
 /compile*/
 *.dll
 *.onemodel
+
+!oneocr.dll
+!oneocr.onemodel
+!onnxruntime.dll
