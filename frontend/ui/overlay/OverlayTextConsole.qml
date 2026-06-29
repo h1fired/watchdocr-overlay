@@ -12,6 +12,7 @@ Rectangle {
     property TranslationInfo translationInfo: translationInfo
     property string ocrProvider: Backend.Ocr.providerName
     property string translatorProvider: Backend.Translation.providerName
+    property bool enableProcessingStageLoader: false
 
     width: 500
     height: 180
@@ -205,7 +206,14 @@ Rectangle {
             }
         }
 
-        function onRecognizerStatusChanged(status) {
+        function onRecognizerStatusChanged() {
+            if (!root.enableProcessingStageLoader) {
+                if (textConsoleResponseLoader.state === "processing")
+                    textConsoleResponseLoader.state = "idle";
+                return;
+            }
+
+            let status = Backend.Processor.recognizerStatus;
             if (status === 0) {
                 textConsoleResponseLoader.state = "idle";
             } else if (status === 1) {

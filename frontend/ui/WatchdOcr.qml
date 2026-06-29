@@ -118,8 +118,9 @@ Item {
 
                 PropertyChanges {
                     target: textConsole
-                    visible: !selectionArea.selecting && !selectionArea.loading
+                    visible: !selectionArea.selecting
                     enableSizeAdaptivity: true
+                    enableProcessingStageLoader: true
                 }
             },
             State {
@@ -144,6 +145,7 @@ Item {
                     target: textConsole
                     visible: !selectionArea.selecting
                     enableSizeAdaptivity: false
+                    enableProcessingStageLoader: false
                 }
             },
         ]
