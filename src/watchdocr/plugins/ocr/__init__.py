@@ -2,6 +2,7 @@ from src.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
 from src.watchdocr.plugins.ocr.filter import OcrImageFilter
 from PIL import Image
 from dataclasses import dataclass
+from enum import IntFlag
 import re
 
 
@@ -13,7 +14,22 @@ class OcrData:
     confidence: float
 
 
+class OcrOptimization(IntFlag):
+    NONE = 0
+    ADAPTIVE_SIZE = 1 << 0
+    FILTER_GRAYSCALE = 1 << 2
+    FILTER_SHADOW_REMOVE = 1 << 3
+
+
 class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
+
+    class Options:
+        optimizations = OcrOptimization.NONE
+
+    def __init__(self):
+        super().__init__()
+        self._optimizations = self.Options.optimizations
+
     def recognize(self, image: Image.Image) -> OcrData:
         try:
             return self.recognizable(image)
@@ -47,7 +63,14 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
 
         # Scale image based on image height
         w, h = image.size
-        scale = 4.0 if h < 150 else 3.0 if h < 300 else 2.0 if h < 600 else 1.0
+
+        scale = 1.0
+        if OcrOptimization.ADAPTIVE_SIZE & self._optimizations:
+            scale = 4.0 if h < 150 else 3.0 if h < 300 else 2.0 if h < 600 else 1.0
+        if OcrOptimization.FILTER_GRAYSCALE & self._optimizations:
+            image = OcrImageFilter.adjust_to_grayscale(image)
+        if OcrOptimization.FILTER_SHADOW_REMOVE & self._optimizations:
+            image = OcrImageFilter.adjust_shadow_remove(image)
 
         if scale != 1.0:
             new_w = int(w * scale)

@@ -1,4 +1,4 @@
-from src.watchdocr.plugins.ocr import OcrPlugin, OcrData
+from src.watchdocr.plugins.ocr import OcrPlugin, OcrData, OcrOptimization
 from src.watchdocr.plugins.ocr.windows_one.engine import OcrEngine, OcrLine
 from PIL import Image
 import os
@@ -16,6 +16,7 @@ DLLS_PATH = os.path.normpath('src/watchdocr/plugins/ocr/windows_one/data/')
 
 
 class WindowsOneOcrPlugin(OcrPlugin):
+
     def on_startup(self):
         self._api = OcrEngine(dlls_path=DLLS_PATH)
 
