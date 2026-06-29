@@ -48,8 +48,8 @@ class UserSettings(BaseModel):
             group='General',
         ).as_dict(),
     )
-    live_mode_recognition_frequency: int = Field(
-        default=2,
+    live_mode_recognition_frequency: float = Field(
+        default=1,
         json_schema_extra=SettingField(
             label='Live mode recognition frequency',
             group='General',
