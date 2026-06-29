@@ -19,6 +19,7 @@
     <file>ui/overlay/OverlayVisualHints.qml</file>
     <file>ui/overlay/components/AccuracyBar.qml</file>
     <file>ui/overlay/components/ActivityBar.qml</file>
+    <file>ui/overlay/components/ControlPanelToolButton.qml</file>
     <file>ui/overlay/components/CopyButton.qml</file>
     <file>ui/overlay/components/ImageProvider.qml</file>
     <file>ui/overlay/components/KeySequenceField.qml</file>

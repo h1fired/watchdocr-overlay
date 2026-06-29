@@ -21,9 +21,7 @@ Rectangle {
     border.width: 1
     border.color: "#353535"
 
-
-
-    component Divider: Rectangle {
+    component HDivider: Rectangle {
         width: 2
 
         Layout.fillHeight: true
@@ -57,7 +55,7 @@ Rectangle {
             Layout.bottomMargin: 4
         }
 
-        Divider {}
+        HDivider {}
 
         TranslationSelector {
             id: translationSelector
@@ -82,7 +80,7 @@ Rectangle {
             }
         }
 
-        Divider {}
+        HDivider {}
 
         ModeSelector {
             id: modeSelector
@@ -94,61 +92,38 @@ Rectangle {
             }
         }
 
-        Divider {
+        HDivider {
             visible: false
         }
 
-        OButton {
+        ControlPanelToolButton {
             id: btnToolSelection
 
             Layout.fillHeight: true
             Layout.preferredWidth: height
 
-            checkable: true
-
             icon.source: "qrc:/qml/resources/icons/selection.svg"
-            icon.color: "#E9E9E9"
-            icon.width: 22
-            icon.height: 22
-
-            background: Rectangle {
-                color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
-                radius: 6
-            }
 
             ToolTip.text: "Selection tool"
-            ToolTip.visible: hovered
-            ToolTip.delay: 1000
-
 
             onClicked: {
                 checked = !checked;
             }
         }
 
-        Divider {}
+        HDivider {}
 
-        OButton {
+        ControlPanelToolButton {
             id: btnScreensPreview
 
             Layout.fillHeight: true
             Layout.preferredWidth: height
 
-            checkable: true
-
             icon.source: "qrc:/qml/resources/icons/eye.svg"
-            icon.color: "#E9E9E9"
             icon.width: 20
             icon.height: 20
 
-            background: Rectangle {
-                color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
-                radius: 6
-            }
-
             ToolTip.text: "Toggle preview"
-            ToolTip.visible: hovered
-            ToolTip.delay: 1000
 
             onClicked: {
                 checked = !checked;
@@ -159,27 +134,19 @@ Rectangle {
             }
         }
 
-        Divider {}
+        HDivider {}
 
-        OButton {
+        ControlPanelToolButton {
             id: btnSettings
 
             Layout.fillHeight: true
             Layout.preferredWidth: height
 
             icon.source: "qrc:/qml/resources/icons/settings.svg"
-            icon.color: "#E9E9E9"
             icon.width: 24
             icon.height: 24
 
-            background: Rectangle {
-                color: parent.hovered || parent.checked ? "#2C2C2C" : "transparent"
-                radius: 6
-            }
-
             ToolTip.text: "Settings"
-            ToolTip.visible: hovered
-            ToolTip.delay: 1000
 
             onClicked: {
                 Gui.showWindowPopup(settingsMenu);
@@ -209,7 +176,7 @@ Rectangle {
         }
     }
 
-    // Sync screensPreview button from settings when changed externally (e.g. SettingsMenu).
+    // Sync screensPreview button from settings when changed externally
     Connections {
         target: Backend.Settings
 
