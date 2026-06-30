@@ -8,7 +8,8 @@ Item {
 
     property SelectionArea area: area
     property alias loading: area.loading
-    property alias selecting: area.selecting
+    readonly property alias selecting: area.selecting
+    readonly property bool boxValid: area.boxValid
 
     SelectionArea {
         id: area
@@ -19,6 +20,10 @@ Item {
             let absoluteBox = area.relativeToAbsoluteBox(area.box);
             Backend.Processor.onSelectionAreaBoxReleased(absoluteBox);
         }
+    }
+
+    onBoxValidChanged: {
+        Backend.Processor.enableWorkflowManager(root.boxValid);
     }
 
     function cleanUp() {

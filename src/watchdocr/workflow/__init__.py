@@ -55,9 +55,6 @@ class WatchdOcrWorkflowManager:
         return self._active
 
     def switch_to(self, workflow: type[WatchdOcrWorkflow]):
-        if not self._active:
-            raise RuntimeError('Cannot start workflow while manager is inactive')
-
         if workflow not in self._workflows.keys():
             raise TypeError(f'Invalid workflow type -> {type(workflow)}')
 
@@ -70,7 +67,10 @@ class WatchdOcrWorkflowManager:
 
         new = self._workflows[workflow]
         log.info('Switching to workflow: %s', new.__class__.__name__, extra={'title': 'Workflow'})
-        new.run()
+
+        if self._active:
+            new.run()
+
         self._current = new
 
     def get_current_workflow(self):

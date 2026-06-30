@@ -27,7 +27,8 @@ class ProcessorViewModel(QmlViewModel):
     def onEvent(self, event: IEvent, data: EventData):
         match event:
             case Events.PROCESSOR_RESULT_RECEIVED:
-                self.resultReceived.emit(json.dumps(data.data))
+                if self._workflow_api.is_active():
+                    self.resultReceived.emit(json.dumps(data.data))
             case Events.PROCESSOR_ACTIVE_CHANGED:
                 self.activeChanged.emit()
             case Events.PROCESSOR_STATUS_CHANGED:
@@ -36,12 +37,7 @@ class ProcessorViewModel(QmlViewModel):
 
     @Slot(str)
     def onModeChanged(self, mode: str):
-        workflow = None
-        if mode == 'onetime':
-            workflow = OnetimeWorkflow
-        elif mode == 'live':
-            workflow = LiveWorkflow
-
+        workflow = self.convertModeStrToType(mode)
         if workflow:
             self._workflow_api.switch_to(workflow)
             self._current_mode = mode
@@ -49,18 +45,15 @@ class ProcessorViewModel(QmlViewModel):
     @Slot(QRect)
     def onSelectionAreaBoxReleased(self, box: QRect):
         if box.isEmpty():
-            self._workflow_api.switch_to(None)
-        else:
-            workflow = self.convertModeStrToType(self._current_mode)
-            self._workflow_api.switch_to(workflow)
+            return
 
-            self._workflow_api.provide_context_data({
-                'boundings': (box.x(), box.y(), box.width(), box.height())
-            })
-            self._workflow_api.execute()
+        self._workflow_api.provide_context_data({
+            'boundings': (box.x(), box.y(), box.width(), box.height())
+        })
+        self._workflow_api.execute()
 
     def getActive(self):
-        return self._api.get_active()
+        return self._workflow_api.is_active()
 
     active = Property(bool, getActive, notify=activeChanged)
 
@@ -76,3 +69,11 @@ class ProcessorViewModel(QmlViewModel):
         elif mode == 'live':
             workflow = LiveWorkflow
         return workflow
+
+    @Slot(bool)
+    def enableWorkflowManager(self, value: bool):
+        if value is True:
+            self._workflow_api.start()
+        else:
+            self._workflow_api.stop()
+        self.activeChanged.emit()

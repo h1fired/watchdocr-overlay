@@ -20,6 +20,9 @@ class OnetimeWorkflow(WatchdOcrWorkflow):
         return self._active
 
     def execute(self):
+        if not self._active:
+            raise RuntimeError('Cannot execute workflow while inactive')
+
         log.info(
             'OnetimeWorkflow execute triggered. Queueing OCR_TRANSLATION pipeline...',
             extra={'title': 'Workflow'}
