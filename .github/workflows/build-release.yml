@@ -23,16 +23,69 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Read version from pyproject.toml
+        id: get_version
+        shell: bash
+        run: |
+          VERSION=$(grep -m1 '^version' pyproject.toml | sed -E 's/version[[:space:]]*=[[:space:]]*"(.*)"/\1/')
+          if [ -z "$VERSION" ]; then
+            echo "Could not find version in pyproject.toml"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION"
+ 
+      - name: Check if release tag already exists
+        id: check_tag
+        shell: bash
+        run: |
+          TAG="v${{ steps.get_version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup project
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           uv sync
           uv run ./tools/resources.py --generate --compile
 
       - name: Disable debug mode
+        if: steps.check_tag.outputs.exists == 'false'
         shell: bash
         run: |
           sed -i 's/^DEBUG = True/DEBUG = False/' ./config/default.py
     
       - name: Build release (installer and portable)
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
-          uv run ./tools/compile/compiler.py --general-compile-dir
+          uv run ./tools/compile/compiler.py --installer --portable --general-compile-dir
+
+      - name: Verify build output
+        if: steps.check_tag.outputs.exists == 'false'
+        shell: bash
+        run: |
+          if [ ! -d "compile/output" ]; then
+            echo "compile/output directory not found"
+            exit 1
+          fi
+          ls -la compile/output
+          EXE_COUNT=$(find compile/output -maxdepth 1 -iname "*.exe" | wc -l)
+          ZIP_COUNT=$(find compile/output -maxdepth 1 -iname "*.zip" | wc -l)
+          if [ "$EXE_COUNT" -eq 0 ] || [ "$ZIP_COUNT" -eq 0 ]; then
+            echo "Expected at least one .exe and one .zip in compile/output"
+            exit 1
+          fi
+ 
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: v${{ steps.get_version.outputs.version }}
+          generate_release_notes: true
+          files: |
+            compile/output/*.exe
+            compile/output/*.zip
