@@ -1,9 +1,9 @@
 name: WatchdOcr Release Build
 
 on: 
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
       - name: Disable debug mode
         shell: bash
         run: |
-          sed -i 's/^DEBUG = True/DEBUG = False/' config/default.py
+          sed -i 's/^DEBUG = True/DEBUG = False/' ./config/default.py
     
       - name: Build release (installer and portable)
         run: |
