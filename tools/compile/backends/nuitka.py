@@ -28,6 +28,7 @@ class NuitkaBackend(CompilerBackend):
             *s_custom_flags,
             f'--output-dir={output_dir}',
             f'--output-filename={exe_name}.exe',
+            '--assume-yes-for-downloads',
             module
         ])
         subprocess.run(cmd, check=True)
