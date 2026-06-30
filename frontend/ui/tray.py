@@ -1,17 +1,19 @@
-from qt.core import QObject, QIcon, QAction, QSystemTrayIcon, QMenu
+from qt.core import QObject, QIcon, QAction, QSystemTrayIcon, QMenu, Signal
 
 
 class SystemTray(QObject):
+    showTriggered = Signal()
+
     def __init__(self, window, app):
         super().__init__(window)
 
-        self.tray = QSystemTrayIcon(QIcon("resources/icons/tray.svg"), app)
+        self.tray = QSystemTrayIcon(QIcon(':/qml/resources/icons/app/app.ico'), app)
 
         self.menu = QMenu()
-        self.show_action = QAction("Show")
-        self.quit_action = QAction("Quit")
+        self.show_action = QAction('Show')
+        self.quit_action = QAction('Quit')
 
-        self.show_action.triggered.connect(window.show)
+        self.show_action.triggered.connect(self.showTriggered)
         self.quit_action.triggered.connect(app.quit)
 
         self.menu.addAction(self.show_action)

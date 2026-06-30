@@ -1,16 +1,21 @@
-import os
 from dotenv import load_dotenv
+from pathlib import Path
+import os
+from common.utils.path import create_dir
 
 
 load_dotenv()
 
+
 DEBUG = True
 
-DEEPL_API_KEY = os.getenv('DEEPL_API_KEY')
-QML_WINDOW_FILE = 'frontend/ui/Window.qml'
+APP_ID = 'F450F02A-C03F-4937-B932-B0EE0CD93BE7'
+APP_NAME = 'WatchdOcr'
+APP_VERSION = '0.1.0'
 
-TRANSLATION_TARGET_LANG = 'UK'
+USER_SETTINGS_PATH = Path(
+    create_dir(os.environ['APPDATA'], APP_NAME),
+    'user_settings.yaml'
+)
 
-WINDOW_TOGGLE_HOTKEY = 'Alt+B'
-
-MAX_IMAGE_RESOLUTION = (-1, -1)
+QML_WINDOW_FILE = ':/qml/ui/MainWindow.qml'

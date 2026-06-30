@@ -24,7 +24,13 @@ from PySide6.QtCore import (
     QEasingCurve,
     QtMsgType,
     qInstallMessageHandler,
-    QElapsedTimer
+    QElapsedTimer,
+    QUrl,
+    QAbstractListModel,
+    QModelIndex,
+    QAbstractProxyModel,
+    QRegularExpression,
+    QSortFilterProxyModel
 )
 from PySide6.QtGui import (
     QKeySequence,

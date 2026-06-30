@@ -1,15 +1,18 @@
-from PySide6.QtQml import qmlRegisterType, qmlRegisterSingletonType, QQmlApplicationEngine
-from frontend.viewmodels.types.image import AnimatedImage, ImageProvider
+from qt.qml import qmlRegisterSingletonType, qmlRegisterType, QQmlApplicationEngine
 from frontend.viewmodels.types.screen import ScreenManager
+from frontend.viewmodels.types.image import ImageProvider, AnimatedImage
 
 
-def registerQmlTypes():
-    qmlRegisterType(AnimatedImage, "App.External", 1, 0, "EAnimatedImage")
-    qmlRegisterSingletonType(ScreenManager, 'App.Utils', 1, 0, 'EScreen')
+def registerUtilsQmlTypes():
+    qmlRegisterType(AnimatedImage, 'App.Utils', 1, 0, 'AnimatedImage')
+    qmlRegisterSingletonType(ScreenManager, 'App.Utils', 1, 0, 'UtilsScreen')
 
 
 def registerQmlImageProviders(engine: QQmlApplicationEngine):
-    providers = {'preview_screens': ImageProvider()}
+    providers = {
+        'preview_screens': ImageProvider(),
+        'preview_area': ImageProvider()
+    }
 
     for name, provider in providers.items():
         engine.addImageProvider(name, provider)

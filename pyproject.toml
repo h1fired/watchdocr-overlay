@@ -1,0 +1,29 @@
+[project]
+name = "ocr-overlay"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "dotenv>=0.9.9",
+    "mss>=10.2.0",
+    "numpy>=2.4.6",
+    "onnxruntime>=1.26.0",
+    "pillow>=12.2.0",
+    "pydantic>=2.13.4",
+    "pyside6>=6.11.1",
+    "pyyaml>=6.0.3",
+    "rapidocr>=3.8.4",
+    "winrt-windows-foundation>=3.2.1",
+    "winrt-windows-foundation-collections>=3.2.1",
+    "winrt-windows-globalization>=3.2.1",
+    "winrt-windows-graphics-imaging>=3.2.1",
+    "winrt-windows-media-ocr>=3.2.1",
+    "winrt-windows-storage>=3.2.1",
+    "winrt-windows-storage-streams>=3.2.1",
+]
+
+[dependency-groups]
+dev = [
+    "nuitka>=4.1.2",
+]

@@ -1,5 +1,4 @@
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtCore import QObject, Property, Signal, QRect
+from qt.core import QGuiApplication, QObject, Property, Signal, QRect
 
 
 class ScreenManager(QObject):
