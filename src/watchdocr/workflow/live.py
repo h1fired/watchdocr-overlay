@@ -15,6 +15,9 @@ class LiveWorkflow(WatchdOcrWorkflow):
         self._e = Event()
 
     def run(self):
+        if self._running:
+            return
+
         log.info('Starting LiveWorkflow thread...', extra={'title': 'Workflow'})
         self._e.clear()
         self._running = True
@@ -34,6 +37,9 @@ class LiveWorkflow(WatchdOcrWorkflow):
         log.info('LiveWorkflow thread exiting.', extra={'title': 'Workflow'})
 
     def close(self):
+        if not self._running:
+            return
+
         log.info('Stopping LiveWorkflow...', extra={'title': 'Workflow'})
         self._running = False
         self._e.set()
@@ -43,3 +49,6 @@ class LiveWorkflow(WatchdOcrWorkflow):
 
     def execute(self):
         pass
+
+    def is_active(self):
+        return self._running
