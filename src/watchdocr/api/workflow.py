@@ -7,6 +7,15 @@ class WorkflowAPI(KernelAPI):
         super().__init__(kernel)
         self._manager: WatchdOcrWorkflowManager = self.kernel.objects.pull('watchdocr-workflows')
 
+    def start(self):
+        self._manager.start()
+
+    def stop(self):
+        self._manager.stop()
+
+    def is_active(self):
+        return self._manager.is_active()
+
     def switch_to(self, workflow: type[WatchdOcrWorkflow] | None):
         self._manager.switch_to(workflow)
 

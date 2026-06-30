@@ -7,8 +7,9 @@ Item {
 
     readonly property alias box: objects.box
     property bool loading: false
-    property bool selecting: selectionMouseArea.selecting || selectionBox.selecting
+    readonly property bool selecting: selectionMouseArea.selecting || selectionBox.selecting
     property bool mouseSelectionActive: false
+    readonly property bool boxValid: !isNullRect(objects.box)
     signal boxSelected()
 
     Item {
@@ -149,6 +150,8 @@ Item {
     SelectionBox {
         id: selectionBox
 
+        visible: root.boxValid
+
         x: 0
         y: 0
         width: 0
@@ -215,6 +218,13 @@ Item {
     function relativeToAbsoluteBox(box) {
         var p = root.mapToGlobal(box.x, box.y);
         return Qt.rect(p.x, p.y, box.width, box.height);
+    }
+
+    function isNullRect(r) {
+        return r.x === 0 &&
+               r.y === 0 &&
+               r.width === 0 &&
+               r.height === 0;
     }
 
     function clear() {
