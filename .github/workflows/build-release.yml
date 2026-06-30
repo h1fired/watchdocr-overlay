@@ -27,6 +27,11 @@ jobs:
         run: |
           uv sync
           uv run ./tools/resources.py --generate --compile
+
+      - name: Disable debug mode
+        shell: bash
+        run: |
+          sed -i 's/^DEBUG = True/DEBUG = False/' config/default.py
     
       - name: Build release (installer and portable)
         run: |
