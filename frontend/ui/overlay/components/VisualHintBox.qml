@@ -61,7 +61,7 @@ Item {
         fontSizeMode: Text.Fit
         font.pixelSize: height
         font.weight: 600
-        minimumPixelSize: 6
+        minimumPixelSize: 8
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
         padding: 0
