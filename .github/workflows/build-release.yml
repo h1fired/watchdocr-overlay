@@ -60,8 +60,6 @@ jobs:
     
       - name: Build release (installer and portable)
         if: steps.check_tag.outputs.exists == 'false'
-        env:
-          NUITKA_QUIET_ASSUME_YES_FOR_DOWNLOADS: "1"
         run: |
           uv run ./tools/compile/compiler.py --installer --portable --general-compile-dir
 

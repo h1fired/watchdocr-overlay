@@ -253,6 +253,7 @@ if __name__ == '__main__':
     builder.compiler_params.custom_flags.append('--include-qt-plugins=qml')
     builder.compiler_params.custom_flags.append('--include-windows-runtime-dlls=yes')
     builder.compiler_params.custom_flags.append('--windows-disable-console')
+    builder.compiler_params.custom_flags.append('--assume-yes-for-downloads')
 
     builder.add_removable_file('qt6webenginecore.dll')
 
