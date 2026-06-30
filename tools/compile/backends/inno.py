@@ -101,7 +101,7 @@ class InnoBackend(InstallerBackend):
             f.write(script)
 
         # Build installer
-        subprocess.run(('iscc', inno_file))
+        subprocess.run(('iscc', inno_file), check=True)
 
         # Clean up
         os.remove(f'{save_dir}/{INNO_SCRIPT_NAME}.iss')

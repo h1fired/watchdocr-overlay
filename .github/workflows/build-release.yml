@@ -18,11 +18,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v6
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Read version from pyproject.toml
         id: get_version
         shell: bash
@@ -46,6 +41,11 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: Setup project
         if: steps.check_tag.outputs.exists == 'false'
         run: |
@@ -60,6 +60,8 @@ jobs:
     
       - name: Build release (installer and portable)
         if: steps.check_tag.outputs.exists == 'false'
+        env:
+          NUITKA_QUIET_ASSUME_YES_FOR_DOWNLOADS: "1"
         run: |
           uv run ./tools/compile/compiler.py --installer --portable --general-compile-dir
 
