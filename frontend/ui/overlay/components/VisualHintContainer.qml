@@ -15,7 +15,7 @@ Item {
         height: provider.height
 
         Repeater {
-            model: root.boxes
+            model: root.visible ? root.boxes : 0
 
             delegate: VisualHintBox {
                 required property var modelData
