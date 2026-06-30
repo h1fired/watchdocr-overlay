@@ -4,8 +4,6 @@ A real-time Optical Character Recognition (OCR) overlay and screen translation t
 
 This application was created as a pet project, inspired by the frequent frustration in games (and other applications) where text cannot be selected, copied, or translated on the fly.
 
----
-
 ## Key Features
 
 - **Overlay**: Seamless HUD overlays rendering translated text directly over windows (supports windowed or borderless modes; exclusive fullscreen is not supported).
@@ -15,14 +13,14 @@ This application was created as a pet project, inspired by the frequent frustrat
   - **One-time Mode**: Capture and translate on-demand.
   - **Live Mode**: Continuously capture and translate a screen region at user-defined polling frequencies.
 
----
-
 ## Installation & Setup
 
 ### Requirements
+- **OS**: Windows 11
 - **Python**: 3.11.9
 - **Qt**: 6.9.3 installed on the system
 - **Dependency Manager**: [uv](https://github.com/astral-sh/uv)
+- **Installation Builder**: [Inno Setup](https://jrsoftware.org/isdl.php)
 
 ### 1. Install Dependencies
 Run the following command to configure the virtual environment and install package dependencies:
@@ -34,6 +32,10 @@ uv sync
 The application compiles `.qrc` resource bundles automatically in `DEBUG` mode on startup:
 ```bash
 uv run .\main.py
+```
+Or use script directly:
+```
+uv run .\tools\resources.py --generate --compile
 ```
 
 ---
