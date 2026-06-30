@@ -124,7 +124,12 @@ class AppBuilder:
     def add_removable_file(self, file: str):
         self._removable_files.append(file)
 
-    def build(self, module: str, options: BuildOption):
+    def build(
+        self,
+        module: str,
+        options: BuildOption,
+        ignore_timestamp: bool = False
+    ):
         # Build resources
         cmd = ' '.join([
             'uv run tools/resources.py',
@@ -134,8 +139,11 @@ class AppBuilder:
         subprocess.run(cmd, check=True)
 
         # Build app
-        datestamp = datetime.strftime(datetime.now(), "%d-%m-%Y-%H-%M-%S")
-        compile_dir = f'{COMPILE_DIR_NAME}_{datestamp}'
+        if ignore_timestamp:
+            compile_dir = COMPILE_DIR_NAME
+        else:
+            datestamp = datetime.strftime(datetime.now(), "%d-%m-%Y-%H-%M-%S")
+            compile_dir = f'{COMPILE_DIR_NAME}_{datestamp}'
 
         # Create compile folder
         print(f'Creating compile folder "{compile_dir}"')
@@ -162,8 +170,9 @@ class AppBuilder:
         )
 
         for file in self._removable_files:
-            full_path = os.path.join(compile_dir, 'dist', file)
-            os.remove(full_path)
+            full_path = os.path.abspath(os.path.join(compile_dir, 'dist', file))
+            if os.path.exists(full_path):
+                os.remove(full_path)
 
         if options & BuildOption.BUILD_INSTALLER:
             params = InstallerParams(
@@ -210,6 +219,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='App builder')
     parser.add_argument('--installer', action='store_true', help='build installer')
     parser.add_argument('--portable', action='store_true', help='build portable version')
+    parser.add_argument('--general-compile-dir', action='store_true', help='use general compile dir name')
     args = parser.parse_args()
 
     config = AppConfig(
@@ -252,4 +262,4 @@ if __name__ == '__main__':
     if args.portable:
         options |= BuildOption.BUILD_PORTABLE
 
-    builder.build('main.py', options)
+    builder.build('main.py', options, args.general_compile_dir)

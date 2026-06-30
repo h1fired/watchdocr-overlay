@@ -35,4 +35,4 @@ jobs:
     
       - name: Build release (installer and portable)
         run: |
-          uv run ./tools/compile/compiler.py --installer --portable
+          uv run ./tools/compile/compiler.py --general-compile-dir
