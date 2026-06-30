@@ -38,6 +38,21 @@ Or use script directly:
 uv run .\tools\resources.py --generate --compile
 ```
 
+### 3. Run Application
+Just run next command :)
+```bash
+uv run .\main.py
+```
+
+---
+
+### Compile the Application
+Build the application into a distributable installer and/or portable package using the compiler script:
+```bash
+uv run .\tools\compile\compiler.py --installer --portable
+```
+This generates both a Windows installer (via Inno Setup) and a standalone portable build.
+> **Note:** The compiler/build tooling is currently in **beta** and may be unstable.
 ---
 
 ## Feedback & Contributing
