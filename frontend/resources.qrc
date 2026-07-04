@@ -16,6 +16,7 @@
     <file>ui/overlay/OverlayScreensPreview.qml</file>
     <file>ui/overlay/OverlaySelectionArea.qml</file>
     <file>ui/overlay/OverlayTextConsole.qml</file>
+    <file>ui/overlay/OverlayTextViewer.qml</file>
     <file>ui/overlay/OverlayVisualHints.qml</file>
     <file>ui/overlay/components/AccuracyBar.qml</file>
     <file>ui/overlay/components/ActivityBar.qml</file>

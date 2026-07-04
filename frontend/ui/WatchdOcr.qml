@@ -51,6 +51,22 @@ Item {
     }
 
     ScreenArea {
+        monitor: 0
+
+        OverlayTextViewer {
+            visible: (
+                root.mode === "live"
+                && selectionArea.boxValid
+                && !root.controlsVisible
+            )
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 20
+        }
+    }
+
+    ScreenArea {
         id: screenArea
 
         visible: root.controlsVisible
