@@ -1,12 +1,22 @@
 from __future__ import annotations
-from typing import Any, Type, TypeVar
 from .event import IEvent, EventSystem, EventData
 from .utils.logging import log
+from config import config
+from dataclasses import dataclass
+from typing import Any, Type, TypeVar
 import pkgutil
 import importlib
+import requests
+import io
+import zipfile
+import os
 
 
 T = TypeVar('T')
+
+
+class PluginError(Exception):
+    pass
 
 
 class PluginDiscovery:
@@ -136,6 +146,9 @@ class Plugin:
     def __str__(self):
         return f'{self.__class__.__name__} ({self._id})'
 
+    def get_name(self):
+        return self._id
+
 
 class LaunchPlugin(Plugin):
     def on_startup(self):
@@ -156,3 +169,64 @@ class PriorityPlugin(Plugin):
     def get_priority(self):
         return 0
 
+
+@dataclass(slots=True)
+class DownloadResource:
+    url: str
+
+
+RESOURCE_EXISTS_FILENAME = '.ready'
+
+
+class DownloadablePlugin(Plugin):
+    def on_after_download(self):
+        pass
+
+    def download_resource(self):
+        if issubclass(self.__class__, LaunchPlugin):
+            raise PluginError('DownloadablePlugin cannot be subclassed with LaunchPlugin')
+
+        rpath = self.get_resource_path()
+        resource_exists_file_path = os.path.join(rpath, RESOURCE_EXISTS_FILENAME)
+
+        log_title = self.get_name()
+
+        if os.path.exists(resource_exists_file_path):
+            log.info(
+                'Resource data already downloaded. Get cached',
+                extra={'title': log_title}
+            )
+            return
+
+        try:
+            resource = self.get_download_resource()
+            log.info(
+                'Trying to download resource data from: %s', resource.url,
+                extra={'title': log_title}
+            )
+            r = requests.get(url=resource.url)
+
+            if r.ok:
+                zip = zipfile.ZipFile(io.BytesIO(r.content))
+                zip.extractall(rpath)
+
+                # Create create file for checking
+                # if data is already downloaded
+                with open(resource_exists_file_path, 'w'):
+                    pass
+
+            log.info(
+                'Resource data successfully downloaded',
+                extra={'title': log_title}
+            )
+        except Exception as e:
+            raise PluginError('Failed to download resource') from e
+
+    def get_download_resource(self) -> DownloadResource:
+        raise NotImplementedError
+
+    def get_resource_path(self):
+        return os.path.join(
+            config.PLUGINS_DOWNLOAD_DATA_PATH,
+            self.get_name()
+        )

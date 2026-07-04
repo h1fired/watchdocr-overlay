@@ -19,3 +19,5 @@ USER_SETTINGS_PATH = Path(
 )
 
 QML_WINDOW_FILE = ':/qml/ui/MainWindow.qml'
+
+PLUGINS_DOWNLOAD_DATA_PATH = os.path.normpath('data/')
