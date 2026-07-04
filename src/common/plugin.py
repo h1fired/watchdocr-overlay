@@ -108,6 +108,9 @@ class PluginManager:
                 instance.__eventsys__ = self._eventsys
             if isinstance(instance, LaunchPlugin):
                 instance.on_startup()
+            if isinstance(instance, DownloadablePlugin):
+                instance.download_resource()
+                instance.on_after_download()
 
             meta = PluginMeta(
                 module.__plugin_meta__['id'],
@@ -183,9 +186,6 @@ class DownloadablePlugin(Plugin):
         pass
 
     def download_resource(self):
-        if issubclass(self.__class__, LaunchPlugin):
-            raise PluginError('DownloadablePlugin cannot be subclassed with LaunchPlugin')
-
         rpath = self.get_resource_path()
         resource_exists_file_path = os.path.join(rpath, RESOURCE_EXISTS_FILENAME)
 
