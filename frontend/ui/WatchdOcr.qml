@@ -58,11 +58,12 @@ Item {
                 root.mode === "live"
                 && selectionArea.boxValid
                 && !root.controlsVisible
+                && Backend.Settings.values.text_viewer_overlay
             )
 
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: 20
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 20
         }
     }
 
