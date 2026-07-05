@@ -50,8 +50,11 @@ class PluginDownloader(QObject):
         downloader.start_download()
 
 
-class PreloaderCore:
-    def __init__(self, manager: PluginManager):
+class PreloaderCore(QObject):
+    finished = Signal()
+
+    def __init__(self, manager: PluginManager, parent=None):
+        super().__init__(parent)
         self._engine = QQmlApplicationEngine()
         self._downloader = PluginDownloader(manager)
 
@@ -62,5 +65,7 @@ class PreloaderCore:
 
         def on_downloading_finish():
             self._engine.rootObjects()[0].close()
+            self.finished.emit()
 
         self._downloader.finished.connect(on_downloading_finish)
+        self._downloader.startDownloading()

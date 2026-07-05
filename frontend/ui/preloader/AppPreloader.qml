@@ -35,7 +35,7 @@ Rectangle {
             font.pixelSize: 14
             color: text !== "" ? "#FAF9FF" : "#060606"
 
-            text: ""
+            text: " "
         }
 
         ProgressBar {

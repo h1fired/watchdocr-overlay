@@ -109,9 +109,6 @@ class PluginManager:
                 instance.__eventsys__ = self._eventsys
             if isinstance(instance, LaunchPlugin):
                 instance.on_startup()
-            if isinstance(instance, DownloadablePlugin):
-                instance.download_resource()
-                instance.on_after_download()
 
             meta = PluginMeta(
                 module.__plugin_meta__['id'],
@@ -158,6 +155,7 @@ class PluginResourceDownloader:
                 progress = round(index+1 / length, 1)
                 self._observable.notify('progress', progress)
                 plugin.download_resource()
+                plugin.on_after_download()
             self._observable.notify('success')
         except Exception as e:
             self._observable.notify('error', e)
