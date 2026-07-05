@@ -1,7 +1,9 @@
-from PySide6.QtCore import QObject, Signal, Property, QThread
+from PySide6.QtCore import QObject, Signal, Property
 from PySide6.QtQml import QQmlApplicationEngine
 from src.common.plugin import PluginManager, PluginResourceDownloader
 from config import config
+from threading import Thread
+import time
 
 
 class PluginDownloader(QObject):
@@ -17,9 +19,7 @@ class PluginDownloader(QObject):
         self._label = ''
         self._progress = 0.
 
-        self._thread = QThread()
-        self.moveToThread(self._thread)
-        self._thread.started.connect(self._runner)
+        self._thread = None
 
     def getLoading(self):
         return self._loading
@@ -28,6 +28,10 @@ class PluginDownloader(QObject):
 
     def getLabel(self):
         return self._label
+
+    def setLabel(self, text: str):
+        self._label = text
+        self.labelChanged.emit()
 
     label = Property(str, getLabel, notify=labelChanged)
 
@@ -41,13 +45,19 @@ class PluginDownloader(QObject):
     progress = Property(float, getProgress, notify=progressChanged)
 
     def startDownloading(self):
+        self._thread = Thread(target=self._runner, daemon=True)
         self._thread.start()
 
     def _runner(self):
         downloader = PluginResourceDownloader(self._manager)
-        downloader.observe('finished', self.finished.emit)
+        self.setLabel('Download resources')
         downloader.observe('progress', self.setProgress)
         downloader.start_download()
+
+        self.setLabel('Finished')
+        time.sleep(0.5)
+
+        self.finished.emit()
 
 
 class PreloaderCore(QObject):
