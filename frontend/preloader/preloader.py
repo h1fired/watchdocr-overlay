@@ -54,7 +54,7 @@ class PluginDownloader(QObject):
         downloader.observe('progress', self.setProgress)
         downloader.start_download()
 
-        self.setLabel('Finished')
+        self.setLabel('Starting WatchdOcr...')
         time.sleep(0.5)
 
         self.finished.emit()

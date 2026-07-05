@@ -8,8 +8,8 @@ Rectangle {
     property alias label: text.text
     property alias progress: progressBar.value
 
-    implicitWidth: 300
-    implicitHeight: column.implicitHeight + (40)
+    implicitWidth: 380
+    implicitHeight: column.implicitHeight + (48)
 
     radius: 15
     color: "#1A1A1A"
@@ -25,13 +25,24 @@ Rectangle {
 
         spacing: 12
 
+        Image {
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            width: 60
+            height: 60
+
+            source: "qrc:/qml/resources/icons/preloader_logo.png"
+            sourceSize.width: width
+            sourceSize.height: height
+        }
+
         Text {
             id: text
 
             anchors.horizontalCenter: parent.horizontalCenter
 
             font.family: "Segoe UI"
-            font.weight: 600
+            font.weight: 700
             font.pixelSize: 14
             color: text !== "" ? "#FAF9FF" : "#060606"
 
@@ -42,7 +53,7 @@ Rectangle {
             id: progressBar
 
             width: parent.width / 1.5
-            height: 4
+            height: 3
 
             anchors.horizontalCenter: parent.horizontalCenter
 
