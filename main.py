@@ -55,6 +55,7 @@ if __name__ == '__main__':
     # After preloader
     def after_preloader():
         gui.tray().setShowActiveVisible(True)
+
         # Load GUI core
         gui.load(core.api_collection(), core.event_system())
 
