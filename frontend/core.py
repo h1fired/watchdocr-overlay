@@ -60,32 +60,31 @@ class GuiCoreApplication(metaclass=Singleton):
     def __init__(self):
         self._tray = None
 
+    def pre_init(self):
+        self._app = QApplication([])
+
+        # Init tray
+        self._app.setQuitOnLastWindowClosed(False)
+        self._tray = SystemTray(self._app)
+
+        def onTrayShowTriggered():
+            if not _qmlSystemObj.getVisible():
+                _qmlSystemObj.setVisible(True)
+        self._tray.showTriggered.connect(onTrayShowTriggered)
+
     def load(
         self,
         api_collection: KernelAPICollection,
         eventsys: EventSystem,
-        load_viewmodels=True,
-        notray=False
+        load_viewmodels=True
     ):
-        app = QApplication([])
-
         engine = QQmlApplicationEngine()
         engine.load(config.QML_WINDOW_FILE)
         if not engine.rootObjects():
             raise RuntimeError('Failed to load QML window')
 
-        self._app = app
         self._engine = engine
         self._window = engine.rootObjects()[0]
-
-        if not notray:
-            app.setQuitOnLastWindowClosed(False)
-            self._tray = SystemTray(self._window, app)
-
-            def onTrayShowTriggered():
-                if not _qmlSystemObj.getVisible():
-                    _qmlSystemObj.setVisible(True)
-            self._tray.showTriggered.connect(onTrayShowTriggered)
 
         self._image_providers = registerQmlImageProviders(engine)
 
@@ -117,6 +116,9 @@ class GuiCoreApplication(metaclass=Singleton):
 
     def image_providers(self):
         return self._image_providers
+
+    def tray(self):
+        return self._tray
 
     def _set_window_affinity(self):
         user32 = ctypes.windll.user32

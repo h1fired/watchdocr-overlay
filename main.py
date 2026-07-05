@@ -1,5 +1,6 @@
 from frontend.core import GuiCoreApplication
 from frontend.utils import ghotkey
+from frontend.preloader.preloader import PreloaderCore
 from src.core import WatchdOcrCore
 from src.utils.sysbehavior import SingleInstance
 from config import config
@@ -42,6 +43,7 @@ if __name__ == '__main__':
     core.initialize()
 
     gui = GuiCoreApplication()
+    gui.pre_init()
 
     # Check for single application instance
     guard = SingleInstance(config.APP_ID)
@@ -50,10 +52,20 @@ if __name__ == '__main__':
 
     guard.activate_requested.connect(show_overlay)
 
-    # Load GUI core
-    gui.load(core.api_collection(), core.event_system())
+    # After preloader
+    def after_preloader():
+        gui.tray().setShowActiveVisible(True)
 
-    # Install global keyboard events hook
-    ghotkey.install_keyboard_hook_proc()
+        # Load GUI core
+        gui.load(core.api_collection(), core.event_system())
+
+        # Install global keyboard events hook
+        ghotkey.install_keyboard_hook_proc()
+
+    # Run preloader
+    preloader = PreloaderCore(core.plugins_manager())
+    preloader.finished.connect(after_preloader)
+    preloader.error.connect(lambda: sys.exit(0))
+    preloader.exec()
 
     sys.exit(gui.exec())
