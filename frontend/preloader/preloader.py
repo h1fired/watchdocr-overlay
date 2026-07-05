@@ -6,7 +6,7 @@ from threading import Thread
 import time
 
 
-class PluginDownloader(QObject):
+class PreloaderWorker(QObject):
     loadingChanged = Signal()
     labelChanged = Signal()
     progressChanged = Signal()
@@ -49,11 +49,14 @@ class PluginDownloader(QObject):
         self._thread.start()
 
     def _runner(self):
+
+        # Plugin downloader
         downloader = PluginResourceDownloader(self._manager)
-        self.setLabel('Download resources')
+        self.setLabel('Downloading resources...')
         downloader.observe('progress', self.setProgress)
         downloader.start_download()
 
+        # Starting app
         self.setLabel('Starting WatchdOcr...')
         time.sleep(0.5)
 
@@ -66,16 +69,16 @@ class PreloaderCore(QObject):
     def __init__(self, manager: PluginManager, parent=None):
         super().__init__(parent)
         self._engine = QQmlApplicationEngine()
-        self._downloader = PluginDownloader(manager)
+        self._worker = PreloaderWorker(manager)
 
     def exec(self):
         context = self._engine.rootContext()
-        context.setContextProperty('resourceDownloader', self._downloader)
+        context.setContextProperty('preloaderWorker', self._worker)
         self._engine.load(config.PRELOADER_WINDOW_FILE)
 
         def on_downloading_finish():
             self._engine.rootObjects()[0].close()
             self.finished.emit()
 
-        self._downloader.finished.connect(on_downloading_finish)
-        self._downloader.startDownloading()
+        self._worker.finished.connect(on_downloading_finish)
+        self._worker.startDownloading()

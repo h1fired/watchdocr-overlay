@@ -36,6 +36,10 @@ Rectangle {
             sourceSize.height: height
         }
 
+        LoaderAnim {
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
         Text {
             id: text
 

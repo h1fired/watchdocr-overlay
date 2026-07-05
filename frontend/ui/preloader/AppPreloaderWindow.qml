@@ -16,7 +16,7 @@ Window {
     AppPreloader {
         id: preloader
 
-        label: resourceDownloader.label
-        progress: resourceDownloader.progress
+        label: preloaderWorker.label
+        progress: preloaderWorker.progress
     }
 }
