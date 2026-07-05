@@ -2,7 +2,7 @@ from src.watchdocr.plugins.translation import TranslatorPlugin, TranslationData
 
 
 __plugin_meta__ = {
-    'id': 'watchdocr.translator.dummy',
+    'id': 'watchdocr-translator-dummy',
     'name': 'DummyTranslator',
     'version': (0, 1, 0)
 }
