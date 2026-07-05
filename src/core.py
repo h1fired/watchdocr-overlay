@@ -100,3 +100,6 @@ class WatchdOcrCore:
 
     def event_system(self):
         return self._kernel.event_system
+
+    def plugins_manager(self):
+        return self._kernel.plugins

@@ -152,9 +152,11 @@ class PluginResourceDownloader:
     def start_download(self):
         plugins = self._manager.get_realizations(DownloadablePlugin)
 
+        length = len(plugins)
         try:
             for index, plugin in enumerate(plugins):
-                self._observable.notify('progress', index+1)
+                progress = round(index+1 / length, 1)
+                self._observable.notify('progress', progress)
                 plugin.download_resource()
             self._observable.notify('success')
         except Exception as e:
