@@ -65,6 +65,7 @@ if __name__ == '__main__':
     # Run preloader
     preloader = PreloaderCore(core.plugins_manager())
     preloader.finished.connect(after_preloader)
+    preloader.error.connect(lambda: sys.exit(0))
     preloader.exec()
 
     sys.exit(gui.exec())

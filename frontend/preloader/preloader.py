@@ -11,6 +11,7 @@ class PreloaderWorker(QObject):
     labelChanged = Signal()
     progressChanged = Signal()
     finished = Signal()
+    error = Signal()
 
     def __init__(self, manager: PluginManager, parent=None):
         super().__init__(parent)
@@ -49,12 +50,16 @@ class PreloaderWorker(QObject):
         self._thread.start()
 
     def _runner(self):
-
         # Plugin downloader
         downloader = PluginResourceDownloader(self._manager)
         self.setLabel('Downloading resources...')
         downloader.observe('progress', self.setProgress)
-        downloader.start_download()
+
+        if not downloader.start_download():
+            self.setLabel('An error occured! Exit...')
+            time.sleep(0.5)
+            self.error.emit()
+            return
 
         # Starting app
         self.setLabel('Starting WatchdOcr...')
@@ -65,6 +70,7 @@ class PreloaderWorker(QObject):
 
 class PreloaderCore(QObject):
     finished = Signal()
+    error = Signal()
 
     def __init__(self, manager: PluginManager, parent=None):
         super().__init__(parent)
@@ -81,4 +87,5 @@ class PreloaderCore(QObject):
             self.finished.emit()
 
         self._worker.finished.connect(on_downloading_finish)
+        self._worker.error.connect(self.error)
         self._worker.startDownloading()

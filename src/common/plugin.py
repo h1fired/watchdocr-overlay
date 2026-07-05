@@ -13,6 +13,9 @@ import zipfile
 import os
 
 
+LOG_TITLE = 'Plugins'
+
+
 T = TypeVar('T')
 
 
@@ -25,18 +28,18 @@ class PluginDiscovery:
         self._p_entries = []
 
     def add_entry_point(self, dir: str):
-        log.info('Adding entry point directory: %s', dir, extra={'title': 'Plugins'})
+        log.info('Adding entry point directory: %s', dir, extra={'title': LOG_TITLE})
         self._p_entries.append(dir)
 
     def discover(self):
         modules = []
 
-        log.info('Starting plugin discovery...', extra={'title': 'Plugins'})
+        log.info('Starting plugin discovery...', extra={'title': LOG_TITLE})
         for module_path in self._p_entries:
             try:
                 package = importlib.import_module(module_path)
             except Exception as e:
-                log.error('Failed to import plugin entry point %s: %s', module_path, e, extra={'title': 'Plugins'})
+                log.error('Failed to import plugin entry point %s: %s', module_path, e, extra={'title': LOG_TITLE})
                 continue
 
             for _, name, _ in pkgutil.walk_packages(
@@ -49,17 +52,17 @@ class PluginDiscovery:
                 try:
                     module = importlib.import_module(name)
                 except Exception as e:
-                    log.error('Failed to import discovered plugin module %s: %s', name, e, extra={'title': 'Plugins'})
+                    log.error('Failed to import discovered plugin module %s: %s', name, e, extra={'title': LOG_TITLE})
                     continue
 
                 if not hasattr(module, '__plugin_meta__'):
-                    log.warning('Module %s is missing __plugin_meta__. Skipping.', name, extra={'title': 'Plugins'})
+                    log.warning('Module %s is missing __plugin_meta__. Skipping.', name, extra={'title': LOG_TITLE})
                     continue
                 elif not hasattr(module, '__plugin_main__'):
-                    log.warning('Module %s is missing __plugin_main__. Skipping.', name, extra={'title': 'Plugins'})
+                    log.warning('Module %s is missing __plugin_main__. Skipping.', name, extra={'title': LOG_TITLE})
                     continue
 
-                log.info('Discovered plugin module: %s (id: %s)', name, module.__plugin_meta__.get('id'), extra={'title': 'Plugins'})
+                log.info('Discovered plugin module: %s (id: %s)', name, module.__plugin_meta__.get('id'), extra={'title': LOG_TITLE})
                 modules.append(name)
 
         return tuple(modules)
@@ -100,7 +103,7 @@ class PluginManager:
         self._discovery = PluginDiscovery()
 
     def init(self):
-        log.info('Initializing plugins...', extra={'title': 'Plugins'})
+        log.info('Initializing plugins...', extra={'title': LOG_TITLE})
         for name in self._discovery.discover():
             module = importlib.import_module(name)
 
@@ -117,7 +120,11 @@ class PluginManager:
                 instance=instance
             )
             self._plugins.append(meta)
-            log.success('Successfully loaded plugin: %s v%s', meta.name(), '.'.join(map(str, meta.version())), extra={'title': 'Plugins'})
+            log.success(
+                'Successfully loaded plugin: %s v%s',
+                meta.name(), '.'.join(map(str, meta.version())),
+                extra={'title': LOG_TITLE}
+            )
 
         # Register on_event callback for event system
         def on_event(event: IEvent, data: EventData):
@@ -149,17 +156,17 @@ class PluginResourceDownloader:
     def start_download(self):
         plugins = self._manager.get_realizations(DownloadablePlugin)
 
-        length = len(plugins)
         try:
+            length = len(plugins)
             for index, plugin in enumerate(plugins):
                 plugin.download_resource()
                 plugin.on_after_download()
                 progress = round(index+1 / length, 1)
                 self._observable.notify('progress', progress)
-            self._observable.notify('success')
+                return True
         except Exception as e:
-            self._observable.notify('error', e)
-        self._observable.notify('finished')
+            log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
+            return False
 
     def observe(self, trigger: str, callback: Callable):
         self._observable.register(trigger, callback)
