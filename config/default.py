@@ -21,4 +21,7 @@ USER_SETTINGS_PATH = Path(
 QML_WINDOW_FILE = ':/qml/ui/MainWindow.qml'
 
 PRELOADER_WINDOW_FILE = ':/qml/ui/preloader/AppPreloaderWindow.qml'
-PLUGINS_DOWNLOAD_DATA_PATH = os.path.normpath('data/')
+PLUGINS_DOWNLOAD_DATA_PATH = Path(
+    create_dir(os.environ['LOCALAPPDATA'], APP_NAME),
+    'plugdata'
+)
