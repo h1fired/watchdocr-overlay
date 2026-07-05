@@ -1,9 +1,10 @@
 from __future__ import annotations
 from .event import IEvent, EventSystem, EventData
 from .utils.logging import log
+from common.observable import MappedObservable
 from config import config
 from dataclasses import dataclass
-from typing import Any, Type, TypeVar
+from typing import Any, Type, TypeVar, Callable
 import pkgutil
 import importlib
 import requests
@@ -141,6 +142,27 @@ class PluginManager:
             if isinstance(p.instance(), plugin)
         ])
         return realizations
+
+
+class PluginResourceDownloader:
+    def __init__(self, manager: PluginManager):
+        self._manager = manager
+        self._observable = MappedObservable()
+
+    def start_download(self):
+        plugins = self._manager.get_realizations(DownloadablePlugin)
+
+        try:
+            for index, plugin in enumerate(plugins):
+                self._observable.notify('progress', index+1)
+                plugin.download_resource()
+            self._observable.notify('success')
+        except Exception as e:
+            self._observable.notify('error', e)
+        self._observable.notify('finished')
+
+    def observe(self, trigger: str, callback: Callable):
+        self._observable.register(trigger, callback)
 
 
 class Plugin:

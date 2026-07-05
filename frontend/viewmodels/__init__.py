@@ -6,7 +6,6 @@ from frontend.viewmodels.components.vm_ocr import OcrViewModel
 from frontend.viewmodels.components.vm_preview import PreviewViewModel
 from frontend.viewmodels.components.vm_settings import SettingsViewModel
 from frontend.viewmodels.components.vm_general import GeneralViewModel
-from frontend.viewmodels.components.vm_plugin import PluginViewModel
 
 
 VIEWMODELS = (
@@ -17,7 +16,6 @@ VIEWMODELS = (
     OcrViewModel,
     PreviewViewModel,
     SettingsViewModel,
-    PluginViewModel
 )
 
 
