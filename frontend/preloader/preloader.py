@@ -57,7 +57,7 @@ class PreloaderWorker(QObject):
 
         if not downloader.start_download():
             self.setLabel('An error occured! Exit...')
-            time.sleep(0.5)
+            time.sleep(1)
             self.error.emit()
             return
 
