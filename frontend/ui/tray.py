@@ -8,7 +8,7 @@ class SystemTray(QObject):
         super().__init__(parent)
 
         self.tray = QSystemTrayIcon(QIcon(':/qml/resources/icons/app/app.ico'), app)
-        self.tray.activated.connect(self.showTriggered)
+        self.tray.activated.connect(self._onActivated)
 
         self.menu = QMenu()
         self.show_action = QAction('Show')
@@ -28,3 +28,7 @@ class SystemTray(QObject):
 
     def setShowActiveVisible(self, value: bool):
         self.show_action.setVisible(value)
+
+    def _onActivated(self, reason):
+        if reason == QSystemTrayIcon.DoubleClick:
+            self.showTriggered.emit()
