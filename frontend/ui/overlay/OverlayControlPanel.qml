@@ -144,8 +144,8 @@ Rectangle {
             Layout.preferredWidth: height
 
             icon.source: "qrc:/qml/resources/icons/settings.svg"
-            icon.width: 24
-            icon.height: 24
+            icon.width: 20
+            icon.height: 20
 
             ToolTip.text: "Settings"
 
