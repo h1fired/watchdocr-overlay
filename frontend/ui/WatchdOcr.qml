@@ -118,7 +118,7 @@ Item {
 
                 PropertyChanges {
                     target: textConsole
-                    visible: !selectionArea.selecting
+                    visible: !selectionArea.selecting && Backend.Settings.values.text_console_show
                     enableProcessingStageLoader: true
                 }
             },
@@ -142,7 +142,7 @@ Item {
 
                 PropertyChanges {
                     target: textConsole
-                    visible: !selectionArea.selecting
+                    visible: !selectionArea.selecting && Backend.Settings.values.text_console_show
                     enableProcessingStageLoader: false
                 }
             },
