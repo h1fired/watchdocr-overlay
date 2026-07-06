@@ -121,6 +121,17 @@ Item {
                     visible: !selectionArea.selecting && Backend.Settings.values.text_console_show
                     enableProcessingStageLoader: true
                 }
+
+                PropertyChanges {
+                    target: controlPanel
+                    btnScreensPreview.enabled: true
+                    btnScreensPreview.checked: false
+                }
+
+                PropertyChanges {
+                    target: Backend.System
+                    windowTransparentForCapture: false
+                }
             },
             State {
                 name: "live"
@@ -144,6 +155,17 @@ Item {
                     target: textConsole
                     visible: !selectionArea.selecting && Backend.Settings.values.text_console_show
                     enableProcessingStageLoader: false
+                }
+
+                PropertyChanges {
+                    target: controlPanel
+                    btnScreensPreview.enabled: false
+                    btnScreensPreview.checked: false
+                }
+
+                PropertyChanges {
+                    target: Backend.System
+                    windowTransparentForCapture: true
                 }
             },
         ]

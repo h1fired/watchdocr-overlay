@@ -28,14 +28,20 @@ registerUtilsQmlTypes()
 class SystemObject(QObject):
     visibleChanged = Signal()
     visibilitySwapRequested = Signal()
+    windowTransparentForCaptureChanged = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._visible = True
         self._focus_helper = FocusHelper(self)
+        self._window = None
+        self._window_transparent_for_capture = False
 
     def requestVisibilitySwap(self):
         self.visibilitySwapRequested.emit()
+
+    def setWindow(self, window):
+        self._window = window
 
     def getVisible(self):
         return self._visible
@@ -50,6 +56,28 @@ class SystemObject(QObject):
         return self._focus_helper
 
     focusHelper = Property(QObject, getFocusHelper, constant=True)
+
+    def getWindowTransparentForCapture(self):
+        return self._window_transparent_for_capture
+
+    def setWindowTransparentForCapture(self, value: bool):
+        user32 = ctypes.windll.user32
+        hwnd = self._window.winId()
+        WDA_NONE = 0x00000000
+        WDA_EXCLUDEFROMCAPTURE = 0x00000011
+        user32.SetWindowDisplayAffinity(
+            hwnd,
+            WDA_EXCLUDEFROMCAPTURE if value else WDA_NONE
+        )
+        self._window_transparent_for_capture = value
+        self.windowTransparentForCaptureChanged.emit()
+
+    windowTransparentForCapture = Property(
+        bool,
+        getWindowTransparentForCapture,
+        setWindowTransparentForCapture,
+        notify=windowTransparentForCaptureChanged
+    )
 
 
 _qmlSystemObj = SystemObject()
@@ -93,7 +121,7 @@ class GuiCoreApplication(metaclass=Singleton):
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 
-        self._set_window_affinity()
+        _qmlSystemObj.setWindow(self._window)
 
     def destroy(self):
         _qmlLinkerCore.destroyContent()
@@ -119,9 +147,3 @@ class GuiCoreApplication(metaclass=Singleton):
 
     def tray(self):
         return self._tray
-
-    def _set_window_affinity(self):
-        user32 = ctypes.windll.user32
-        hwnd = self._window.winId()
-        WDA_EXCLUDEFROMCAPTURE = 0x00000011
-        user32.SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE)

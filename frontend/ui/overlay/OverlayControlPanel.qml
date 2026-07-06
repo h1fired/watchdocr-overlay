@@ -13,6 +13,7 @@ Rectangle {
     property alias screensPreviewActive: btnScreensPreview.checked
     property TranslationSelector translationSelector: translationSelector
     readonly property string mode: modeSelector.currentMode
+    readonly property ControlPanelToolButton btnScreensPreview: btnScreensPreview
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
