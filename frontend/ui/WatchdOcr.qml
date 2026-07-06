@@ -128,11 +128,6 @@ Item {
                     btnScreensPreview.enabled: true
                     btnScreensPreview.checked: false
                 }
-
-                PropertyChanges {
-                    target: System
-                    windowTransparentForCapture: false
-                }
             },
             State {
                 name: "live"
