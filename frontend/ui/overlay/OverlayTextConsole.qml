@@ -147,6 +147,26 @@ Rectangle {
                         }
                     }
 
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton
+
+                        onClicked: (mouse) => {
+                            contextMenu.x = mouse.x
+                            contextMenu.y = mouse.y
+                            contextMenu.open()
+                        }
+                    }
+
+                    OMenu {
+                        id: contextMenu
+
+                        OMenuItem {
+                            text: "Copy"
+                            onTriggered: responseTextEdit.copy()
+                        }
+                    }
+
                     onVisibleChanged: {
                         if (!visible) {
                             root.width = 500;
