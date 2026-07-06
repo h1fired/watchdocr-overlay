@@ -1,5 +1,6 @@
 import QtQuick
 import App.Backend
+import App.System
 import "qrc:/qml/ui/overlay"
 import "qrc:/qml/ui/overlay/components"
 import "qrc:/qml/ui/common/components"
@@ -129,7 +130,7 @@ Item {
                 }
 
                 PropertyChanges {
-                    target: Backend.System
+                    target: System
                     windowTransparentForCapture: false
                 }
             },
@@ -164,7 +165,7 @@ Item {
                 }
 
                 PropertyChanges {
-                    target: Backend.System
+                    target: System
                     windowTransparentForCapture: true
                 }
             },

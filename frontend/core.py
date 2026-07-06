@@ -114,14 +114,14 @@ class GuiCoreApplication(metaclass=Singleton):
         self._engine = engine
         self._window = engine.rootObjects()[0]
 
+        _qmlSystemObj.setWindow(self._window)
+
         self._image_providers = registerQmlImageProviders(engine)
 
         if load_viewmodels:
             _qmlLinkerCore.initialize(self._window, api_collection, eventsys)
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
-
-        _qmlSystemObj.setWindow(self._window)
 
     def destroy(self):
         _qmlLinkerCore.destroyContent()
