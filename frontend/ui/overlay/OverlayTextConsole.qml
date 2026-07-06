@@ -222,4 +222,8 @@ Rectangle {
             }
         }
     }
+
+    function clear() {
+        responseTextEdit.text = "";
+    }
 }

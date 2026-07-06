@@ -119,7 +119,6 @@ Item {
                 PropertyChanges {
                     target: textConsole
                     visible: !selectionArea.selecting
-                    enableSizeAdaptivity: true
                     enableProcessingStageLoader: true
                 }
             },
@@ -144,7 +143,6 @@ Item {
                 PropertyChanges {
                     target: textConsole
                     visible: !selectionArea.selecting
-                    enableSizeAdaptivity: false
                     enableProcessingStageLoader: false
                 }
             },
@@ -154,6 +152,7 @@ Item {
             if (state == "onetime") {
                 selectionArea.cleanUp();
                 controlPanel.selectionToolActive = true;
+                textConsole.clear();
             }
             visualHints.clear();
         }
