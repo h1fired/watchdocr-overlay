@@ -3,7 +3,7 @@ import requests
 
 
 __plugin_meta__ = {
-    'id': 'watchdocr.translator.google',
+    'id': 'watchdocr-translator-google',
     'name': 'GoogleTranslator',
     'version': (0, 1, 0)
 }

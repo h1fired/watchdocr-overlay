@@ -38,6 +38,9 @@
     <file>ui/overlay/components/VisualHintBox.qml</file>
     <file>ui/overlay/components/VisualHintContainer.qml</file>
     <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
+    <file>ui/preloader/AppPreloader.qml</file>
+    <file>ui/preloader/AppPreloaderWindow.qml</file>
+    <file>ui/preloader/LoaderAnim.qml</file>
   </qresource>
   <qresource prefix="/qml">
     <file>resources\icons/a_loading.svg</file>
@@ -51,6 +54,7 @@
     <file>resources\icons/pause.svg</file>
     <file>resources\icons/play.svg</file>
     <file>resources\icons/preferences_dots.svg</file>
+    <file>resources\icons/preloader_logo.png</file>
     <file>resources\icons/selection.svg</file>
     <file>resources\icons/settings.svg</file>
     <file>resources\icons/swap.svg</file>

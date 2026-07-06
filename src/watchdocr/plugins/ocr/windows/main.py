@@ -9,7 +9,7 @@ import io
 
 
 __plugin_meta__ = {
-    'id': 'watchdocr.ocr.windows',
+    'id': 'watchdocr-ocr-windows',
     'name': 'WindowsOCR',
     'version': (0, 1, 0)
 }

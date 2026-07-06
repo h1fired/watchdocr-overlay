@@ -1,5 +1,6 @@
 import QtQuick
 import App.Backend
+import App.System
 import "qrc:/qml/ui/overlay"
 import "qrc:/qml/ui/overlay/components"
 import "qrc:/qml/ui/common/components"
@@ -118,9 +119,14 @@ Item {
 
                 PropertyChanges {
                     target: textConsole
-                    visible: !selectionArea.selecting
-                    enableSizeAdaptivity: true
+                    visible: !selectionArea.selecting && Backend.Settings.values.text_console_show
                     enableProcessingStageLoader: true
+                }
+
+                PropertyChanges {
+                    target: controlPanel
+                    btnScreensPreview.enabled: true
+                    btnScreensPreview.checked: false
                 }
             },
             State {
@@ -143,9 +149,19 @@ Item {
 
                 PropertyChanges {
                     target: textConsole
-                    visible: !selectionArea.selecting
-                    enableSizeAdaptivity: false
+                    visible: !selectionArea.selecting && Backend.Settings.values.text_console_show
                     enableProcessingStageLoader: false
+                }
+
+                PropertyChanges {
+                    target: controlPanel
+                    btnScreensPreview.enabled: false
+                    btnScreensPreview.checked: false
+                }
+
+                PropertyChanges {
+                    target: System
+                    windowTransparentForCapture: true
                 }
             },
         ]
@@ -154,6 +170,7 @@ Item {
             if (state == "onetime") {
                 selectionArea.cleanUp();
                 controlPanel.selectionToolActive = true;
+                textConsole.clear();
             }
             visualHints.clear();
         }

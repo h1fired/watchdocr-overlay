@@ -34,7 +34,21 @@ Item {
         }
     }
 
+    Timer {
+        id: windowTransparentTimer
+
+        running: false
+        interval: 50
+
+        onTriggered: {
+            System.windowTransparentForCapture = false;
+        }
+    }
+
     function updatePreview() {
+        windowTransparentTimer.stop();
+        System.windowTransparentForCapture = true;
         Backend.Preview.requestAllScreensPreview();
+        windowTransparentTimer.start();
     }
 }

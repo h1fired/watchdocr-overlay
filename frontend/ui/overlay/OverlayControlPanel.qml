@@ -13,6 +13,7 @@ Rectangle {
     property alias screensPreviewActive: btnScreensPreview.checked
     property TranslationSelector translationSelector: translationSelector
     readonly property string mode: modeSelector.currentMode
+    readonly property ControlPanelToolButton btnScreensPreview: btnScreensPreview
 
     implicitWidth: row.implicitWidth + (row.anchors.leftMargin * 2)
 
@@ -144,8 +145,8 @@ Rectangle {
             Layout.preferredWidth: height
 
             icon.source: "qrc:/qml/resources/icons/settings.svg"
-            icon.width: 24
-            icon.height: 24
+            icon.width: 20
+            icon.height: 20
 
             ToolTip.text: "Settings"
 

@@ -24,6 +24,14 @@ class SettingField:
 
 
 class UserSettings(BaseModel):
+    text_console_show: bool = Field(
+        default=True,
+        json_schema_extra=SettingField(
+            label='Show text console',
+            description='Display a text console for text interaction.',
+            group='Visual',
+        ).as_dict(),
+    )
     visual_hints_show: bool = Field(
         default=False,
         json_schema_extra=SettingField(

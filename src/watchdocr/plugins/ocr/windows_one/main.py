@@ -1,24 +1,29 @@
-from src.watchdocr.plugins.ocr import OcrPlugin, OcrData, OcrOptimization
+from src.common.plugin import DownloadResource, DownloadablePlugin
+from src.watchdocr.plugins.ocr import OcrPlugin, OcrData
 from src.watchdocr.plugins.ocr.windows_one.engine import OcrEngine, OcrLine
 from PIL import Image
-import os
 
 
 __plugin_meta__ = {
-    'id': 'watchdocr.ocr.windows_one',
+    'id': 'watchdocr-ocr-windowsone',
     'name': 'WindowsOneOCR',
     'version': (0, 1, 0)
 }
 __plugin_main__ = 'WindowsOneOcrPlugin'
 
 
-DLLS_PATH = os.path.normpath('src/watchdocr/plugins/ocr/windows_one/data/')
+RESOURCE_PATH = 'https://github.com/h1fired/watchdocr-overlay/releases/download/v0.1.0/watchdocr_windowsone_ocr_data.zip'
 
 
-class WindowsOneOcrPlugin(OcrPlugin):
+class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
+    _id = 'windowsone_ocr'
 
-    def on_startup(self):
-        self._api = OcrEngine(dlls_path=DLLS_PATH)
+    def on_after_download(self):
+        dlls_path = self.get_resource_path()
+        self._api = OcrEngine(dlls_path=dlls_path)
+
+    def get_download_resource(self):
+        return DownloadResource(RESOURCE_PATH)
 
     def get_priority(self):
         return 1
@@ -27,9 +32,8 @@ class WindowsOneOcrPlugin(OcrPlugin):
         return 'WindowsOne'
 
     def recognizable(self, image: Image.Image):
-        image, scale = self.process_image(image)
         res = self._api.recognize(image)
-        boxes = self._parse_boxes(res.lines, scale)
+        boxes = self._parse_boxes(res.lines, 1.0)
         return OcrData(True, res.text, tuple(boxes), 0.)
 
     def _parse_boxes(self, rlines: tuple[OcrLine, ...], scale: float):

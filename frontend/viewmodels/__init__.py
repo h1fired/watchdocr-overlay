@@ -15,7 +15,7 @@ VIEWMODELS = (
     UtilsViewModel,
     OcrViewModel,
     PreviewViewModel,
-    SettingsViewModel
+    SettingsViewModel,
 )
 
 

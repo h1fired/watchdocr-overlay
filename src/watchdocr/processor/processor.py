@@ -78,7 +78,11 @@ class OcrPipelineStage(PipelineStage):
         log.info('Starting OCR Pipeline Stage...', extra={'title': 'Processor'})
         image = ScreenGrabber.grab_screen_area(ctx.boundings)
         if not image:
-            log.warning('Screen grabber returned no image for boundings %s', ctx.boundings, extra={'title': 'Processor'})
+            log.warning(
+                'Screen grabber returned no image for boundings %s',
+                ctx.boundings,
+                extra={'title': 'Processor'}
+            )
             ctx.ocr_success = False
             ctx.text = ''
             ctx.translated_text = ''
@@ -89,7 +93,11 @@ class OcrPipelineStage(PipelineStage):
             return
 
         ctx.image = image
-        log.info('Screen grabbed successfully (%dx%d). Running recognition...', image.width, image.height, extra={'title': 'Processor'})
+        log.info(
+            'Screen grabbed successfully (%dx%d). Running recognition...',
+            image.width, image.height,
+            extra={'title': 'Processor'}
+        )
 
         data = self._ocr.recognize(ctx.image)
         ctx.ocr_success = data.success
@@ -127,7 +135,7 @@ class TranslationPipelineStage(PipelineStage):
             texts = []
         else:
             texts = data.translated_text.split(BOXED_TEXT_SEPARATOR)
-        ctx.translated_text = cleanup_text_simple(' '.join(texts))
+        ctx.translated_text = cleanup_text_simple('\n'.join(texts))
 
         boxes = []
         for i, (_, t) in enumerate(zip(ctx.boxes, texts)):
