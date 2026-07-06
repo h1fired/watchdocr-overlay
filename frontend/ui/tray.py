@@ -8,6 +8,7 @@ class SystemTray(QObject):
         super().__init__(parent)
 
         self.tray = QSystemTrayIcon(QIcon(':/qml/resources/icons/app/app.ico'), app)
+        self.tray.activated.connect(self.showTriggered)
 
         self.menu = QMenu()
         self.show_action = QAction('Show')
