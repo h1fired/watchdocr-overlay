@@ -46,8 +46,10 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
+        if: steps.check_tag.outputs.exists == 'false'
         with:
           python-version: ${{ matrix.python-version }}
+          enable-cache: false
 
       - name: Setup project
         if: steps.check_tag.outputs.exists == 'false'
