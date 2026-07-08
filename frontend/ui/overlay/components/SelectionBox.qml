@@ -242,5 +242,6 @@ Item {
         root.y = rect.y;
         root.width = rect.width;
         root.height = rect.height;
+        root.boxChanged();
     }
 }
