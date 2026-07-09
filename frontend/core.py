@@ -15,8 +15,11 @@ from frontend.viewmodels.types import (
     registerQmlImageProviders
 )
 from config import config
-
 import ctypes
+import os
+
+
+os.environ['QT_ENABLE_HIGHDPI_SCALING'] = '0'  # Bad fix, should be replaced
 
 
 _qmlLinkerCore = WatchdOcrLinkerCore()

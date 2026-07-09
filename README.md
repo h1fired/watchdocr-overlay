@@ -1,8 +1,12 @@
 # OCR Overlay
 
-A real-time Optical Character Recognition (OCR) overlay and screen translation tool built with Python and PySide6. The application captures a designated screen region, processes text extraction through pluggable OCR backends, translates the content, and renders it as an on-screen overlay in real time.
+An Optical Character Recognition (OCR) overlay and screen translation tool. The application captures a designated screen region, processes text extraction through OCR backend, translates the content, and renders it as an on-screen overlay.
 
-This application was created as a pet project, inspired by the frequent frustration in games (and other applications) where text cannot be selected, copied, or translated on the fly.
+This application was created as a pet project, inspired by the frequent frustration in games (and other applications) where text cannot be selected, copied, or translated on the fly. Can be used for everything on screen actually.
+
+> The app is currently in the **Alpha** stage. Issues with optimization and stability may occur. If you notice anything of this sort, feel free to open an issue.
+
+![Applcation preview](assets/preview.jpg)
 
 ## Key Features
 

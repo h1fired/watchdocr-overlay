@@ -81,69 +81,15 @@ Item {
         }
     }
 
-    MouseArea {
+    SelectionMouseArea {
         id: selectionMouseArea
 
-        visible: root.mouseSelectionActive
-        enabled: root.mouseSelectionActive
-
-        property point startPoint: Qt.point(0, 0)
-        property point endPoint: Qt.point(0, 0)
-        property bool selecting: false
-
-        anchors.fill: parent
-
-        cursorShape: Qt.CrossCursor
-
-        onPressed: (event) => {
-            startPoint = Qt.point(event.x, event.y);
-            endPoint = startPoint;
-
-            selecting = true;
+        onBoxChanged: {
+            selectionBox.updateArea(box);
         }
 
-        onPositionChanged: (event) => {
-            endPoint = Qt.point(event.x, event.y);
-            objects.box = reformatRect(rectFromPoints(startPoint, endPoint));
-            objects.boxUpdated();
-   
-            // Update selection box area
-            selectionBox.updateArea(objects.box)
-        }
-
-        onReleased: (event) => {
-            endPoint = Qt.point(event.x, event.y);
-            let box = reformatRect(rectFromPoints(startPoint, endPoint));
-            
-            // Normalize box to minimun recognizable size
-            if (box.width < selectionBox.minWidth)
-                box.width = selectionBox.minWidth;
-            if (box.height < selectionBox.minHeight)
-                box.height = selectionBox.minHeight;
-
-            objects.box = box
-            root.boxSelected();
-
-            // Update selection box area
-            selectionBox.updateArea(objects.box)
-
-            selecting = false;
-        }
-
-        function reformatRect(rect) {
-            if (rect.width <= 0)
-                rect.width = 10;
-            if (rect.height <= 0)
-                rect.height = 10;
-            return rect;
-        }
-
-        function rectFromPoints(p1, p2) {
-            var x = Math.min(p1.x, p2.x);
-            var y = Math.min(p1.y, p2.y);
-            var w = Math.abs(p2.x - p1.x);
-            var h = Math.abs(p2.y - p1.y);
-            return Qt.rect(x, y, w, h);
+        onReleased: {
+            selectionBox.boxReleased();
         }
     }
 
