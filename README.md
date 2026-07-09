@@ -6,7 +6,7 @@ This application was created as a pet project, inspired by the frequent frustrat
 
 > The app is currently in the **Alpha** stage. Issues with optimization and stability may occur. If you notice anything of this sort, feel free to open an issue.
 
-![Applcation preview](assets/preview.png)
+![Applcation preview](assets/preview.jpg)
 
 ## Key Features
 
