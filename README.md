@@ -11,11 +11,11 @@ This application was created as a pet project, inspired by the frequent frustrat
 ## Key Features
 
 - **Overlay**: Seamless HUD overlays rendering translated text directly over windows (supports windowed or borderless modes; exclusive fullscreen is not supported).
-- **Windows Media OCR**: Pluggable backend utilizing an unofficial Windows OCR wrapper/backend for native, fast, and lightweight text extraction on Windows.
-- **Dynamic Translation**: Real-time translation utilizing an unofficial Google Translation endpoint.
+- **OCR**: Unofficial Windows OCR wrapper/backend for native, fast, and lightweight text extraction on Windows.
+- **Translation**: Unofficial Google Translation endpoint.
 - **Flexible Workflows**:
   - **One-time Mode**: Capture and translate on-demand.
-  - **Live Mode**: Continuously capture and translate a screen region at user-defined polling frequencies.
+  - **Live Mode** (BETA): Continuously capture and translate a screen region at user-defined polling frequencies.
 
 ## Installation & Setup
 
