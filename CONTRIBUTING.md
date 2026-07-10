@@ -1,4 +1,4 @@
-**WatchdOcr** accepts contributions via public **pull requests**, which include changes made to the project, as well as a written description of the changes and their justification.
+**WatchdOcr** accepts contributions via public **pull requests**, which include changes made to the project, as well as a written description of the changes and their justification. Pull requests can be opened by any user with sufficient contribution permissions on the platform chosen by the project.
 
 > **Note:** WatchdOcr is currently in **alpha** . The code style, architecture, and guidelines are still evolving, so accepting changes in the past does not guarantee that similar changes will be accepted in the future as the project evolves.
 
