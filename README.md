@@ -1,6 +1,6 @@
 # WatchdOcr
 
-An Optical Character Recognition (OCR) overlay and screen translation tool. The application captures a designated screen region, processes text extraction through OCR backend, translates the content, and renders it as an on-screen overlay.
+OCR overlay and translation tool. The application captures a designated screen region, processes text extraction through OCR backend, translates the content, and renders it as an on-screen overlay.
 
 This application was created as a pet project, inspired by the frequent frustration in games (and other applications) where text cannot be selected, copied, or translated on the fly. Can be used for everything on screen actually.
 
