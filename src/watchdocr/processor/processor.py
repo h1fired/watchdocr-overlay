@@ -69,13 +69,9 @@ class PipelineStage:
         raise NotImplementedError
 
 
-class OcrPipelineStage(PipelineStage):
-    def __init__(self, ocr: Ocr):
-        super().__init__()
-        self._ocr = ocr
-
+class ImagePreprocessorStage(PipelineStage):
     def execute(self, ctx):
-        log.info('Starting OCR Pipeline Stage...', extra={'title': 'Processor'})
+        log.info('Starting Image Preprocessor Pipeline Stage...', extra={'title': 'Processor'})
         image = ScreenGrabber.grab_screen_area(ctx.boundings)
         if not image:
             log.warning(
@@ -99,6 +95,14 @@ class OcrPipelineStage(PipelineStage):
             extra={'title': 'Processor'}
         )
 
+
+class OcrPipelineStage(PipelineStage):
+    def __init__(self, ocr: Ocr):
+        super().__init__()
+        self._ocr = ocr
+
+    def execute(self, ctx):
+        log.info('Starting OCR Pipeline Stage...', extra={'title': 'Processor'})
         data = self._ocr.recognize(ctx.image)
         ctx.ocr_success = data.success
         ctx.text = data.text
@@ -152,6 +156,7 @@ class WatchdOcrPipeline:
     ):
         self._ctx = ctx
         self._stages: dict[str, PipelineStage] = {
+            'image_preprocessor': ImagePreprocessorStage(),
             'ocr': OcrPipelineStage(ocr),
             'translation': TranslationPipelineStage(translator)
         }
@@ -160,15 +165,19 @@ class WatchdOcrPipeline:
     def provide_strategy(self, strategy: PipelineStrategy):
         match strategy:
             case PipelineStrategy.ONLY_CONTEXT_CHANGE:
+                self._stages['image_preprocessor'].set_enabled(False)
                 self._stages['ocr'].set_enabled(False)
                 self._stages['translation'].set_enabled(False)
             case PipelineStrategy.OCR_ONLY:
+                self._stages['image_preprocessor'].set_enabled(True)
                 self._stages['ocr'].set_enabled(True)
                 self._stages['translation'].set_enabled(False)
             case PipelineStrategy.TRANSLATION_ONLY:
+                self._stages['image_preprocessor'].set_enabled(False)
                 self._stages['ocr'].set_enabled(False)
                 self._stages['translation'].set_enabled(True)
             case PipelineStrategy.OCR_TRANSLATION:
+                self._stages['image_preprocessor'].set_enabled(True)
                 self._stages['ocr'].set_enabled(True)
                 self._stages['translation'].set_enabled(True)
         self._strategy = strategy
