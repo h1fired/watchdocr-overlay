@@ -1,6 +1,5 @@
 import ctypes
 import os
-import copy
 from ctypes import Structure, byref, POINTER, c_int64, c_int32, c_float, c_ubyte, c_char, c_char_p
 from PIL import Image
 from dataclasses import dataclass
@@ -104,9 +103,7 @@ class OcrEngine:
     def recognize(self, image: Image.Image):
         '''Process PIL Image object'''
         if any(x < 50 or x > 10000 for x in image.size):
-            result = copy.deepcopy(self.empty_result)
-            result['error'] = 'Unsupported image size'
-            return result
+            return OcrOutputData('', tuple(), 0.)
 
         if image.mode != 'RGBA':
             image = image.convert('RGBA')
