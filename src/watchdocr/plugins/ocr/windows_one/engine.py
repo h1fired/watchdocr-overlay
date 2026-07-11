@@ -1,6 +1,5 @@
 import ctypes
 import os
-import copy
 from ctypes import Structure, byref, POINTER, c_int64, c_int32, c_float, c_ubyte, c_char, c_char_p
 from PIL import Image
 from dataclasses import dataclass
