@@ -3,6 +3,7 @@ from src.watchdocr.plugins.ocr.filter import OcrImageFilter
 from PIL import Image
 from dataclasses import dataclass
 from enum import IntFlag
+from config import config
 import re
 
 
@@ -32,7 +33,8 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
 
     def recognize(self, image: Image.Image) -> OcrData:
         try:
-            return self.recognizable(image)
+            image, scale = self.process_image(image)
+            return self.recognizable(image, scale)
         except Exception as e:
             return OcrData(
                 success=False,
@@ -41,7 +43,7 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
                 confidence=0.
             )
 
-    def recognizable(self, image: Image.Image) -> OcrData:
+    def recognizable(self, image: Image.Image, scale: float) -> OcrData:
         raise NotImplementedError
 
     def get_provider_name(self):
@@ -57,20 +59,21 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
         return ctext
 
     def process_image(self, image: Image.Image):
-        # Change image mode to RGB if needed
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-
-        # Scale image based on image height
         w, h = image.size
-
         scale = 1.0
-        if OcrOptimization.ADAPTIVE_SIZE & self._optimizations:
-            scale = 4.0 if h < 150 else 3.0 if h < 300 else 2.0 if h < 600 else 1.0
-        if OcrOptimization.FILTER_GRAYSCALE & self._optimizations:
-            image = OcrImageFilter.adjust_to_grayscale(image)
-        if OcrOptimization.FILTER_SHADOW_REMOVE & self._optimizations:
-            image = OcrImageFilter.adjust_shadow_remove(image)
+
+        # Decrease size of image if it bigger that max size
+        max_size = config.OCR_MAX_RECOGNITION_RES
+        if image.width > max_size or image.height > max_size:
+            scale = min(max_size / w, max_size / h)
+
+        if self._optimizations != OcrOptimization.NONE:
+            if OcrOptimization.ADAPTIVE_SIZE & self._optimizations:
+                scale = 4.0 if h < 150 else 3.0 if h < 300 else 2.0 if h < 600 else scale
+            if OcrOptimization.FILTER_GRAYSCALE & self._optimizations:
+                image = OcrImageFilter.adjust_to_grayscale(image)
+            if OcrOptimization.FILTER_SHADOW_REMOVE & self._optimizations:
+                image = OcrImageFilter.adjust_shadow_remove(image)
 
         if scale != 1.0:
             new_w = int(w * scale)
