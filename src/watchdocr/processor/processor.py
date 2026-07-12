@@ -56,7 +56,8 @@ class WatchdOcrOutput:
 
 
 class PipelineStage:
-    def __init__(self):
+    def __init__(self, plugin_manager: PluginManager):
+        self._plugin_manager = plugin_manager
         self._enabled = True
 
     def set_enabled(self, enable: bool):
@@ -68,10 +69,14 @@ class PipelineStage:
     def execute(self, ctx: WatchdOcrRuntimeContext):
         raise NotImplementedError
 
+    @property
+    def plugin_manager(self):
+        return self._plugin_manager
 
-class ImagePreprocessorStage(PipelineStage):
+
+class ImageGrabberStage(PipelineStage):
     def execute(self, ctx):
-        log.info('Starting Image Preprocessor Pipeline Stage...', extra={'title': 'Processor'})
+        log.info('Starting Image Grabber Pipeline Stage...', extra={'title': 'Processor'})
         image = ScreenGrabber.grab_screen_area(ctx.boundings)
         if not image:
             log.warning(
@@ -88,6 +93,11 @@ class ImagePreprocessorStage(PipelineStage):
             ctx.translated_boxes = []
             return
 
+        image = self.plugin_manager.call_hook(
+            id='watchdocr.image_grabber_pipeline.image_process',
+            data=image
+        )
+
         ctx.image = image
         log.info(
             'Screen grabbed successfully (%dx%d). Running recognition...',
@@ -97,8 +107,8 @@ class ImagePreprocessorStage(PipelineStage):
 
 
 class OcrPipelineStage(PipelineStage):
-    def __init__(self, ocr: Ocr):
-        super().__init__()
+    def __init__(self, plugin_manager, ocr: Ocr):
+        super().__init__(plugin_manager)
         self._ocr = ocr
 
     def execute(self, ctx):
@@ -114,8 +124,8 @@ class OcrPipelineStage(PipelineStage):
 
 
 class TranslationPipelineStage(PipelineStage):
-    def __init__(self, translator: Translator):
-        super().__init__()
+    def __init__(self, plugin_manager, translator: Translator):
+        super().__init__(plugin_manager)
         self._translator = translator
 
     def execute(self, ctx):
@@ -150,34 +160,35 @@ class TranslationPipelineStage(PipelineStage):
 class WatchdOcrPipeline:
     def __init__(
         self,
+        plugin_manager: PluginManager,
         ctx: WatchdOcrRuntimeContext,
         ocr: Ocr,
         translator: Translator
     ):
         self._ctx = ctx
         self._stages: dict[str, PipelineStage] = {
-            'image_preprocessor': ImagePreprocessorStage(),
-            'ocr': OcrPipelineStage(ocr),
-            'translation': TranslationPipelineStage(translator)
+            'image_grabber': ImageGrabberStage(plugin_manager),
+            'ocr': OcrPipelineStage(plugin_manager, ocr),
+            'translation': TranslationPipelineStage(plugin_manager, translator)
         }
         self._strategy = PipelineStrategy.OCR_TRANSLATION
 
     def provide_strategy(self, strategy: PipelineStrategy):
         match strategy:
             case PipelineStrategy.ONLY_CONTEXT_CHANGE:
-                self._stages['image_preprocessor'].set_enabled(False)
+                self._stages['image_grabber'].set_enabled(False)
                 self._stages['ocr'].set_enabled(False)
                 self._stages['translation'].set_enabled(False)
             case PipelineStrategy.OCR_ONLY:
-                self._stages['image_preprocessor'].set_enabled(True)
+                self._stages['image_grabber'].set_enabled(True)
                 self._stages['ocr'].set_enabled(True)
                 self._stages['translation'].set_enabled(False)
             case PipelineStrategy.TRANSLATION_ONLY:
-                self._stages['image_preprocessor'].set_enabled(False)
+                self._stages['image_grabber'].set_enabled(False)
                 self._stages['ocr'].set_enabled(False)
                 self._stages['translation'].set_enabled(True)
             case PipelineStrategy.OCR_TRANSLATION:
-                self._stages['image_preprocessor'].set_enabled(True)
+                self._stages['image_grabber'].set_enabled(True)
                 self._stages['ocr'].set_enabled(True)
                 self._stages['translation'].set_enabled(True)
         self._strategy = strategy
@@ -297,7 +308,12 @@ class WatchdOcrProcessor:
         self._ctx = WatchdOcrRuntimeContext()
         self._ocr = Ocr(plugins_manager)
         self._translator = Translator(plugins_manager)
-        self._pipeline = WatchdOcrPipeline(self._ctx, self._ocr, self._translator)
+        self._pipeline = WatchdOcrPipeline(
+            plugin_manager=plugins_manager,
+            ctx=self._ctx,
+            ocr=self._ocr,
+            translator=self._translator
+        )
         self._runner = WatchdOcrRunner(self._ctx, self._pipeline)
         self._runner.register_output_callback(self._on_output)
         self._runner.register_status_callback(self._on_status)

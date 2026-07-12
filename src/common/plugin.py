@@ -166,12 +166,13 @@ class PluginManager:
         ])
         return realizations
 
-    def call_hook(self, id: str, *args, **kwargs):
+    def call_hook(self, id: str, data: Any, *args, **kwargs):
         for plugin in self.get_realizations(HookPlugin):
             hooks = plugin.__plugin_hooks__.get(id)
             if hooks:
                 for hook in hooks:
-                    hook(*args, **kwargs)
+                    data = hook(data, *args, **kwargs)
+        return data
 
 
 class Plugin:
