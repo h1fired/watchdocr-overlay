@@ -5,6 +5,7 @@ from common.observable import MappedObservable
 from config import config
 from dataclasses import dataclass
 from typing import Any, Type, TypeVar, Callable
+from collections import defaultdict
 import pkgutil
 import importlib
 import requests
@@ -18,11 +19,28 @@ LOG_TITLE = 'Plugins'
 _ID_PATTERN = re.compile(r"^[a-z0-9-]+$")
 
 
-T = TypeVar('T')
+class Hookable:
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+
+        cls.__plugin_hooks__ = defaultdict(set)
+        for _, attr in cls.__dict__.items():
+            if hasattr(attr, '__hook_id__'):
+                cls.__plugin_hooks__[attr.__hook_id__].add(attr)
+
+
+def hook(id: str):
+    def decorator(func):
+        func.__hook_id__ = id
+        return func
+    return decorator
 
 
 class PluginError(Exception):
     pass
+
+
+T = TypeVar('T')
 
 
 class PluginDiscovery:
@@ -165,32 +183,15 @@ class PluginManager:
         ])
         return realizations
 
-
-class PluginResourceDownloader:
-    def __init__(self, manager: PluginManager):
-        self._manager = manager
-        self._observable = MappedObservable()
-
-    def start_download(self):
-        plugins = self._manager.get_realizations(DownloadablePlugin)
-
-        try:
-            length = len(plugins)
-            for index, plugin in enumerate(plugins):
-                plugin.download_resource()
-                plugin.on_after_download()
-                progress = round(index+1 / length, 1)
-                self._observable.notify('progress', progress)
-                return True
-        except Exception as e:
-            log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
-            return False
-
-    def observe(self, trigger: str, callback: Callable):
-        self._observable.register(trigger, callback)
+    def call_hook(self, id: str, *args, **kwargs):
+        for plugin in self._plugins.values():
+            hooks = plugin.__plugin_hooks__.get(id)
+            if hooks:
+                for hook in hooks:
+                    hook(*args, **kwargs)
 
 
-class Plugin:
+class Plugin(Hookable):
     def __str__(self):
         return f'{self.__class__.__name__} ({self.meta.id})'
 
@@ -199,6 +200,7 @@ class Plugin:
         return self.__plugin_meta__
 
 
+# Plugin types
 class LaunchPlugin(Plugin):
     def on_startup(self):
         pass
@@ -276,3 +278,27 @@ class DownloadablePlugin(Plugin):
             config.PLUGINS_DOWNLOAD_DATA_PATH,
             self.meta.id
         )
+
+
+class PluginResourceDownloader:
+    def __init__(self, manager: PluginManager):
+        self._manager = manager
+        self._observable = MappedObservable()
+
+    def start_download(self):
+        plugins = self._manager.get_realizations(DownloadablePlugin)
+
+        try:
+            length = len(plugins)
+            for index, plugin in enumerate(plugins):
+                plugin.download_resource()
+                plugin.on_after_download()
+                progress = round(index+1 / length, 1)
+                self._observable.notify('progress', progress)
+                return True
+        except Exception as e:
+            log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
+            return False
+
+    def observe(self, trigger: str, callback: Callable):
+        self._observable.register(trigger, callback)
