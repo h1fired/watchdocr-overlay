@@ -171,7 +171,7 @@ class PluginManager:
             hooks = plugin.__plugin_hooks__.get(id)
             if hooks:
                 for hook in hooks:
-                    data = hook(data, *args, **kwargs)
+                    data = hook(plugin, data, *args, **kwargs)
         return data
 
 
