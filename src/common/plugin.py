@@ -19,23 +19,6 @@ LOG_TITLE = 'Plugins'
 _ID_PATTERN = re.compile(r"^[a-z0-9-]+$")
 
 
-class Hookable:
-    def __init_subclass__(cls):
-        super().__init_subclass__()
-
-        cls.__plugin_hooks__ = defaultdict(set)
-        for _, attr in cls.__dict__.items():
-            if hasattr(attr, '__hook_id__'):
-                cls.__plugin_hooks__[attr.__hook_id__].add(attr)
-
-
-def hook(id: str):
-    def decorator(func):
-        func.__hook_id__ = id
-        return func
-    return decorator
-
-
 class PluginError(Exception):
     pass
 
@@ -184,14 +167,14 @@ class PluginManager:
         return realizations
 
     def call_hook(self, id: str, *args, **kwargs):
-        for plugin in self._plugins.values():
+        for plugin in self.get_realizations(HookPlugin):
             hooks = plugin.__plugin_hooks__.get(id)
             if hooks:
                 for hook in hooks:
                     hook(*args, **kwargs)
 
 
-class Plugin(Hookable):
+class Plugin:
     def __str__(self):
         return f'{self.__class__.__name__} ({self.meta.id})'
 
@@ -201,6 +184,23 @@ class Plugin(Hookable):
 
 
 # Plugin types
+class HookPlugin(Plugin):
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+
+        cls.__plugin_hooks__ = defaultdict(set)
+        for _, attr in cls.__dict__.items():
+            if hasattr(attr, '__hook_id__'):
+                cls.__plugin_hooks__[attr.__hook_id__].add(attr)
+
+
+def hook(id: str):
+    def decorator(func):
+        func.__hook_id__ = id
+        return func
+    return decorator
+
+
 class LaunchPlugin(Plugin):
     def on_startup(self):
         pass
