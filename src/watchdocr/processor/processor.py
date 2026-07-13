@@ -117,14 +117,19 @@ class PipelineStage:
 
 class ImageGrabberStage(PipelineStage):
     def execute(self, ctx):
-        log.info('Starting Image Grabber Pipeline Stage...', extra={'title': 'Processor'})
+        log.info(
+            'Starting Image Grabber Pipeline Stage...',
+            extra={'title': LOG_PROCESSOR}
+        )
+
         image = ScreenGrabber.grab_screen_area(ctx.boundings)
         if not image:
             log.warning(
                 'Screen grabber returned no image for boundings %s',
                 ctx.boundings,
-                extra={'title': 'Processor'}
+                extra={'title': LOG_PROCESSOR}
             )
+
             ctx.clear()
             return
 
@@ -134,11 +139,11 @@ class ImageGrabberStage(PipelineStage):
             data=image
         )
 
-        ctx.image = image
+        ctx.image = image  # Store image
         log.info(
             'Screen grabbed successfully (%dx%d). Running recognition...',
             image.width, image.height,
-            extra={'title': 'Processor'}
+            extra={'title': LOG_PROCESSOR}
         )
 
 
@@ -148,7 +153,10 @@ class OcrPipelineStage(PipelineStage):
         self._ocr = ocr
 
     def execute(self, ctx):
-        log.info('Starting OCR Pipeline Stage...', extra={'title': 'Processor'})
+        log.info(
+            'Starting OCR Pipeline Stage...',
+            extra={'title': LOG_PROCESSOR}
+        )
 
         data = self._ocr.recognize(ctx.image)
         ctx.ocr.success = data.success
@@ -167,7 +175,9 @@ class TranslationPipelineStage(PipelineStage):
             ctx.translation.clear()
             return
 
-        ctx.translation.boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in ctx.ocr.boxes)
+        ctx.translation.boxed_text = BOXED_TEXT_SEPARATOR.join(
+            b[0] for b in ctx.ocr.boxes
+        )
 
         data = self._translator.translate(
             ctx.translation.boxed_text,
@@ -176,7 +186,11 @@ class TranslationPipelineStage(PipelineStage):
         )
 
         if not data.success:
-            log.error('Translation failed. Reusing original text.', extra={'title': 'Processor'})
+            log.error(
+                'Translation failed. Reusing original text.',
+                extra={'title': LOG_PROCESSOR}
+            )
+
             ctx.translation.text = data.translated_text
             ctx.translation.boxes = tuple()
             return
@@ -276,22 +290,34 @@ class WatchdOcrRunner:
         self._lock = Lock()
 
     def put(self, strategy: PipelineStrategy):
-        log.debug('Queueing strategy: %s', strategy.name, extra={'title': 'Processor'})
+        log.debug(
+            'Queueing strategy: %s', strategy.name,
+            extra={'title': LOG_PROCESSOR}
+        )
         self._q.put(strategy)
 
     def start(self):
-        log.info('Starting WatchdOcrRunner background thread...', extra={'title': 'Processor'})
+        log.info(
+            'Starting WatchdOcrRunner background thread...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._running = True
         self._th = Thread(target=self._run, daemon=True)
         self._th.start()
 
     def stop(self):
-        log.info('Stopping WatchdOcrRunner background thread...', extra={'title': 'Processor'})
+        log.info(
+            'Stopping WatchdOcrRunner background thread...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._running = False
         if self._th and self._th.is_alive():
             self._th.join()
         self._q.queue.clear()
-        log.info('WatchdOcrRunner background thread stopped.', extra={'title': 'Processor'})
+        log.info(
+            'WatchdOcrRunner background thread stopped.',
+            extra={'title': LOG_PROCESSOR}
+        )
 
     def is_running(self):
         return self._running
@@ -370,18 +396,28 @@ class WatchdOcrProcessor:
         self._runner.register_area_preview_callback(self._on_area_preview)
 
     def run(self):
-        log.info('Starting WatchdOcrProcessor...', extra={'title': 'Processor'})
+        log.info(
+            'Starting WatchdOcrProcessor...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._runner.start()
 
     def stop(self):
-        log.info('Stopping WatchdOcrProcessor...', extra={'title': 'Processor'})
+        log.info(
+            'Stopping WatchdOcrProcessor...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._runner.stop()
 
     def get_active(self):
         return self._runner.is_running()
 
     def queue_pipeline(self, strategy: PipelineStrategy, context_data: dict):
-        log.info('Queueing pipeline execution with strategy: %s', strategy.name, extra={'title': 'Processor'})
+        log.info(
+            'Queueing pipeline execution with strategy: %s',
+            strategy.name,
+            extra={'title': LOG_PROCESSOR}
+        )
         self._ctx.update_from_dict(context_data)
         self._runner.put(strategy)
 
@@ -410,7 +446,10 @@ class WatchdOcrProcessor:
         )
 
     def clean_current_pipelines(self):
-        log.info('Cleaning current runner pipelines queue...', extra={'title': 'Processor'})
+        log.info(
+            'Cleaning current runner pipelines queue...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._runner.clean_current_pipelines()
 
 
