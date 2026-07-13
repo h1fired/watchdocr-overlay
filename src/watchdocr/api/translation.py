@@ -26,12 +26,20 @@ class TranslationAPI(KernelAPI):
         processor = self.kernel.objects.pull('watchdocr-processor')
         processor.queue_pipeline(
             strategy=PipelineStrategy.TRANSLATION_ONLY,
-            context_data={'source_language': code}
+            context_data={
+                'translation': {
+                    'source_language': code
+                }
+            }
         )
 
     def set_target_language(self, code: str):
         processor = self.kernel.objects.pull('watchdocr-processor')
         processor.queue_pipeline(
             strategy=PipelineStrategy.TRANSLATION_ONLY,
-            context_data={'target_language': code}
+            context_data={
+                'translation': {
+                    'target_language': code
+                }
+            }
         )

@@ -5,37 +5,90 @@ from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.text import cleanup_text_simple
-from dataclasses import dataclass, asdict, fields
+from dataclasses import dataclass, asdict, fields, field, is_dataclass
 from enum import IntEnum, auto
 from threading import Thread, Event, Lock
 from PIL import Image
-from typing import Callable
+from typing import Callable, Any
 import queue
 
 
+LOG_PROCESSOR = 'Processor'
 BOXED_TEXT_SEPARATOR = '\n\n'
+
+
+# Context
+LOG_CONTEXT = 'Runtime Context'
+
+
+@dataclass(slots=True)
+class OcrContext:
+    success: bool = False
+    ignore: bool = False
+
+    text: str = ''
+    boxes: tuple = tuple()
+    confidence: float = 0.
+
+    def clear(self):
+        self.success = None
+        self.ignore = False
+        self.text = ''
+        self.boxes = tuple()
+        self.confidence = 0.
+
+
+@dataclass(slots=True)
+class TranslationContext:
+    success: bool = False
+
+    source_language: str = ''
+    target_language: str = ''
+
+    text: str = ''
+    boxes: tuple = tuple()
+
+    def clear(self):
+        self.success = False
+        self.text = ''
+        self.boxes = tuple()
 
 
 @dataclass(slots=True)
 class WatchdOcrRuntimeContext:
     boundings: tuple = (0, 0, 0, 0)
     image: Image.Image | None = None
+    ocr: OcrContext = field(default_factory=OcrContext)
+    translation: TranslationContext = field(default_factory=TranslationContext)
 
-    # OCR
-    ocr_success: bool = False
-    text: str = ''
-    boxes: tuple = tuple()
-    confidence: float = 0.
+    def clear(self):
+        self.boundings = (0, 0, 0, 0)
+        self.image = None
 
-    # Translation
-    translation_success: bool = False
-    boxed_text: str = ''
-    translated_text: str = ''
-    source_language: str = ''
-    target_language: str = ''
-    translated_boxes: tuple = tuple()
+        self.ocr.clear()
+        self.translation.clear()
+
+    def update_from_dict(self, data: dict, target: Any | None = None):
+        target = target if target is not None else self
+        field_names = {f.name for f in fields(target)}
+
+        for key, value in data.items():
+            if key not in field_names:
+                log.warning(
+                    'Invalid context field provided (%s). Ignore',
+                    key,
+                    extra={'title': LOG_CONTEXT})
+                continue
+
+            curr_field = getattr(target, key)
+
+            if is_dataclass(curr_field) and isinstance(value, dict):
+                self.update_from_dict(value, curr_field)
+            else:
+                setattr(target, key, value)
 
 
+# Pipeline
 class PipelineStrategy(IntEnum):
     ONLY_CONTEXT_CHANGE = auto()
     OCR_ONLY = auto()
@@ -43,6 +96,177 @@ class PipelineStrategy(IntEnum):
     OCR_TRANSLATION = auto()
 
 
+class PipelineStage:
+    def __init__(self, plugin_manager: PluginManager):
+        self._plugin_manager = plugin_manager
+        self._enabled = True
+
+    def set_enabled(self, enable: bool):
+        self._enabled = enable
+
+    def enabled(self):
+        return self._enabled
+
+    def execute(self, ctx: WatchdOcrRuntimeContext):
+        raise NotImplementedError
+
+    @property
+    def plugin_manager(self):
+        return self._plugin_manager
+
+
+class ImageGrabberStage(PipelineStage):
+    def execute(self, ctx):
+        log.info(
+            'Starting Image Grabber Pipeline Stage...',
+            extra={'title': LOG_PROCESSOR}
+        )
+
+        image = ScreenGrabber.grab_screen_area(ctx.boundings)
+        if not image:
+            log.warning(
+                'Screen grabber returned no image for boundings %s',
+                ctx.boundings,
+                extra={'title': LOG_PROCESSOR}
+            )
+            return
+
+        # Call image process hook
+        image = self.plugin_manager.call_hook(
+            id='watchdocr.image_grabber_pipeline.image_process',
+            data=image,
+            ctx=ctx
+        )
+
+        ctx.image = image  # Store image
+        log.info(
+            'Screen grabbed successfully (%dx%d). Running recognition...',
+            image.width, image.height,
+            extra={'title': LOG_PROCESSOR}
+        )
+
+
+class OcrPipelineStage(PipelineStage):
+    def __init__(self, plugin_manager, ocr: Ocr):
+        super().__init__(plugin_manager)
+        self._ocr = ocr
+
+    def execute(self, ctx):
+        log.info(
+            'Starting OCR Pipeline Stage...',
+            extra={'title': LOG_PROCESSOR}
+        )
+
+        # Skip OCR pipeline if ignore flag is set (created for hooks)
+        if ctx.ocr.ignore:
+            ctx.ocr.ignore = False
+            return
+
+        data = self._ocr.recognize(ctx.image)
+
+        if not data.success:
+            return
+
+        ctx.ocr.success = data.success
+        ctx.ocr.text = data.text
+        ctx.ocr.confidence = data.confidence
+        ctx.ocr.boxes = data.boxes
+
+
+class TranslationPipelineStage(PipelineStage):
+    def __init__(self, plugin_manager, translator: Translator):
+        super().__init__(plugin_manager)
+        self._translator = translator
+
+    def execute(self, ctx):
+        # Skip if OCR pipeline if failed
+        if not ctx.ocr.success:
+            return
+
+        boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in ctx.ocr.boxes)
+
+        data = self._translator.translate(
+            boxed_text,
+            ctx.translation.source_language,
+            ctx.translation.target_language
+        )
+
+        if not data.success:
+            log.error(
+                'Translation failed. Reusing original text.',
+                extra={'title': LOG_PROCESSOR}
+            )
+
+            ctx.translation.text = data.translated_text
+            ctx.translation.boxes = tuple()
+            return
+
+        # Generate translated boxes from output
+        if data.translated_text == '':
+            texts = []
+        else:
+            texts = data.translated_text.split(BOXED_TEXT_SEPARATOR)
+        ctx.translation.text = cleanup_text_simple('\n'.join(texts))
+
+        boxes = []
+        for i, (_, t) in enumerate(zip(ctx.ocr.boxes, texts)):
+            boxes.append((t, ctx.ocr.boxes[i][1], ctx.ocr.boxes[i][2]))
+        ctx.translation.boxes = tuple(boxes)
+
+
+class WatchdOcrPipeline:
+    def __init__(
+        self,
+        plugin_manager: PluginManager,
+        ctx: WatchdOcrRuntimeContext,
+        ocr: Ocr,
+        translator: Translator
+    ):
+        self._ctx = ctx
+        self._plugin_manager = plugin_manager
+        self._stages: dict[str, PipelineStage] = {
+            'image_grabber': ImageGrabberStage(plugin_manager),
+            'ocr': OcrPipelineStage(plugin_manager, ocr),
+            'translation': TranslationPipelineStage(plugin_manager, translator)
+        }
+        self._strategy = PipelineStrategy.OCR_TRANSLATION
+
+    def provide_strategy(self, strategy: PipelineStrategy):
+        match strategy:
+            case PipelineStrategy.ONLY_CONTEXT_CHANGE:
+                self._stages['image_grabber'].set_enabled(False)
+                self._stages['ocr'].set_enabled(False)
+                self._stages['translation'].set_enabled(False)
+            case PipelineStrategy.OCR_ONLY:
+                self._stages['image_grabber'].set_enabled(True)
+                self._stages['ocr'].set_enabled(True)
+                self._stages['translation'].set_enabled(False)
+            case PipelineStrategy.TRANSLATION_ONLY:
+                self._stages['image_grabber'].set_enabled(False)
+                self._stages['ocr'].set_enabled(False)
+                self._stages['translation'].set_enabled(True)
+            case PipelineStrategy.OCR_TRANSLATION:
+                self._stages['image_grabber'].set_enabled(True)
+                self._stages['ocr'].set_enabled(True)
+                self._stages['translation'].set_enabled(True)
+        self._strategy = strategy
+
+    def execute(self):
+        for stage in self._stages.values():
+            if stage.enabled():
+                stage.execute(self._ctx)
+
+        # Call pipeline finish hook
+        self._plugin_manager.call_hook(
+            id='watchdocr.processor_pipeline.finish',
+            data=self._ctx,
+        )
+
+    def current_strategy(self):
+        return self._strategy
+
+
+# Output
 @dataclass(slots=True)
 class WatchdOcrOutput:
     strategy: PipelineStrategy
@@ -55,142 +279,7 @@ class WatchdOcrOutput:
         return asdict(self)
 
 
-class PipelineStage:
-    def __init__(self):
-        self._enabled = True
-
-    def set_enabled(self, enable: bool):
-        self._enabled = enable
-
-    def enabled(self):
-        return self._enabled
-
-    def execute(self, ctx: WatchdOcrRuntimeContext):
-        raise NotImplementedError
-
-
-class ImagePreprocessorStage(PipelineStage):
-    def execute(self, ctx):
-        log.info('Starting Image Preprocessor Pipeline Stage...', extra={'title': 'Processor'})
-        image = ScreenGrabber.grab_screen_area(ctx.boundings)
-        if not image:
-            log.warning(
-                'Screen grabber returned no image for boundings %s',
-                ctx.boundings,
-                extra={'title': 'Processor'}
-            )
-            ctx.ocr_success = False
-            ctx.text = ''
-            ctx.translated_text = ''
-            ctx.confidence = 0.
-            ctx.boxes = tuple()
-            ctx.boxed_text = ''
-            ctx.translated_boxes = []
-            return
-
-        ctx.image = image
-        log.info(
-            'Screen grabbed successfully (%dx%d). Running recognition...',
-            image.width, image.height,
-            extra={'title': 'Processor'}
-        )
-
-
-class OcrPipelineStage(PipelineStage):
-    def __init__(self, ocr: Ocr):
-        super().__init__()
-        self._ocr = ocr
-
-    def execute(self, ctx):
-        log.info('Starting OCR Pipeline Stage...', extra={'title': 'Processor'})
-        data = self._ocr.recognize(ctx.image)
-        ctx.ocr_success = data.success
-        ctx.text = data.text
-        ctx.translated_text = data.text
-        ctx.confidence = data.confidence
-        ctx.boxes = data.boxes
-        ctx.boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in data.boxes)
-        ctx.translated_boxes = data.boxes
-
-
-class TranslationPipelineStage(PipelineStage):
-    def __init__(self, translator: Translator):
-        super().__init__()
-        self._translator = translator
-
-    def execute(self, ctx):
-        if not ctx.ocr_success:
-            ctx.translation_success = False
-            return
-
-        data = self._translator.translate(
-            ctx.boxed_text,
-            ctx.source_language,
-            ctx.target_language
-        )
-
-        if not data.success:
-            log.error('Translation failed. Reusing original text.', extra={'title': 'Processor'})
-            ctx.translated_text = data.translated_text
-            ctx.translated_boxes = tuple()
-            return
-
-        if data.translated_text == '':
-            texts = []
-        else:
-            texts = data.translated_text.split(BOXED_TEXT_SEPARATOR)
-        ctx.translated_text = cleanup_text_simple('\n'.join(texts))
-
-        boxes = []
-        for i, (_, t) in enumerate(zip(ctx.boxes, texts)):
-            boxes.append((t, ctx.boxes[i][1], ctx.boxes[i][2]))
-        ctx.translated_boxes = tuple(boxes)
-
-
-class WatchdOcrPipeline:
-    def __init__(
-        self,
-        ctx: WatchdOcrRuntimeContext,
-        ocr: Ocr,
-        translator: Translator
-    ):
-        self._ctx = ctx
-        self._stages: dict[str, PipelineStage] = {
-            'image_preprocessor': ImagePreprocessorStage(),
-            'ocr': OcrPipelineStage(ocr),
-            'translation': TranslationPipelineStage(translator)
-        }
-        self._strategy = PipelineStrategy.OCR_TRANSLATION
-
-    def provide_strategy(self, strategy: PipelineStrategy):
-        match strategy:
-            case PipelineStrategy.ONLY_CONTEXT_CHANGE:
-                self._stages['image_preprocessor'].set_enabled(False)
-                self._stages['ocr'].set_enabled(False)
-                self._stages['translation'].set_enabled(False)
-            case PipelineStrategy.OCR_ONLY:
-                self._stages['image_preprocessor'].set_enabled(True)
-                self._stages['ocr'].set_enabled(True)
-                self._stages['translation'].set_enabled(False)
-            case PipelineStrategy.TRANSLATION_ONLY:
-                self._stages['image_preprocessor'].set_enabled(False)
-                self._stages['ocr'].set_enabled(False)
-                self._stages['translation'].set_enabled(True)
-            case PipelineStrategy.OCR_TRANSLATION:
-                self._stages['image_preprocessor'].set_enabled(True)
-                self._stages['ocr'].set_enabled(True)
-                self._stages['translation'].set_enabled(True)
-        self._strategy = strategy
-
-    def execute(self):
-        for stage in self._stages.values():
-            if stage.enabled():
-                stage.execute(self._ctx)
-
-    def current_strategy(self):
-        return self._strategy
-
-
+# Processor
 class WatchdOcrProcessorStatus(IntEnum):
     IDLE = 0
     RECOGNIZING = 1
@@ -215,22 +304,34 @@ class WatchdOcrRunner:
         self._lock = Lock()
 
     def put(self, strategy: PipelineStrategy):
-        log.debug('Queueing strategy: %s', strategy.name, extra={'title': 'Processor'})
+        log.debug(
+            'Queueing strategy: %s', strategy.name,
+            extra={'title': LOG_PROCESSOR}
+        )
         self._q.put(strategy)
 
     def start(self):
-        log.info('Starting WatchdOcrRunner background thread...', extra={'title': 'Processor'})
+        log.info(
+            'Starting WatchdOcrRunner background thread...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._running = True
         self._th = Thread(target=self._run, daemon=True)
         self._th.start()
 
     def stop(self):
-        log.info('Stopping WatchdOcrRunner background thread...', extra={'title': 'Processor'})
+        log.info(
+            'Stopping WatchdOcrRunner background thread...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._running = False
         if self._th and self._th.is_alive():
             self._th.join()
         self._q.queue.clear()
-        log.info('WatchdOcrRunner background thread stopped.', extra={'title': 'Processor'})
+        log.info(
+            'WatchdOcrRunner background thread stopped.',
+            extra={'title': LOG_PROCESSOR}
+        )
 
     def is_running(self):
         return self._running
@@ -259,10 +360,10 @@ class WatchdOcrRunner:
     def create_output_data(self):
         return WatchdOcrOutput(
             strategy=self._pipeline.current_strategy(),
-            text=self._ctx.text,
-            translated_text=self._ctx.translated_text,
-            boxes=self._ctx.translated_boxes,
-            confidence=self._ctx.confidence
+            text=self._ctx.ocr.text,
+            translated_text=self._ctx.translation.text,
+            boxes=self._ctx.translation.boxes,
+            confidence=self._ctx.ocr.confidence
         )
 
     def register_output_callback(self, cb: Callable[[WatchdOcrOutput], None]):
@@ -297,26 +398,41 @@ class WatchdOcrProcessor:
         self._ctx = WatchdOcrRuntimeContext()
         self._ocr = Ocr(plugins_manager)
         self._translator = Translator(plugins_manager)
-        self._pipeline = WatchdOcrPipeline(self._ctx, self._ocr, self._translator)
+        self._pipeline = WatchdOcrPipeline(
+            plugin_manager=plugins_manager,
+            ctx=self._ctx,
+            ocr=self._ocr,
+            translator=self._translator
+        )
         self._runner = WatchdOcrRunner(self._ctx, self._pipeline)
         self._runner.register_output_callback(self._on_output)
         self._runner.register_status_callback(self._on_status)
         self._runner.register_area_preview_callback(self._on_area_preview)
 
     def run(self):
-        log.info('Starting WatchdOcrProcessor...', extra={'title': 'Processor'})
+        log.info(
+            'Starting WatchdOcrProcessor...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._runner.start()
 
     def stop(self):
-        log.info('Stopping WatchdOcrProcessor...', extra={'title': 'Processor'})
+        log.info(
+            'Stopping WatchdOcrProcessor...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._runner.stop()
 
     def get_active(self):
         return self._runner.is_running()
 
     def queue_pipeline(self, strategy: PipelineStrategy, context_data: dict):
-        log.info('Queueing pipeline execution with strategy: %s', strategy.name, extra={'title': 'Processor'})
-        self._update_context_data(context_data)
+        log.info(
+            'Queueing pipeline execution with strategy: %s',
+            strategy.name,
+            extra={'title': LOG_PROCESSOR}
+        )
+        self._ctx.update_from_dict(context_data)
         self._runner.put(strategy)
 
     def context(self):
@@ -324,14 +440,6 @@ class WatchdOcrProcessor:
 
     def wait_for_pipeline_finish(self):
         return self._runner.wait_for_exec_finish()
-
-    def _update_context_data(self, data: dict):
-        field_names = {f.name for f in fields(self._ctx)}
-        for key, value in data.items():
-            if key in field_names:
-                setattr(self._ctx, key, value)
-            else:
-                log.warning('Invalid context field provided (%s). Ignore', key, extra={'title': 'Processor'})
 
     def _on_output(self, data: WatchdOcrOutput):
         self._eventsys.dispatch(
@@ -352,7 +460,10 @@ class WatchdOcrProcessor:
         )
 
     def clean_current_pipelines(self):
-        log.info('Cleaning current runner pipelines queue...', extra={'title': 'Processor'})
+        log.info(
+            'Cleaning current runner pipelines queue...',
+            extra={'title': LOG_PROCESSOR}
+        )
         self._runner.clean_current_pipelines()
 
 
