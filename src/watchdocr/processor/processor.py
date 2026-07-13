@@ -88,6 +88,7 @@ class WatchdOcrRuntimeContext:
                 setattr(target, key, value)
 
 
+# Pipeline
 class PipelineStrategy(IntEnum):
     ONLY_CONTEXT_CHANGE = auto()
     OCR_ONLY = auto()
@@ -95,7 +96,6 @@ class PipelineStrategy(IntEnum):
     OCR_TRANSLATION = auto()
 
 
-# Pipeline
 class PipelineStage:
     def __init__(self, plugin_manager: PluginManager):
         self._plugin_manager = plugin_manager
@@ -159,6 +159,11 @@ class OcrPipelineStage(PipelineStage):
         )
 
         data = self._ocr.recognize(ctx.image)
+
+        if not data.success:
+            ctx.ocr.clear()
+            return
+
         ctx.ocr.success = data.success
         ctx.ocr.text = data.text
         ctx.ocr.confidence = data.confidence
