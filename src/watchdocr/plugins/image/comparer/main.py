@@ -15,6 +15,7 @@ __plugin_main__ = 'ImageComparerPlugin'
 
 
 IMAGE_DIFF_TOLERANCE = 1
+HASH_SIZE = 32
 LOG_TITLE = f'{__plugin_meta__["name"]} Plugin'
 
 
@@ -31,15 +32,15 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         ctx: WatchdOcrRuntimeContext
     ):
         if self._image_hash_cache is None:
-            self._image_hash_cache = imagehash.average_hash(image)
+            self._image_hash_cache = imagehash.average_hash(image, HASH_SIZE)
             return image
 
         hash1 = self._image_hash_cache
-        hash2 = imagehash.average_hash(image)
+        hash2 = imagehash.average_hash(image, HASH_SIZE)
         diff = hash1 - hash2
 
         # Cache image
-        self._image_hash_cache = imagehash.average_hash(image)
+        self._image_hash_cache = imagehash.average_hash(image, HASH_SIZE)
 
         # Return cached data if images are similar
         if diff <= IMAGE_DIFF_TOLERANCE and self._ctx_cache:
