@@ -55,7 +55,7 @@ Item {
         monitor: 0
 
         OverlayTextViewer {
-            
+            visible: Backend.Settings.values.text_viewer_show
         }
     }
 

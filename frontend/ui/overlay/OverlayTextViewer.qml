@@ -13,6 +13,10 @@ Rectangle {
 
     radius: 15
     color: Qt.rgba(0.024, 0.024, 0.024, 0.5)
+    border.width: 1
+    border.color: mouse.containsMouse
+        ? Qt.rgba(0.3, 0.3, 0.3, 1.0)
+        : Qt.rgba(0.3, 0.3, 0.3, 0.0)
 
     Text {
         id: text
@@ -35,7 +39,12 @@ Rectangle {
     }
 
     MouseArea {
+        id: mouse
+
         anchors.fill: parent
+
+        hoverEnabled: true
+        cursorShape: Qt.SizeAllCursor
 
         drag.target: parent
         drag.axis: Drag.XAndYAxis
