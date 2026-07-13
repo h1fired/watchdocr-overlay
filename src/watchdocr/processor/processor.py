@@ -43,13 +43,11 @@ class TranslationContext:
     source_language: str = ''
     target_language: str = ''
 
-    boxed_text: str = ''
     text: str = ''
     boxes: tuple = tuple()
 
     def clear(self):
         self.success = False
-        self.boxed_text = ''
         self.text = ''
         self.boxes = tuple()
 
@@ -180,12 +178,10 @@ class TranslationPipelineStage(PipelineStage):
             ctx.translation.clear()
             return
 
-        ctx.translation.boxed_text = BOXED_TEXT_SEPARATOR.join(
-            b[0] for b in ctx.ocr.boxes
-        )
+        boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in ctx.ocr.boxes)
 
         data = self._translator.translate(
-            ctx.translation.boxed_text,
+            boxed_text,
             ctx.translation.source_language,
             ctx.translation.target_language
         )
