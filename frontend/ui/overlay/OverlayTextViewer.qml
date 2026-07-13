@@ -7,8 +7,9 @@ Rectangle {
 
     property bool extended: false
     property int dragMargin: 16
-    property int minimumWidth: 72
-    property int minimumHeight: 72
+    readonly property int minimumWidth: 72
+    readonly property int minimumHeight: 72
+    readonly property bool dragging: mouse.drag.active || mouseResize.drag.active
     signal closeRequested()
 
     clip: true

@@ -54,7 +54,11 @@ Item {
     ScreenArea {
         monitor: 0
 
+        z: textViewer.dragging ? 10 : 0
+
         OverlayTextViewer {
+            id: textViewer
+
             visible: (
                 Backend.Settings.values.text_viewer_show &&
                 (!controlPanel.selectionToolActive || !root.controlsVisible) &&
