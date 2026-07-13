@@ -52,6 +52,14 @@ Item {
     }
 
     ScreenArea {
+        monitor: 0
+
+        OverlayTextViewer {
+            
+        }
+    }
+
+    ScreenArea {
         id: screenArea
 
         visible: root.controlsVisible

@@ -14,7 +14,7 @@ __plugin_meta__ = {
 __plugin_main__ = 'ImageComparerPlugin'
 
 
-IMAGE_DIFF_TOLERANCE = 3
+IMAGE_DIFF_TOLERANCE = 1
 LOG_TITLE = f'{__plugin_meta__["name"]} Plugin'
 
 
