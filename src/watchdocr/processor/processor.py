@@ -24,6 +24,7 @@ LOG_CONTEXT = 'Runtime Context'
 @dataclass(slots=True)
 class OcrContext:
     success: bool = False
+    ignore: bool = False
 
     text: str = ''
     boxes: tuple = tuple()
@@ -31,6 +32,7 @@ class OcrContext:
 
     def clear(self):
         self.success = None
+        self.ignore = False
         self.text = ''
         self.boxes = tuple()
         self.confidence = 0.
@@ -39,6 +41,7 @@ class OcrContext:
 @dataclass(slots=True)
 class TranslationContext:
     success: bool = False
+    ignore: bool = False
 
     source_language: str = ''
     target_language: str = ''
@@ -48,6 +51,7 @@ class TranslationContext:
 
     def clear(self):
         self.success = False
+        self.ignore = False
         self.text = ''
         self.boxes = tuple()
 
@@ -134,7 +138,8 @@ class ImageGrabberStage(PipelineStage):
         # Call image process hook
         image = self.plugin_manager.call_hook(
             id='watchdocr.image_grabber_pipeline.image_process',
-            data=image
+            data=image,
+            ctx=ctx
         )
 
         ctx.image = image  # Store image
@@ -156,6 +161,11 @@ class OcrPipelineStage(PipelineStage):
             extra={'title': LOG_PROCESSOR}
         )
 
+        # Skip OCR pipeline if ignore flag is set (created for hooks)
+        if ctx.ocr.ignore:
+            ctx.ocr.clear()
+            return
+
         data = self._ocr.recognize(ctx.image)
 
         if not data.success:
@@ -174,6 +184,12 @@ class TranslationPipelineStage(PipelineStage):
         self._translator = translator
 
     def execute(self, ctx):
+        # Skip Translation pipeline if ignore flag is set (created for hooks)
+        if ctx.ocr.ignore:
+            ctx.ocr.clear()
+            return
+
+        # Skip if OCR pipeline if failed
         if not ctx.ocr.success:
             ctx.translation.clear()
             return
