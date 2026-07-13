@@ -1,12 +1,15 @@
 import QtQuick
 import App.Backend
+import "qrc:/qml/ui/common/controls"
 
 Rectangle {
     id: root
 
+    property bool extended: false
     property int dragMargin: 16
     property int minimumWidth: 72
     property int minimumHeight: 72
+    signal closeRequested()
 
     clip: true
 
@@ -14,7 +17,7 @@ Rectangle {
     implicitHeight: 120
 
     radius: 15
-    color: Qt.rgba(0.024, 0.024, 0.024, 0.5)
+    color: Qt.rgba(0.024, 0.024, 0.024, 0.7)
     border.width: 1
     border.color: (
         mouse.containsMouse || mouse.drag.active ||
@@ -46,6 +49,9 @@ Rectangle {
     MouseArea {
         id: mouse
 
+        visible: root.extended
+        enabled: root.extended
+
         anchors.fill: parent
 
         hoverEnabled: true
@@ -68,6 +74,9 @@ Rectangle {
 
         MouseArea {
             id: mouseResize
+
+            visible: root.extended
+            enabled: root.extended
 
             anchors.fill: parent
 
@@ -107,6 +116,29 @@ Rectangle {
                 return Math.min(Math.max(value, min), max);
             }
         }
+    }
+
+    OButton {
+        id: btnClose
+
+        visible: root.extended
+
+        width: 28
+        height: 28
+
+        anchors.top: parent.top
+        anchors.topMargin: 8
+        anchors.right: parent.right
+        anchors.rightMargin: 8
+
+        icon.source: "qrc:/qml/resources/icons/close.svg"
+        icon.width: 12
+        icon.height: 12
+        icon.color: "#E2E2E2"
+
+        background: Item {}
+
+        onClicked: root.closeRequested()
     }
 
     Connections {

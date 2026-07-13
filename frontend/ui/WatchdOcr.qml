@@ -55,7 +55,15 @@ Item {
         monitor: 0
 
         OverlayTextViewer {
-            visible: Backend.Settings.values.text_viewer_show
+            visible: (
+                Backend.Settings.values.text_viewer_show &&
+                (!controlPanel.selectionToolActive || !root.controlsVisible)
+            )
+            extended: root.controlsVisible
+
+            onCloseRequested: {
+                Backend.Settings.set("text_viewer_show", false);
+            }
         }
     }
 
