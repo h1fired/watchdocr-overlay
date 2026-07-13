@@ -10,6 +10,7 @@ Item {
     property alias loading: area.loading
     readonly property alias selecting: area.selecting
     readonly property bool boxValid: area.boxValid
+    property alias mouseSelectionActive: area.mouseSelectionActive
 
     SelectionArea {
         id: area

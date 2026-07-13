@@ -28,7 +28,7 @@ Item {
 
         anchors.fill: parent
 
-        area.mouseSelectionActive: controlPanel.selectionToolActive
+        mouseSelectionActive: controlPanel.selectionToolActive
 
         Connections {
             target: selectionArea.area
@@ -57,7 +57,8 @@ Item {
         OverlayTextViewer {
             visible: (
                 Backend.Settings.values.text_viewer_show &&
-                (!controlPanel.selectionToolActive || !root.controlsVisible)
+                (!controlPanel.selectionToolActive || !root.controlsVisible) &&
+                !selectionArea.selecting
             )
             extended: root.controlsVisible
 
