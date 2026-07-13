@@ -14,7 +14,7 @@ Rectangle {
     radius: 15
     color: Qt.rgba(0.024, 0.024, 0.024, 0.5)
     border.width: 1
-    border.color: mouse.containsMouse
+    border.color: mouse.containsMouse || mouse.drag.active
         ? Qt.rgba(0.3, 0.3, 0.3, 1.0)
         : Qt.rgba(0.3, 0.3, 0.3, 0.0)
 
