@@ -1,4 +1,5 @@
 from src.common.plugin import HookPlugin, hook, LaunchPlugin
+from src.common.utils.logging import log
 from src.watchdocr.processor.processor import WatchdOcrRuntimeContext
 from PIL import Image
 import imagehash
@@ -14,6 +15,7 @@ __plugin_main__ = 'ImageComparerPlugin'
 
 
 IMAGE_DIFF_TOLERANCE = 3
+LOG_TITLE = f'{__plugin_meta__["name"]} Plugin'
 
 
 class ImageComparerPlugin(LaunchPlugin, HookPlugin):
@@ -41,6 +43,12 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
 
         # Return cached data if images are similar
         if diff <= IMAGE_DIFF_TOLERANCE and self._ctx_cache:
+            log.info(
+                'Similar images detected (tolerance <= %s), run pipeline optimization',
+                IMAGE_DIFF_TOLERANCE,
+                extra={'title': LOG_TITLE}
+            )
+
             ctx.ocr.ignore = True
             ctx.ocr.success = self._ctx_cache.ocr.success
             ctx.ocr.text = self._ctx_cache.ocr.text

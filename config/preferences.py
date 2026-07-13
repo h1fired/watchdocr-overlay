@@ -52,8 +52,8 @@ class UserSettings(BaseModel):
         default=False,
         json_schema_extra=SettingField(
             label='Screens preview',
-            description='Show a preview thumbnail of captured screen areas.',
-            group='General',
+            modifiable=False,
+            group='General'
         ).as_dict(),
     )
     live_mode_recognition_frequency: float = Field(
