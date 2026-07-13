@@ -41,7 +41,6 @@ class OcrContext:
 @dataclass(slots=True)
 class TranslationContext:
     success: bool = False
-    ignore: bool = False
 
     source_language: str = ''
     target_language: str = ''
@@ -51,7 +50,6 @@ class TranslationContext:
 
     def clear(self):
         self.success = False
-        self.ignore = False
         self.text = ''
         self.boxes = tuple()
 
@@ -131,8 +129,6 @@ class ImageGrabberStage(PipelineStage):
                 ctx.boundings,
                 extra={'title': LOG_PROCESSOR}
             )
-
-            ctx.clear()
             return
 
         # Call image process hook
@@ -163,13 +159,12 @@ class OcrPipelineStage(PipelineStage):
 
         # Skip OCR pipeline if ignore flag is set (created for hooks)
         if ctx.ocr.ignore:
-            ctx.ocr.clear()
+            ctx.ocr.ignore = False
             return
 
         data = self._ocr.recognize(ctx.image)
 
         if not data.success:
-            ctx.ocr.clear()
             return
 
         ctx.ocr.success = data.success
@@ -184,14 +179,8 @@ class TranslationPipelineStage(PipelineStage):
         self._translator = translator
 
     def execute(self, ctx):
-        # Skip Translation pipeline if ignore flag is set (created for hooks)
-        if ctx.ocr.ignore:
-            ctx.ocr.clear()
-            return
-
         # Skip if OCR pipeline if failed
         if not ctx.ocr.success:
-            ctx.translation.clear()
             return
 
         boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in ctx.ocr.boxes)
@@ -234,6 +223,7 @@ class WatchdOcrPipeline:
         translator: Translator
     ):
         self._ctx = ctx
+        self._plugin_manager = plugin_manager
         self._stages: dict[str, PipelineStage] = {
             'image_grabber': ImageGrabberStage(plugin_manager),
             'ocr': OcrPipelineStage(plugin_manager, ocr),
@@ -265,6 +255,12 @@ class WatchdOcrPipeline:
         for stage in self._stages.values():
             if stage.enabled():
                 stage.execute(self._ctx)
+
+        # Call pipeline finish hook
+        self._plugin_manager.call_hook(
+            id='watchdocr.processor_pipeline.finish',
+            data=self._ctx,
+        )
 
     def current_strategy(self):
         return self._strategy
