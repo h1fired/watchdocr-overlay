@@ -21,7 +21,7 @@ LOG_TITLE = f'{__plugin_meta__["name"]} Plugin'
 class ImageComparerPlugin(LaunchPlugin, HookPlugin):
 
     def on_startup(self):
-        self._image_cache = None
+        self._image_hash_cache = None
         self._ctx_cache = None
 
     @hook('watchdocr.image_grabber_pipeline.image_process')
@@ -30,16 +30,16 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         image: Image.Image,
         ctx: WatchdOcrRuntimeContext
     ):
-        if self._image_cache is None:
-            self._image_cache = image
+        if self._image_hash_cache is None:
+            self._image_hash_cache = imagehash.average_hash(image)
             return image
 
-        hash1 = imagehash.average_hash(self._image_cache)
+        hash1 = self._image_hash_cache
         hash2 = imagehash.average_hash(image)
         diff = hash1 - hash2
 
         # Cache image
-        self._image_cache = image
+        self._image_hash_cache = imagehash.average_hash(image)
 
         # Return cached data if images are similar
         if diff <= IMAGE_DIFF_TOLERANCE and self._ctx_cache:
