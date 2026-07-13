@@ -5,35 +5,87 @@ from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.text import cleanup_text_simple
-from dataclasses import dataclass, asdict, fields
+from dataclasses import dataclass, asdict, fields, field, is_dataclass
 from enum import IntEnum, auto
 from threading import Thread, Event, Lock
 from PIL import Image
-from typing import Callable
+from typing import Callable, Any
 import queue
 
 
+LOG_PROCESSOR = 'Processor'
 BOXED_TEXT_SEPARATOR = '\n\n'
+
+
+# Context
+LOG_CONTEXT = 'Runtime Context'
+
+
+@dataclass(slots=True)
+class OcrContext:
+    success: bool = False
+
+    text: str = ''
+    boxes: tuple = tuple()
+    confidence: float = 0.
+
+    def clear(self):
+        self.success = None
+        self.text = ''
+        self.boxes = tuple()
+        self.confidence = 0.
+
+
+@dataclass(slots=True)
+class TranslationContext:
+    success: bool = False
+
+    source_language: str = ''
+    target_language: str = ''
+
+    boxed_text: str = ''
+    text: str = ''
+    boxes: tuple = tuple()
+
+    def clear(self):
+        self.success = False
+        self.boxed_text = ''
+        self.text = ''
+        self.boxes = tuple()
 
 
 @dataclass(slots=True)
 class WatchdOcrRuntimeContext:
     boundings: tuple = (0, 0, 0, 0)
     image: Image.Image | None = None
+    ocr: OcrContext = field(default_factory=OcrContext)
+    translation: TranslationContext = field(default_factory=TranslationContext)
 
-    # OCR
-    ocr_success: bool = False
-    text: str = ''
-    boxes: tuple = tuple()
-    confidence: float = 0.
+    def clear(self):
+        self.boundings = (0, 0, 0, 0)
+        self.image = None
 
-    # Translation
-    translation_success: bool = False
-    boxed_text: str = ''
-    translated_text: str = ''
-    source_language: str = ''
-    target_language: str = ''
-    translated_boxes: tuple = tuple()
+        self.ocr.clear()
+        self.translation.clear()
+
+    def update_from_dict(self, data: dict, target: Any | None = None):
+        target = target if target is not None else self
+        field_names = {f.name for f in fields(target)}
+
+        for key, value in data.items():
+            if key not in field_names:
+                log.warning(
+                    'Invalid context field provided (%s). Ignore',
+                    key,
+                    extra={'title': LOG_CONTEXT})
+                continue
+
+            curr_field = getattr(target, key)
+
+            if is_dataclass(curr_field) and isinstance(value, dict):
+                self.update_from_dict(value, curr_field)
+            else:
+                setattr(target, key, value)
 
 
 class PipelineStrategy(IntEnum):
@@ -43,18 +95,7 @@ class PipelineStrategy(IntEnum):
     OCR_TRANSLATION = auto()
 
 
-@dataclass(slots=True)
-class WatchdOcrOutput:
-    strategy: PipelineStrategy
-    text: str
-    translated_text: str
-    boxes: tuple
-    confidence: float
-
-    def to_dict(self):
-        return asdict(self)
-
-
+# Pipeline
 class PipelineStage:
     def __init__(self, plugin_manager: PluginManager):
         self._plugin_manager = plugin_manager
@@ -84,15 +125,10 @@ class ImageGrabberStage(PipelineStage):
                 ctx.boundings,
                 extra={'title': 'Processor'}
             )
-            ctx.ocr_success = False
-            ctx.text = ''
-            ctx.translated_text = ''
-            ctx.confidence = 0.
-            ctx.boxes = tuple()
-            ctx.boxed_text = ''
-            ctx.translated_boxes = []
+            ctx.clear()
             return
 
+        # Call image process hook
         image = self.plugin_manager.call_hook(
             id='watchdocr.image_grabber_pipeline.image_process',
             data=image
@@ -113,14 +149,12 @@ class OcrPipelineStage(PipelineStage):
 
     def execute(self, ctx):
         log.info('Starting OCR Pipeline Stage...', extra={'title': 'Processor'})
+
         data = self._ocr.recognize(ctx.image)
-        ctx.ocr_success = data.success
-        ctx.text = data.text
-        ctx.translated_text = data.text
-        ctx.confidence = data.confidence
-        ctx.boxes = data.boxes
-        ctx.boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in data.boxes)
-        ctx.translated_boxes = data.boxes
+        ctx.ocr.success = data.success
+        ctx.ocr.text = data.text
+        ctx.ocr.confidence = data.confidence
+        ctx.ocr.boxes = data.boxes
 
 
 class TranslationPipelineStage(PipelineStage):
@@ -129,32 +163,34 @@ class TranslationPipelineStage(PipelineStage):
         self._translator = translator
 
     def execute(self, ctx):
-        if not ctx.ocr_success:
-            ctx.translation_success = False
+        if not ctx.ocr.success:
+            ctx.translation.clear()
             return
 
+        ctx.translation.boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in ctx.ocr.boxes)
+
         data = self._translator.translate(
-            ctx.boxed_text,
-            ctx.source_language,
-            ctx.target_language
+            ctx.translation.boxed_text,
+            ctx.translation.source_language,
+            ctx.translation.target_language
         )
 
         if not data.success:
             log.error('Translation failed. Reusing original text.', extra={'title': 'Processor'})
-            ctx.translated_text = data.translated_text
-            ctx.translated_boxes = tuple()
+            ctx.translation.text = data.translated_text
+            ctx.translation.boxes = tuple()
             return
 
         if data.translated_text == '':
             texts = []
         else:
             texts = data.translated_text.split(BOXED_TEXT_SEPARATOR)
-        ctx.translated_text = cleanup_text_simple('\n'.join(texts))
+        ctx.translation.text = cleanup_text_simple('\n'.join(texts))
 
         boxes = []
-        for i, (_, t) in enumerate(zip(ctx.boxes, texts)):
-            boxes.append((t, ctx.boxes[i][1], ctx.boxes[i][2]))
-        ctx.translated_boxes = tuple(boxes)
+        for i, (_, t) in enumerate(zip(ctx.ocr.boxes, texts)):
+            boxes.append((t, ctx.ocr.boxes[i][1], ctx.ocr.boxes[i][2]))
+        ctx.translation.boxes = tuple(boxes)
 
 
 class WatchdOcrPipeline:
@@ -202,6 +238,20 @@ class WatchdOcrPipeline:
         return self._strategy
 
 
+# Output
+@dataclass(slots=True)
+class WatchdOcrOutput:
+    strategy: PipelineStrategy
+    text: str
+    translated_text: str
+    boxes: tuple
+    confidence: float
+
+    def to_dict(self):
+        return asdict(self)
+
+
+# Processor
 class WatchdOcrProcessorStatus(IntEnum):
     IDLE = 0
     RECOGNIZING = 1
@@ -270,10 +320,10 @@ class WatchdOcrRunner:
     def create_output_data(self):
         return WatchdOcrOutput(
             strategy=self._pipeline.current_strategy(),
-            text=self._ctx.text,
-            translated_text=self._ctx.translated_text,
-            boxes=self._ctx.translated_boxes,
-            confidence=self._ctx.confidence
+            text=self._ctx.ocr.text,
+            translated_text=self._ctx.translation.text,
+            boxes=self._ctx.translation.boxes,
+            confidence=self._ctx.ocr.confidence
         )
 
     def register_output_callback(self, cb: Callable[[WatchdOcrOutput], None]):
@@ -332,7 +382,7 @@ class WatchdOcrProcessor:
 
     def queue_pipeline(self, strategy: PipelineStrategy, context_data: dict):
         log.info('Queueing pipeline execution with strategy: %s', strategy.name, extra={'title': 'Processor'})
-        self._update_context_data(context_data)
+        self._ctx.update_from_dict(context_data)
         self._runner.put(strategy)
 
     def context(self):
@@ -340,14 +390,6 @@ class WatchdOcrProcessor:
 
     def wait_for_pipeline_finish(self):
         return self._runner.wait_for_exec_finish()
-
-    def _update_context_data(self, data: dict):
-        field_names = {f.name for f in fields(self._ctx)}
-        for key, value in data.items():
-            if key in field_names:
-                setattr(self._ctx, key, value)
-            else:
-                log.warning('Invalid context field provided (%s). Ignore', key, extra={'title': 'Processor'})
 
     def _on_output(self, data: WatchdOcrOutput):
         self._eventsys.dispatch(
