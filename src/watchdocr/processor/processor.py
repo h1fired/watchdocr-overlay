@@ -196,6 +196,7 @@ class TranslationPipelineStage(PipelineStage):
             ctx.translation.boxes = tuple()
             return
 
+        # Generate translated boxes from output
         if data.translated_text == '':
             texts = []
         else:
