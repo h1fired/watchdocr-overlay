@@ -75,9 +75,9 @@ Item {
             }
 
             onVisibleChanged: {
-                if (!visible) {
-                    x = dragMargin;
-                    y = dragMargin;
+                if (visible) {
+                    x = parent.width / 2 - width / 2;
+                    y = parent.height / 2 - height / 2;
                 }
             }
         }
