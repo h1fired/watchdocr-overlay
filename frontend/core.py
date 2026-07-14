@@ -32,6 +32,7 @@ class SystemObject(QObject):
     visibleChanged = Signal()
     visibilitySwapRequested = Signal()
     windowTransparentForCaptureChanged = Signal()
+    windowTransparentForInputChanged = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -39,6 +40,7 @@ class SystemObject(QObject):
         self._focus_helper = FocusHelper(self)
         self._window = None
         self._window_transparent_for_capture = False
+        self._window_transparent_for_input = False
 
     def requestVisibilitySwap(self):
         self.visibilitySwapRequested.emit()
@@ -80,6 +82,30 @@ class SystemObject(QObject):
         getWindowTransparentForCapture,
         setWindowTransparentForCapture,
         notify=windowTransparentForCaptureChanged
+    )
+
+    def getWindowTransparentForInput(self):
+        return self._window_transparent_for_input
+
+    def setWindowTransparentForInput(self, value: bool):
+        WS_EX_TRANSPARENT = 0x00000020
+        GWL_EXSTYLE = -20
+        hwnd = self._window.winId()
+        style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+        if value:
+            style |= WS_EX_TRANSPARENT
+        else:
+            style &= ~WS_EX_TRANSPARENT
+        ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
+
+        self._window_transparent_for_input = value
+        self.windowTransparentForInputChanged.emit()
+
+    windowTransparentForInput = Property(
+        bool,
+        getWindowTransparentForInput,
+        setWindowTransparentForInput,
+        notify=windowTransparentForInputChanged
     )
 
 
