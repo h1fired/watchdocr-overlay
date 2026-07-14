@@ -19,6 +19,10 @@ class NuitkaBackend(CompilerBackend):
         for flag in self.params.custom_flags:
             s_custom_flags.append(flag)
 
+        s_icon = []
+        if self.params.icon:
+            s_icon.append(f'--windows-icon-from-ico={self.params.icon}')
+
         cmd = ' '.join([
             'uv run',
             'nuitka',
@@ -26,6 +30,7 @@ class NuitkaBackend(CompilerBackend):
             *s_plugins,
             *s_hidden_packages,
             *s_custom_flags,
+            *s_icon,
             f'--output-dir={output_dir}',
             f'--output-filename={exe_name}.exe',
             '--assume-yes-for-downloads',

@@ -124,8 +124,10 @@ class AppBuilder:
         img = Image.open(self._config.icon)
         if img.size != (256, 256):
             raise ValueError('Icon size must be 256x256')
-        img.save(f'{compile_dir}/logo.ico')
+        ico_path = f'{compile_dir}/logo.ico'
+        img.save(ico_path)
         self._config.icon = 'logo.ico'
+        self._compiler.params.icon = os.path.abspath(ico_path)
 
         print('Build executable from .py module...')
         self._compiler.build(

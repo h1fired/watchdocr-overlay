@@ -84,6 +84,9 @@ Item {
     SelectionMouseArea {
         id: selectionMouseArea
 
+        visible: root.mouseSelectionActive
+        enabled: root.mouseSelectionActive
+
         onBoxChanged: {
             selectionBox.updateArea(box);
         }

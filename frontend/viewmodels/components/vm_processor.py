@@ -48,7 +48,12 @@ class ProcessorViewModel(QmlViewModel):
             return
 
         self._workflow_api.provide_context_data({
-            'boundings': (box.x(), box.y(), box.width(), box.height())
+            'boundings': (
+                box.x(),
+                box.y(),
+                box.width(),
+                box.height()
+            )
         })
         self._workflow_api.execute()
 

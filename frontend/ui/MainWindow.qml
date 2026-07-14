@@ -11,6 +11,8 @@ import "qrc:/qml/ui/overlay/components"
 Window {
     id: window
 
+    property bool mainUiVisible: System.visible
+
     visible: true
 
     x: UtilsScreen.globalX
@@ -19,12 +21,12 @@ Window {
     height: UtilsScreen.globalHeight
 
     title: "OCR Overlay"
-    flags: window.mainUiVisible
-        ? Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-        : Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
 
-    property bool mainUiVisible: System.visible
+    onMainUiVisibleChanged: {
+        System.windowTransparentForInput = !mainUiVisible;
+    }
 
     Loader {
         id: loaderWatchdOcr

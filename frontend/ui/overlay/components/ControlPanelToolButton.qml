@@ -5,7 +5,9 @@ import "qrc:/qml/ui/common/controls"
 OButton {
     id: root
 
-    icon.color: enabled ? "#E9E9E9" : "#A0A0A0"
+    icon.color: (
+        !enabled ? "#A0A0A0" : (checked ? "#75A0FF" : "#E9E9E9")
+    ) 
     icon.width: 22
     icon.height: 22
 

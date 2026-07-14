@@ -136,6 +136,27 @@ Rectangle {
             }
         }
 
+        ControlPanelToolButton {
+            id: btnTextViewer
+
+            Layout.fillHeight: true
+            Layout.preferredWidth: height
+
+            icon.source: "qrc:/qml/resources/icons/text_viewer.svg"
+            icon.width: 14
+            icon.height: 14
+
+            ToolTip.text: "Toggle text viewer visibility"
+
+            onClicked: {
+                checked = !checked;
+            }
+
+            onCheckedChanged: {
+                Backend.Settings.set("text_viewer_show", checked);
+            }
+        }
+
         HDivider {}
 
         ControlPanelToolButton {
@@ -178,12 +199,12 @@ Rectangle {
         }
     }
 
-    // Sync screensPreview button from settings when changed externally
     Connections {
         target: Backend.Settings
 
         function onSettingsChanged() {
             btnScreensPreview.checked = Backend.Settings.values.screens_preview_enabled;
+            btnTextViewer.checked = Backend.Settings.values.text_viewer_show;
         }
     }
 

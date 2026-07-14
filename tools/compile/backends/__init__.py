@@ -6,6 +6,7 @@ class CompilerParams:
     plugins: list = field(default_factory=list)
     hidden_packages: list = field(default_factory=list)
     custom_flags: list = field(default_factory=list)
+    icon: str = ''
 
 
 class CompilerBackend:

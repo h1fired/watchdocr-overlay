@@ -1,6 +1,7 @@
 import QtQuick
 import App.Backend
 import App.System
+import App.Utils
 import "qrc:/qml/ui/overlay"
 import "qrc:/qml/ui/overlay/components"
 import "qrc:/qml/ui/common/components"
@@ -28,7 +29,7 @@ Item {
 
         anchors.fill: parent
 
-        area.mouseSelectionActive: controlPanel.selectionToolActive
+        mouseSelectionActive: controlPanel.selectionToolActive
 
         Connections {
             target: selectionArea.area
@@ -49,6 +50,37 @@ Item {
         id: visualHints
 
         anchors.fill: parent
+    }
+
+    ScreenArea {
+        monitor: mouseTrackedMonitor
+        enableMonitorMouseTracking: textViewer.dragging
+
+        z: textViewer.dragging ? 10 : 0
+
+        OverlayTextViewer {
+            id: textViewer
+
+            visible: (
+                Backend.Settings.values.text_viewer_show
+            )
+            opacity: (
+                (!controlPanel.selectionToolActive || !root.controlsVisible) &&
+                !selectionArea.selecting
+            ) ? 1.0 : 0.5
+            extended: root.controlsVisible && !controlPanel.selectionToolActive
+
+            onCloseRequested: {
+                Backend.Settings.set("text_viewer_show", false);
+            }
+
+            onVisibleChanged: {
+                if (visible) {
+                    x = parent.width / 2 - width / 2;
+                    y = parent.height / 2 - height / 2;
+                }
+            }
+        }
     }
 
     ScreenArea {

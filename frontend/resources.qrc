@@ -16,6 +16,7 @@
     <file>ui/overlay/OverlayScreensPreview.qml</file>
     <file>ui/overlay/OverlaySelectionArea.qml</file>
     <file>ui/overlay/OverlayTextConsole.qml</file>
+    <file>ui/overlay/OverlayTextViewer.qml</file>
     <file>ui/overlay/OverlayVisualHints.qml</file>
     <file>ui/overlay/components/AccuracyBar.qml</file>
     <file>ui/overlay/components/ActivityBar.qml</file>
@@ -56,9 +57,11 @@
     <file>resources\icons/play.svg</file>
     <file>resources\icons/preferences_dots.svg</file>
     <file>resources\icons/preloader_logo.png</file>
+    <file>resources\icons/resize_angle.svg</file>
     <file>resources\icons/selection.svg</file>
     <file>resources\icons/settings.svg</file>
     <file>resources\icons/swap.svg</file>
+    <file>resources\icons/text_viewer.svg</file>
     <file>resources\icons/tray.svg</file>
     <file>resources\icons/visual_hint.svg</file>
     <file>resources\icons/app/app.ico</file>
