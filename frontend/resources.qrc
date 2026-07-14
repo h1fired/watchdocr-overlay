@@ -61,6 +61,7 @@
     <file>resources\icons/selection.svg</file>
     <file>resources\icons/settings.svg</file>
     <file>resources\icons/swap.svg</file>
+    <file>resources\icons/text_viewer.svg</file>
     <file>resources\icons/tray.svg</file>
     <file>resources\icons/visual_hint.svg</file>
     <file>resources\icons/app/app.ico</file>
