@@ -88,6 +88,9 @@ class SystemObject(QObject):
         return self._window_transparent_for_input
 
     def setWindowTransparentForInput(self, value: bool):
+        if not self._window:
+            return
+
         WS_EX_TRANSPARENT = 0x00000020
         GWL_EXSTYLE = -20
         hwnd = self._window.winId()
