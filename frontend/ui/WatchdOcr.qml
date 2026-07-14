@@ -62,11 +62,13 @@ Item {
             id: textViewer
 
             visible: (
-                Backend.Settings.values.text_viewer_show &&
+                Backend.Settings.values.text_viewer_show
+            )
+            opacity: (
                 (!controlPanel.selectionToolActive || !root.controlsVisible) &&
                 !selectionArea.selecting
-            )
-            extended: root.controlsVisible
+            ) ? 1.0 : 0.3
+            extended: root.controlsVisible && !controlPanel.selectionToolActive
 
             onCloseRequested: {
                 Backend.Settings.set("text_viewer_show", false);
