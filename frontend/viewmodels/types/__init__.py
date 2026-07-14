@@ -1,11 +1,13 @@
 from qt.qml import qmlRegisterSingletonType, qmlRegisterType, QQmlApplicationEngine
 from frontend.viewmodels.types.screen import ScreenManager
+from frontend.viewmodels.types.mouse import MouseTracker
 from frontend.viewmodels.types.image import ImageProvider, AnimatedImage
 
 
 def registerUtilsQmlTypes():
     qmlRegisterType(AnimatedImage, 'App.Utils', 1, 0, 'AnimatedImage')
     qmlRegisterSingletonType(ScreenManager, 'App.Utils', 1, 0, 'UtilsScreen')
+    qmlRegisterSingletonType(MouseTracker, 'App.Utils', 1, 0, 'UtilsMouseTracker')
 
 
 def registerQmlImageProviders(engine: QQmlApplicationEngine):

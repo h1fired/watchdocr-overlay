@@ -1,6 +1,7 @@
 import QtQuick
 import App.Backend
 import App.System
+import App.Utils
 import "qrc:/qml/ui/overlay"
 import "qrc:/qml/ui/overlay/components"
 import "qrc:/qml/ui/common/components"
@@ -52,7 +53,8 @@ Item {
     }
 
     ScreenArea {
-        monitor: 0
+        monitor: mouseTrackedMonitor
+        enableMonitorMouseTracking: true
 
         z: textViewer.dragging ? 10 : 0
 
