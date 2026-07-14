@@ -14,6 +14,9 @@ Rectangle {
 
     clip: true
 
+    x: dragMargin
+    y: dragMargin
+
     implicitWidth: 500
     implicitHeight: 120
 
