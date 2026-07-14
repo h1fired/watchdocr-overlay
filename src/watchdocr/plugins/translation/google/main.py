@@ -143,6 +143,9 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
                 'q': text
             }
             response = self.session.get(URL, params=params, timeout=5)
+            if not response.ok:
+                raise ValueError('Request failed')
+
             translated_text = ''.join(t[0] for t in response.json()[0])
 
             if not translated_text:

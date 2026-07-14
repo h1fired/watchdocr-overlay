@@ -48,6 +48,14 @@ class UserSettings(BaseModel):
             group='Visual',
         ).as_dict(),
     )
+    text_viewer_show: bool = Field(
+        default=False,
+        json_schema_extra=SettingField(
+            label='Text viewer',
+            description='Render interactive text viewer in non-overlay mode',
+            group='Visual',
+        ).as_dict(),
+    )
     screens_preview_enabled: bool = Field(
         default=False,
         json_schema_extra=SettingField(
