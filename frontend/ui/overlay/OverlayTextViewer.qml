@@ -69,18 +69,25 @@ Rectangle {
         drag.maximumY: parent.parent.height - parent.height - root.dragMargin
     }
 
-    Item {
-        width: 16
-        height: 16
+    OButton {
+        width: 20
+        height: 20
+
+        visible: root.extended
+        enabled: root.extended
 
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
+        icon.source: "qrc:/qml/resources/icons/resize_angle.svg"
+        icon.width: 16
+        icon.height: 16
+        icon.color: "#414141"
+
+        background: Item {}
+
         MouseArea {
             id: mouseResize
-
-            visible: root.extended
-            enabled: root.extended
 
             anchors.fill: parent
 
