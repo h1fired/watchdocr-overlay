@@ -10,6 +10,7 @@ class SettingField:
     label: str
     description: str = ''
     modifiable: bool = True
+    reset_on_reload: bool = False
     group: str = 'General'
     field_type: str | None = None
 
@@ -51,6 +52,7 @@ class UserSettings(BaseModel):
     text_viewer_show: bool = Field(
         default=False,
         json_schema_extra=SettingField(
+            reset_on_reload=True,
             label='Text viewer',
             description='Render interactive text viewer in non-overlay mode',
             group='Visual',
@@ -122,6 +124,12 @@ class UserSettings(BaseModel):
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 data = yaml.safe_load(f) or {}
+
+                for name in data.keys():
+                    field = cls.model_fields.get(name)
+                    if field.json_schema_extra.reset_on_reload:
+                        data[name] = field.default
+
             return cls.model_validate(data)
         except (ValidationError, Exception) as e:
             print(f'Warning: Failed to load config ({e}). Using defaults.')
