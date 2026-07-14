@@ -67,11 +67,18 @@ Item {
             opacity: (
                 (!controlPanel.selectionToolActive || !root.controlsVisible) &&
                 !selectionArea.selecting
-            ) ? 1.0 : 0.3
+            ) ? 1.0 : 0.5
             extended: root.controlsVisible && !controlPanel.selectionToolActive
 
             onCloseRequested: {
                 Backend.Settings.set("text_viewer_show", false);
+            }
+
+            onVisibleChanged: {
+                if (!visible) {
+                    x = dragMargin;
+                    y = dragMargin;
+                }
             }
         }
     }
