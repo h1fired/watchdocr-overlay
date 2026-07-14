@@ -33,7 +33,7 @@ class UserSettings(BaseModel):
         ).as_dict(),
     )
     visual_hints_show: bool = Field(
-        default=False,
+        default=True,
         json_schema_extra=SettingField(
             label='Show visual hints',
             description='Display bounding-box hints on detected text regions.',
@@ -88,7 +88,7 @@ class UserSettings(BaseModel):
         ).as_dict(),
     )
     overlay_toggle_hotkey: str = Field(
-        default='[',
+        default='Alt+B',
         json_schema_extra=SettingField(
             label='Overlay toggle hotkey',
             description='Trigger an overlay visibility.',
