@@ -199,7 +199,6 @@ Rectangle {
         }
     }
 
-    // Sync screensPreview button from settings when changed externally
     Connections {
         target: Backend.Settings
 
