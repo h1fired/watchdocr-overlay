@@ -142,6 +142,10 @@ Rectangle {
         onClicked: root.closeRequested()
     }
 
+    function clear() {
+        text.text = "";
+    }
+
     Connections {
         target: Backend.Processor
         enabled: root.visible
