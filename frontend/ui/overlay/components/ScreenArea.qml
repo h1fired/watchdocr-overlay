@@ -5,7 +5,7 @@ Item {
     id: root
 
     property int monitor: 0
-    property int mouseTrackedMonitor: -1
+    property int mouseTrackedMonitor: 0
     property bool enableMonitorMouseTracking: false
 
     onMonitorChanged: {

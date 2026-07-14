@@ -54,7 +54,7 @@ Item {
 
     ScreenArea {
         monitor: mouseTrackedMonitor
-        enableMonitorMouseTracking: true
+        enableMonitorMouseTracking: textViewer.dragging
 
         z: textViewer.dragging ? 10 : 0
 
