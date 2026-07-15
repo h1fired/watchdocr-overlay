@@ -20,9 +20,9 @@ Item {
             delegate: VisualHintBox {
                 required property var modelData
 
-                x: modelData[1][0]
+                x: modelData[1][0] - root._boxExpansion
                 y: modelData[1][1] - root._boxExpansion
-                width: modelData[1][2] - modelData[1][0]
+                width: modelData[1][2] - modelData[1][0] + (root._boxExpansion * 2)
                 height: modelData[1][3] - modelData[1][1] + (root._boxExpansion * 2)
 
                 provider: root.provider
