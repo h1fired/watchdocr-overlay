@@ -27,6 +27,7 @@ Item {
 
                 provider: root.provider
                 text: modelData[0]
+                internalPadding: root._boxExpansion
             }
         }
     }

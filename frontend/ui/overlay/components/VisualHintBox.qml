@@ -6,6 +6,7 @@ Item {
 
     required property ImageProvider provider
     required property string text
+    property int internalPadding: 0
 
     ShaderEffectSource {
         id: rawBoxCapture
@@ -14,7 +15,12 @@ Item {
         live: true
 
         sourceItem: provider
-        sourceRect: Qt.rect(root.x, root.y, root.width, root.height)
+        sourceRect: Qt.rect(
+            root.x + root.internalPadding,
+            root.y + root.internalPadding,
+            root.width - (root.internalPadding * 2),
+            root.height - (root.internalPadding * 2)
+        )
     }
 
     ShaderEffect {
@@ -23,9 +29,9 @@ Item {
         property variant source: rawBoxCapture
         property vector2d pixelSize: Qt.vector2d(4, 4)
 
-        visible: false
-
         anchors.fill: parent
+        layer.enabled: true
+        opacity: 0
 
         fragmentShader: "qrc:/qml/ui/shaders/average.frag.qsb" 
     }
@@ -56,6 +62,7 @@ Item {
         visible: false
 
         anchors.fill: parent
+        leftPadding: root.internalPadding * 2
         
         text: root.text
         fontSizeMode: Text.Fit
@@ -66,13 +73,31 @@ Item {
         verticalAlignment: Text.AlignVCenter
         padding: 0
 
+        renderType: Text.QtRendering
+        antialiasing: true
+
         color: "white"
     }
 
-    Blend {
+    ShaderEffectSource {
+        id: textMaskSource
+
+        visible: false
+
+        sourceItem: textLabel
+        live: true
+        smooth: true
+        samples: 4
+    }
+
+    ShaderEffect {
         anchors.fill: parent
-        source: maskedBackground
-        foregroundSource: textLabel
-        mode: "exclusion"
+
+        property variant background: cleanBackgroundBox
+        property variant textMask: textMaskSource
+
+        fragmentShader: "qrc:/qml/ui/shaders/text_difference.frag.qsb"
+
+        smooth: true
     }
 }
