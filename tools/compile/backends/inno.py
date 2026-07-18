@@ -55,6 +55,7 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{{cm:CreateDesktopIcon}}"; GroupDescription: "{{cm:AdditionalIcons}}"; Flags: unchecked
+Name: "startupicon"; Description: "Start {{#MyAppName}} when Windows starts"; GroupDescription: "Additional options:"; Flags: unchecked
 
 [Files]
 Source: "{{#MyAppExeDir}}\*"; DestDir: "{{app}}"; Flags: ignoreversion
@@ -72,6 +73,7 @@ Root: HKA; Subkey: "Software\Classes\Applications\{{#MyAppExeName}}\SupportedTyp
 Name: "{{autoprograms}}\{{#MyAppName}}"; Filename: "{{app}}\{{#MyAppExeName}}"
 Name: "{{autodesktop}}\{{#MyAppName}}"; Filename: "{{app}}\{{#MyAppExeName}}"; Tasks: desktopicon
 Name: "{{group}}\{{#MyAppName}}"; Filename: "{{app}}\{{#MyAppExeName}}"
+Name: "{{commonstartup}}\{{#MyAppName}}"; Filename: "{{app}}\{{#MyAppExeName}}"; Parameters: "--hide-on-exec"; Tasks: startupicon
 
 [Run]
 Filename: "{{app}}\{{#MyAppExeName}}"; Description: "{{cm:LaunchProgram,{{#StringChange(MyAppName, '&', '&&')}}}}"; Flags: nowait postinstall skipifsilent
