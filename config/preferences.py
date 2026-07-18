@@ -19,6 +19,7 @@ class SettingField:
             'label': self.label,
             'description': self.description,
             'modifiable': self.modifiable,
+            'reset_on_reload': self.reset_on_reload,
             'group': self.group,
             'field_type': self.field_type,
         }

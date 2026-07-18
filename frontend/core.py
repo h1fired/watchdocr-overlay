@@ -36,7 +36,7 @@ class SystemObject(QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._visible = True
+        self._visible = False
         self._focus_helper = FocusHelper(self)
         self._window = None
         self._window_transparent_for_capture = False

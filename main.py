@@ -7,6 +7,7 @@ from config import config
 import subprocess
 import sys
 import ctypes
+import argparse
 
 
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('company.app.1')
@@ -18,6 +19,10 @@ def show_overlay():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog=config.APP_NAME)
+    parser.add_argument('--hide-on-exec', action='store_true')
+    args = parser.parse_args()
+
     if config.DEBUG:
         cmd = ' '.join((
             sys.executable,
@@ -61,6 +66,12 @@ if __name__ == '__main__':
 
         # Install global keyboard events hook
         ghotkey.install_keyboard_hook_proc()
+
+        sys_obj = gui.system_obj()
+        if not args.hide_on_exec:
+            sys_obj.setVisible(True)
+        else:
+            sys_obj.setWindowTransparentForInput(True)
 
     # Run preloader
     preloader = PreloaderCore(core.plugins_manager())
