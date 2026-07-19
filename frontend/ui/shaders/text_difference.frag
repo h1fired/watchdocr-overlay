@@ -19,7 +19,7 @@ void main() {
 
     // invert around 0.5, then push outward so extremes reach pure black/white
     float inverted = 1.0 - luminance;
-    float textValue = clamp((inverted - 0.5) * 2.2 + 0.5, 0.0, 1.0);
+    float textValue = clamp((inverted - 0.5) * 15.2 + 0.5, 0.0, 1.0);
 
     float textAlpha = texture(textMask, qt_TexCoord0).a;
     fragColor = vec4(vec3(textValue) * textAlpha, textAlpha) * qt_Opacity;
