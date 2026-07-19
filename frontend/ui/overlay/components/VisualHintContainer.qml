@@ -7,6 +7,7 @@ Item {
     required property ImageProvider provider
     property var boxes: ([])
     property int _boxExpansion: 2
+    signal linkActivated()
 
     Item {
         x: provider.x
@@ -28,6 +29,8 @@ Item {
                 provider: root.provider
                 text: modelData[0]
                 internalPadding: root._boxExpansion
+
+                onLinkActivated: root.linkActivated()
             }
         }
     }

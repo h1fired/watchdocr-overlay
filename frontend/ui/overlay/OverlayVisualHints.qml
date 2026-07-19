@@ -1,6 +1,7 @@
 import QtQuick
 import Qt5Compat.GraphicalEffects
 import App.Backend
+import App.System
 import "qrc:/qml/ui/overlay/components"
 
 Item {
@@ -26,6 +27,10 @@ Item {
         anchors.fill: parent
 
         provider: areaPreview
+
+        onLinkActivated: {
+            System.visible = false;
+        }
     }
 
     function clear() {

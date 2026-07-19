@@ -7,6 +7,7 @@ Item {
     required property ImageProvider provider
     required property string text
     property int internalPadding: 0
+    signal linkActivated()
 
     ShaderEffectSource {
         id: rawBoxCapture
@@ -59,12 +60,14 @@ Item {
     Text {
         id: textLabel
 
-        visible: false
+        visible: true
+        opacity: 0
 
         anchors.fill: parent
+
         leftPadding: root.internalPadding * 2
-        
-        text: root.text
+
+        text: root.linkify(root.text)
         fontSizeMode: Text.Fit
         font.pixelSize: height
         font.weight: 600
@@ -77,6 +80,20 @@ Item {
         antialiasing: true
 
         color: "white"
+
+        textFormat: Text.StyledText
+
+        onLinkActivated: (link) => {
+            Qt.openUrlExternally(link);
+            root.linkActivated();
+        }
+
+        MouseArea {
+            anchors.fill: parent
+
+            acceptedButtons: Qt.NoButton
+            cursorShape: textLabel.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+        }
     }
 
     ShaderEffectSource {
@@ -99,5 +116,20 @@ Item {
         fragmentShader: "qrc:/qml/ui/shaders/text_difference.frag.qsb"
 
         smooth: true
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;");
+    }
+
+    function linkify(str) {
+        let text = escapeHtml(str);
+        let urlRegex = /((https?:\/\/|www\.)[^\s<]+|\b[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}(\/[^\s<]*)?)/g;
+        return text.replace(urlRegex, function(url) {
+            let href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+            return '<a href="' + href + '">' + url + '</a>';
+        });
     }
 }
