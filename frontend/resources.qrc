@@ -68,5 +68,6 @@
   </qresource>
   <qresource prefix="/qml">
     <file>ui/shaders\average.frag.qsb</file>
+    <file>ui/shaders\text_difference.frag.qsb</file>
   </qresource>
 </RCC>
