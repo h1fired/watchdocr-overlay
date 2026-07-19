@@ -125,11 +125,11 @@ Item {
     }
 
     function linkify(str) {
-        let text = escapeHtml(str);
-        let urlRegex = /((https?:\/\/|www\.)[^\s<]+|\b[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}(\/[^\s<]*)?)/g;
+        var text = escapeHtml(str);
+        var urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
         return text.replace(urlRegex, function(url) {
-            let href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
-            return '<a href="' + href + '">' + url + '</a>';
+            var href = url.startsWith('www.') ? 'https://' + url : url;
+            return `<a href="${href}">${url}</a>`;
         });
     }
 }
