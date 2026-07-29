@@ -4,7 +4,6 @@ from src.common.plugin import PluginManager
 from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
-from src.watchdocr.processor.text import cleanup_text_simple
 from dataclasses import dataclass, asdict, fields, field, is_dataclass
 from enum import IntEnum, auto
 from threading import Thread, Event, Lock
@@ -206,7 +205,14 @@ class TranslationPipelineStage(PipelineStage):
             texts = []
         else:
             texts = data.translated_text.split(BOXED_TEXT_SEPARATOR)
-        ctx.translation.text = cleanup_text_simple('\n'.join(texts))
+
+        ctx.translation.text = '\n'.join(texts)
+
+        # Call text output hook
+        ctx.translation.text = self._plugin_manager.call_hook(
+            id='watchdocr.translation_pipeline.output_text',
+            data=ctx.translation.text
+        )
 
         boxes = []
         for i, (_, t) in enumerate(zip(ctx.ocr.boxes, texts)):
