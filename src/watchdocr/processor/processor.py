@@ -1,7 +1,7 @@
 from src.common.utils.logging import log
 from src.common.event import EventSystem, IEvent
 from src.common.plugin import PluginManager
-from src.watchdocr.processor.ocr import Ocr
+from src.watchdocr.processor.ocr import Ocr, OcrBoxData
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
 from dataclasses import dataclass, asdict, fields, field, is_dataclass
@@ -26,7 +26,7 @@ class OcrContext:
     ignore: bool = False
 
     text: str = ''
-    boxes: tuple = tuple()
+    boxes: tuple[OcrBoxData, ...] = tuple()
     confidence: float = 0.
 
     def clear(self):
@@ -182,7 +182,7 @@ class TranslationPipelineStage(PipelineStage):
         if not ctx.ocr.success:
             return
 
-        boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in ctx.ocr.boxes)
+        boxed_text = BOXED_TEXT_SEPARATOR.join(b.text for b in ctx.ocr.boxes)
 
         data = self._translator.translate(
             boxed_text,
@@ -216,7 +216,7 @@ class TranslationPipelineStage(PipelineStage):
 
         boxes = []
         for i, (_, t) in enumerate(zip(ctx.ocr.boxes, texts)):
-            boxes.append((t, ctx.ocr.boxes[i][1], ctx.ocr.boxes[i][2]))
+            boxes.append((t, ctx.ocr.boxes[i].boundings, ctx.ocr.boxes[i].confidence))
         ctx.translation.boxes = tuple(boxes)
 
 

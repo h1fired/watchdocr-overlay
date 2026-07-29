@@ -1,5 +1,5 @@
 from src.common.plugin import PluginManager
-from src.watchdocr.plugins.ocr import OcrPlugin
+from src.watchdocr.plugins.ocr import OcrPlugin, OcrBoxData
 from src.common.utils.logging import log
 from PIL import Image
 
