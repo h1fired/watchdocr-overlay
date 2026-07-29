@@ -83,7 +83,9 @@ class PreloaderCore(QObject):
         self._engine.load(config.PRELOADER_WINDOW_FILE)
 
         def on_downloading_finish():
-            self._engine.rootObjects()[0].close()
+            component = self._engine.rootObjects()[0]
+            component.close()
+            component.deleteLater()
             self.finished.emit()
 
         self._worker.finished.connect(on_downloading_finish)
