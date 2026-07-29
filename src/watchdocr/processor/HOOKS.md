@@ -12,3 +12,7 @@ This document lists all available hooks that plugins can implement.
 ### `watchdocr.processor_pipeline.finish`
 * **Trigger**: On processor pipeline finish.
 * **Input/Output**: `WatchdOcrRuntimeContext`
+
+### `watchdocr.translation_pipeline.output_text`
+* **Trigger**: On translation output text.
+* **Input/Output**: `str`
