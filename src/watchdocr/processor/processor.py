@@ -5,6 +5,7 @@ from src.watchdocr.processor.context import WatchdOcrRuntimeContext
 from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
+from src.watchdocr.processor.adapter import OcrTranslatorTextAdapter
 from dataclasses import dataclass, asdict
 from enum import IntEnum, auto
 from threading import Thread, Event, Lock
@@ -115,12 +116,16 @@ class TranslationPipelineStage(PipelineStage):
         if not ctx.ocr.success:
             return
 
-        boxed_text = BOXED_TEXT_SEPARATOR.join(b.text for b in ctx.ocr.boxes)
+        text_adapter = OcrTranslatorTextAdapter()
+        mapped_text = text_adapter.generate_mapped_string(
+            full_text=ctx.ocr.text,
+            boxes=ctx.ocr.boxes
+        )
 
         data = self._translator.translate(
-            boxed_text,
-            ctx.config.source_language,
-            ctx.config.target_language
+            text=mapped_text,
+            source_lang=ctx.config.source_language,
+            target_lang=ctx.config.target_language
         )
 
         if not data.success:
@@ -134,16 +139,10 @@ class TranslationPipelineStage(PipelineStage):
             return
 
         # Generate translated boxes from output
-        if data.translated_text == '':
-            texts = []
-        else:
-            texts = data.translated_text.split(BOXED_TEXT_SEPARATOR)
+        full_text, parts = text_adapter.unpack_mapped_string(data.translated_text)
+        boxes = text_adapter.generate_translated_boxes(ctx.ocr.boxes, parts)
 
-        ctx.translation.text = '\n'.join(texts)
-
-        boxes = []
-        for i, (_, t) in enumerate(zip(ctx.ocr.boxes, texts)):
-            boxes.append((t, ctx.ocr.boxes[i].boundings, ctx.ocr.boxes[i].confidence))
+        ctx.translation.text = full_text
         ctx.translation.boxes = tuple(boxes)
 
         ctx.final_text = ctx.translation.text
