@@ -1,90 +1,20 @@
 from src.common.utils.logging import log
 from src.common.event import EventSystem, IEvent
 from src.common.plugin import PluginManager
+from src.watchdocr.processor.context import WatchdOcrRuntimeContext
 from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
-from dataclasses import dataclass, asdict, fields, field, is_dataclass
+from dataclasses import dataclass, asdict
 from enum import IntEnum, auto
 from threading import Thread, Event, Lock
 from PIL import Image
-from typing import Callable, Any
+from typing import Callable
 import queue
 
 
 LOG_PROCESSOR = 'Processor'
 BOXED_TEXT_SEPARATOR = '\n\n'
-
-
-# Context
-LOG_CONTEXT = 'Runtime Context'
-
-
-@dataclass(slots=True)
-class OcrContext:
-    success: bool = False
-    ignore: bool = False
-
-    text: str = ''
-    boxes: tuple = tuple()
-    confidence: float = 0.
-
-    def clear(self):
-        self.success = None
-        self.ignore = False
-        self.text = ''
-        self.boxes = tuple()
-        self.confidence = 0.
-
-
-@dataclass(slots=True)
-class TranslationContext:
-    success: bool = False
-
-    source_language: str = ''
-    target_language: str = ''
-
-    text: str = ''
-    boxes: tuple = tuple()
-
-    def clear(self):
-        self.success = False
-        self.text = ''
-        self.boxes = tuple()
-
-
-@dataclass(slots=True)
-class WatchdOcrRuntimeContext:
-    boundings: tuple = (0, 0, 0, 0)
-    image: Image.Image | None = None
-    ocr: OcrContext = field(default_factory=OcrContext)
-    translation: TranslationContext = field(default_factory=TranslationContext)
-
-    def clear(self):
-        self.boundings = (0, 0, 0, 0)
-        self.image = None
-
-        self.ocr.clear()
-        self.translation.clear()
-
-    def update_from_dict(self, data: dict, target: Any | None = None):
-        target = target if target is not None else self
-        field_names = {f.name for f in fields(target)}
-
-        for key, value in data.items():
-            if key not in field_names:
-                log.warning(
-                    'Invalid context field provided (%s). Ignore',
-                    key,
-                    extra={'title': LOG_CONTEXT})
-                continue
-
-            curr_field = getattr(target, key)
-
-            if is_dataclass(curr_field) and isinstance(value, dict):
-                self.update_from_dict(value, curr_field)
-            else:
-                setattr(target, key, value)
 
 
 # Pipeline
@@ -121,11 +51,11 @@ class ImageGrabberStage(PipelineStage):
             extra={'title': LOG_PROCESSOR}
         )
 
-        image = ScreenGrabber.grab_screen_area(ctx.boundings)
+        image = ScreenGrabber.grab_screen_area(ctx.config.boundings)
         if not image:
             log.warning(
                 'Screen grabber returned no image for boundings %s',
-                ctx.boundings,
+                ctx.config.boundings,
                 extra={'title': LOG_PROCESSOR}
             )
             return
@@ -182,12 +112,12 @@ class TranslationPipelineStage(PipelineStage):
         if not ctx.ocr.success:
             return
 
-        boxed_text = BOXED_TEXT_SEPARATOR.join(b[0] for b in ctx.ocr.boxes)
+        boxed_text = BOXED_TEXT_SEPARATOR.join(b.text for b in ctx.ocr.boxes)
 
         data = self._translator.translate(
             boxed_text,
-            ctx.translation.source_language,
-            ctx.translation.target_language
+            ctx.config.source_language,
+            ctx.config.target_language
         )
 
         if not data.success:
@@ -208,15 +138,9 @@ class TranslationPipelineStage(PipelineStage):
 
         ctx.translation.text = '\n'.join(texts)
 
-        # Call text output hook
-        ctx.translation.text = self._plugin_manager.call_hook(
-            id='watchdocr.translation_pipeline.output_text',
-            data=ctx.translation.text
-        )
-
         boxes = []
         for i, (_, t) in enumerate(zip(ctx.ocr.boxes, texts)):
-            boxes.append((t, ctx.ocr.boxes[i][1], ctx.ocr.boxes[i][2]))
+            boxes.append((t, ctx.ocr.boxes[i].boundings, ctx.ocr.boxes[i].confidence))
         ctx.translation.boxes = tuple(boxes)
 
 
@@ -261,6 +185,12 @@ class WatchdOcrPipeline:
         for stage in self._stages.values():
             if stage.enabled():
                 stage.execute(self._ctx)
+
+        # Call text output hook
+        self._ctx.translation.text = self._plugin_manager.call_hook(
+            id='watchdocr.processor_pipeline.output_text',
+            data=self._ctx.translation.text
+        )
 
         # Call pipeline finish hook
         self._plugin_manager.call_hook(
@@ -438,7 +368,7 @@ class WatchdOcrProcessor:
             strategy.name,
             extra={'title': LOG_PROCESSOR}
         )
-        self._ctx.update_from_dict(context_data)
+        self._ctx.update_config(context_data)
         self._runner.put(strategy)
 
     def context(self):

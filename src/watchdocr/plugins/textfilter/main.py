@@ -17,7 +17,7 @@ __plugin_main__ = 'TextFilterPlugin'
 
 class TextFilterPlugin(HookPlugin):
 
-    @hook('watchdocr.translation_pipeline.output_text')
+    @hook('watchdocr.processor_pipeline.output_text')
     def on(self, text: str):
         ctext = cleanup_text_simple(text)
         return ctext
