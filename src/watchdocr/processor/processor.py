@@ -8,7 +8,7 @@ from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.adapter import OcrTranslatorTextAdapter
 from dataclasses import dataclass, asdict
 from enum import IntEnum, auto
-from threading import Thread, Event, Lock
+from threading import Thread, Event
 from PIL import Image
 from typing import Callable
 import queue
@@ -255,7 +255,6 @@ class WatchdOcrRunner:
         self._area_preview_callback = None
         self._e = Event()
         self._e.set()
-        self._lock = Lock()
 
     def put(self, strategy: PipelineStrategy):
         log.debug(
@@ -343,8 +342,7 @@ class WatchdOcrRunner:
             self._area_preview_callback(image)
 
     def clean_current_pipelines(self):
-        with self._lock:
-            self._q.queue.clear()
+        self._q.queue.clear()
 
 
 class WatchdOcrProcessor:
