@@ -162,7 +162,7 @@ Rectangle {
 
         function onResultReceived(json) {
             let data = JSON.parse(json);
-            text.text = data.translated_text;
+            text.text = data.final_text;
         }
     }
 }

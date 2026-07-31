@@ -74,14 +74,18 @@ class TranslationContext:
 class WatchdOcrRuntimeContext:
     config: RuntimeConfig = field(default_factory=RuntimeConfig)
 
-    image: Image.Image | None = None
     ocr: OcrContext = field(default_factory=OcrContext)
     translation: TranslationContext = field(default_factory=TranslationContext)
+
+    image: Image.Image | None = None
+    final_text: str = ''
+    final_boxes: tuple = tuple()
 
     def clear(self):
         self.config.clear()
 
         self.image = None
+        self.final_text = ''
 
         self.ocr.clear()
         self.translation.clear()

@@ -101,6 +101,9 @@ class OcrPipelineStage(PipelineStage):
         ctx.ocr.confidence = data.confidence
         ctx.ocr.boxes = data.boxes
 
+        ctx.final_text = data.text
+        ctx.final_boxes = data.boxes
+
 
 class TranslationPipelineStage(PipelineStage):
     def __init__(self, plugin_manager, translator: Translator):
@@ -142,6 +145,9 @@ class TranslationPipelineStage(PipelineStage):
         for i, (_, t) in enumerate(zip(ctx.ocr.boxes, texts)):
             boxes.append((t, ctx.ocr.boxes[i].boundings, ctx.ocr.boxes[i].confidence))
         ctx.translation.boxes = tuple(boxes)
+
+        ctx.final_text = ctx.translation.text
+        ctx.final_boxes = boxes
 
 
 class WatchdOcrPipeline:
@@ -206,7 +212,8 @@ class WatchdOcrPipeline:
 @dataclass(slots=True)
 class WatchdOcrOutput:
     strategy: PipelineStrategy
-    text: str
+    final_text: str
+    original_text: str
     translated_text: str
     boxes: tuple
     confidence: float
@@ -296,9 +303,10 @@ class WatchdOcrRunner:
     def create_output_data(self):
         return WatchdOcrOutput(
             strategy=self._pipeline.current_strategy(),
-            text=self._ctx.ocr.text,
+            final_text=self._ctx.final_text,
+            original_text=self._ctx.ocr.text,
             translated_text=self._ctx.translation.text,
-            boxes=self._ctx.translation.boxes,
+            boxes=self._ctx.final_boxes,
             confidence=self._ctx.ocr.confidence
         )
 
