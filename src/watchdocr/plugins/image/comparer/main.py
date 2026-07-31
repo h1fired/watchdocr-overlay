@@ -49,12 +49,7 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
                 IMAGE_DIFF_TOLERANCE,
                 extra={'title': LOG_TITLE}
             )
-
-            ctx.ocr.ignore = True
-            ctx.ocr.success = self._ctx_cache.ocr.success
-            ctx.ocr.text = self._ctx_cache.ocr.text
-            ctx.ocr.confidence = self._ctx_cache.ocr.confidence
-            ctx.ocr.boxes = self._ctx_cache.ocr.boxes
+            self._update_context(ctx)
 
         return image
 
@@ -62,3 +57,10 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
     def on_processor_pipeline_finish(self, ctx: WatchdOcrRuntimeContext):
         self._ctx_cache = copy.deepcopy(ctx)
         return ctx
+
+    def _update_context(self, ctx: WatchdOcrRuntimeContext):
+        ctx.ocr.ignore = True
+        ctx.ocr.success = self._ctx_cache.ocr.success
+        ctx.ocr.text = self._ctx_cache.ocr.text
+        ctx.ocr.confidence = self._ctx_cache.ocr.confidence
+        ctx.ocr.boxes = self._ctx_cache.ocr.boxes
