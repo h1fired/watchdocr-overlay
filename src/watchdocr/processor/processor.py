@@ -234,6 +234,8 @@ class WatchdOcrProcessorStatus(IntEnum):
 
 
 class WatchdOcrRunner:
+    _Sentinel = None
+
     def __init__(
         self,
         ctx: WatchdOcrRuntimeContext,
@@ -273,6 +275,7 @@ class WatchdOcrRunner:
             extra={'title': LOG_PROCESSOR}
         )
         self._running = False
+        self._q.put(self._Sentinel)
         if self._th and self._th.is_alive():
             self._th.join()
         self._q.queue.clear()
@@ -287,6 +290,10 @@ class WatchdOcrRunner:
     def _run(self):
         while self._running:
             strategy: PipelineStrategy = self._q.get()
+
+            if strategy is self._Sentinel:
+                break
+
             self._pipeline.provide_strategy(strategy)
 
             if strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
