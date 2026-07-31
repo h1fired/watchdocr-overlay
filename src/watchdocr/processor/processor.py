@@ -165,32 +165,14 @@ class WatchdOcrPipeline:
         }
         self._strategy = PipelineStrategy.OCR_TRANSLATION
 
-    def provide_strategy(self, strategy: PipelineStrategy):
-        match strategy:
-            case PipelineStrategy.ONLY_CONTEXT_CHANGE:
-                self._stages['image_grabber'].set_enabled(False)
-                self._stages['ocr'].set_enabled(False)
-                self._stages['translation'].set_enabled(False)
-            case PipelineStrategy.OCR_ONLY:
-                self._stages['image_grabber'].set_enabled(True)
-                self._stages['ocr'].set_enabled(True)
-                self._stages['translation'].set_enabled(False)
-            case PipelineStrategy.TRANSLATION_ONLY:
-                self._stages['image_grabber'].set_enabled(False)
-                self._stages['ocr'].set_enabled(False)
-                self._stages['translation'].set_enabled(True)
-            case PipelineStrategy.OCR_TRANSLATION:
-                self._stages['image_grabber'].set_enabled(True)
-                self._stages['ocr'].set_enabled(True)
-                self._stages['translation'].set_enabled(True)
-        self._strategy = strategy
-
-    def execute(self):
+    def execute(self, strategy: PipelineStrategy):
         # Call pipeline start hook
         self._plugin_manager.call_hook(
             id='watchdocr.processor_pipeline.start',
             data=self._ctx,
         )
+
+        self._switch_strategy(strategy)
 
         for stage in self._stages.values():
             if stage.enabled():
@@ -210,6 +192,26 @@ class WatchdOcrPipeline:
 
     def current_strategy(self):
         return self._strategy
+
+    def _switch_strategy(self, strategy: PipelineStrategy):
+        match strategy:
+            case PipelineStrategy.ONLY_CONTEXT_CHANGE:
+                self._stages['image_grabber'].set_enabled(False)
+                self._stages['ocr'].set_enabled(False)
+                self._stages['translation'].set_enabled(False)
+            case PipelineStrategy.OCR_ONLY:
+                self._stages['image_grabber'].set_enabled(True)
+                self._stages['ocr'].set_enabled(True)
+                self._stages['translation'].set_enabled(False)
+            case PipelineStrategy.TRANSLATION_ONLY:
+                self._stages['image_grabber'].set_enabled(False)
+                self._stages['ocr'].set_enabled(False)
+                self._stages['translation'].set_enabled(True)
+            case PipelineStrategy.OCR_TRANSLATION:
+                self._stages['image_grabber'].set_enabled(True)
+                self._stages['ocr'].set_enabled(True)
+                self._stages['translation'].set_enabled(True)
+        self._strategy = strategy
 
 
 # Output
@@ -294,12 +296,10 @@ class WatchdOcrRunner:
             if strategy is self._Sentinel:
                 break
 
-            self._pipeline.provide_strategy(strategy)
-
             if strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
                 self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
                 self._e.clear()
-                self._pipeline.execute()
+                self._pipeline.execute(strategy)
                 self._send_status(WatchdOcrProcessorStatus.IDLE)
 
                 output = self.create_output_data()
