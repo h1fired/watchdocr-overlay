@@ -218,7 +218,7 @@ Rectangle {
 
         function onResultReceived(json) {
             let data = JSON.parse(json);
-            responseTextEdit.text = data.final_text;
+            responseTextEdit.text = data.translated_text;
 
             if (root.enableSizeAdaptivity && responseTextEdit.isOverflowing()) {
                 root.width = 720;

@@ -9,6 +9,10 @@ This document lists all available hooks that plugins can implement.
 * **Input/Output**: `PIL.Image`
 * **Extra kwargs**: `ctx=WatchdOcrRuntimeContext`
 
+### `watchdocr.processor_pipeline.start`
+* **Trigger**: On processor pipeline start.
+* **Input/Output**: `WatchdOcrRuntimeContext`
+
 ### `watchdocr.processor_pipeline.finish`
 * **Trigger**: On processor pipeline finish.
 * **Input/Output**: `WatchdOcrRuntimeContext`

@@ -1,7 +1,7 @@
 from src.common.utils.logging import log
 from src.common.event import EventSystem, IEvent
 from src.common.plugin import PluginManager
-from src.watchdocr.processor.context import WatchdOcrRuntimeContext
+from src.watchdocr.processor.context import WatchdOcrRuntimeContext, OcrBox
 from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
@@ -52,6 +52,8 @@ class ImageGrabberStage(PipelineStage):
             extra={'title': LOG_PROCESSOR}
         )
 
+        ctx.image = None  # Clean up
+
         image = ScreenGrabber.grab_screen_area(ctx.config.boundings)
         if not image:
             log.warning(
@@ -67,8 +69,8 @@ class ImageGrabberStage(PipelineStage):
             data=image,
             ctx=ctx
         )
-
         ctx.image = image  # Store image
+
         log.info(
             'Screen grabbed successfully (%dx%d). Running recognition...',
             image.width, image.height,
@@ -87,23 +89,24 @@ class OcrPipelineStage(PipelineStage):
             extra={'title': LOG_PROCESSOR}
         )
 
+        ctx.ocr.clear()  # Clean up
+
         # Skip OCR pipeline if ignore flag is set (created for hooks)
         if ctx.ocr.ignore:
             ctx.ocr.ignore = False
             return
 
         data = self._ocr.recognize(ctx.image)
+        ctx.ocr.success = data.success
 
         if not data.success:
             return
 
-        ctx.ocr.success = data.success
         ctx.ocr.text = data.text
-        ctx.ocr.confidence = data.confidence
-        ctx.ocr.boxes = data.boxes
+        ctx.ocr.total_confidence = data.confidence
 
-        ctx.final_text = data.text
-        ctx.final_boxes = data.boxes
+        ctx.ocr.boxes = tuple(OcrBox(b.boundings, b.confidence) for b in data.boxes)
+        ctx.ocr.parts = [p.text for p in data.boxes]
 
 
 class TranslationPipelineStage(PipelineStage):
@@ -112,6 +115,8 @@ class TranslationPipelineStage(PipelineStage):
         self._translator = translator
 
     def execute(self, ctx):
+        ctx.translation.clear()  # Clean up
+
         # Skip if OCR pipeline if failed
         if not ctx.ocr.success:
             return
@@ -119,7 +124,7 @@ class TranslationPipelineStage(PipelineStage):
         text_adapter = OcrTranslatorTextAdapter()
         mapped_text = text_adapter.generate_mapped_string(
             full_text=ctx.ocr.text,
-            boxes=ctx.ocr.boxes
+            parts=ctx.ocr.parts
         )
 
         data = self._translator.translate(
@@ -135,18 +140,13 @@ class TranslationPipelineStage(PipelineStage):
             )
 
             ctx.translation.text = data.translated_text
-            ctx.translation.boxes = tuple()
             return
 
         # Generate translated boxes from output
         full_text, parts = text_adapter.unpack_mapped_string(data.translated_text)
-        boxes = text_adapter.generate_translated_boxes(ctx.ocr.boxes, parts)
 
         ctx.translation.text = full_text
-        ctx.translation.boxes = tuple(boxes)
-
-        ctx.final_text = ctx.translation.text
-        ctx.final_boxes = boxes
+        ctx.translation.parts = [p for _, p in zip(ctx.ocr.parts, parts)]
 
 
 class WatchdOcrPipeline:
@@ -187,6 +187,12 @@ class WatchdOcrPipeline:
         self._strategy = strategy
 
     def execute(self):
+        # Call pipeline start hook
+        self._plugin_manager.call_hook(
+            id='watchdocr.processor_pipeline.start',
+            data=self._ctx,
+        )
+
         for stage in self._stages.values():
             if stage.enabled():
                 stage.execute(self._ctx)
@@ -211,11 +217,12 @@ class WatchdOcrPipeline:
 @dataclass(slots=True)
 class WatchdOcrOutput:
     strategy: PipelineStrategy
-    final_text: str
     original_text: str
     translated_text: str
-    boxes: tuple
-    confidence: float
+    boxes: tuple[tuple, float]
+    original_parts: list[str]
+    translated_parts: list[str]
+    total_confidence: float
 
     def to_dict(self):
         return asdict(self)
@@ -302,11 +309,12 @@ class WatchdOcrRunner:
     def create_output_data(self):
         return WatchdOcrOutput(
             strategy=self._pipeline.current_strategy(),
-            final_text=self._ctx.final_text,
             original_text=self._ctx.ocr.text,
             translated_text=self._ctx.translation.text,
-            boxes=self._ctx.final_boxes,
-            confidence=self._ctx.ocr.confidence
+            boxes=self._ctx.ocr.boxes,
+            original_parts=self._ctx.ocr.parts,
+            translated_parts=self._ctx.ocr.parts,
+            total_confidence=self._ctx.ocr.total_confidence
         )
 
     def register_output_callback(self, cb: Callable[[WatchdOcrOutput], None]):

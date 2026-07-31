@@ -39,13 +39,20 @@ class RuntimeConfig:
 
 
 @dataclass(slots=True)
+class OcrBox:
+    boundings: tuple
+    confidence: float
+
+
+@dataclass(slots=True)
 class OcrContext:
     success: bool = False
     ignore: bool = False
 
     text: str = ''
-    boxes: tuple[OcrBoxData, ...] = tuple()
-    confidence: float = 0.
+    boxes: tuple[OcrBox, ...] = tuple()
+    parts: list[str] = field(default_factory=list)
+    total_confidence: float = 0.
 
     def clear(self):
         self.success = None
@@ -53,7 +60,8 @@ class OcrContext:
 
         self.text = ''
         self.boxes = tuple()
-        self.confidence = 0.
+        self.parts = {}
+        self.total_confidence = 0.
 
 
 @dataclass(slots=True)
@@ -61,13 +69,13 @@ class TranslationContext:
     success: bool = False
 
     text: str = ''
-    boxes: tuple = tuple()
+    parts: list[str] = field(default_factory=list)
 
     def clear(self):
         self.success = False
 
         self.text = ''
-        self.boxes = tuple()
+        self.parts = {}
 
 
 @dataclass(slots=True)
@@ -78,14 +86,11 @@ class WatchdOcrRuntimeContext:
     translation: TranslationContext = field(default_factory=TranslationContext)
 
     image: Image.Image | None = None
-    final_text: str = ''
-    final_boxes: tuple = tuple()
 
     def clear(self):
         self.config.clear()
 
         self.image = None
-        self.final_text = ''
 
         self.ocr.clear()
         self.translation.clear()

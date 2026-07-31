@@ -36,6 +36,7 @@ Item {
         target: Backend.Processor
         function onResultReceived(json) {
             let data = JSON.parse(json);
+            container.parts = data.translated_parts;
             container.boxes = data.boxes;
         }
     }
