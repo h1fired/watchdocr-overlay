@@ -138,12 +138,6 @@ class TranslationPipelineStage(PipelineStage):
 
         ctx.translation.text = '\n'.join(texts)
 
-        # Call text output hook
-        ctx.translation.text = self._plugin_manager.call_hook(
-            id='watchdocr.translation_pipeline.output_text',
-            data=ctx.translation.text
-        )
-
         boxes = []
         for i, (_, t) in enumerate(zip(ctx.ocr.boxes, texts)):
             boxes.append((t, ctx.ocr.boxes[i].boundings, ctx.ocr.boxes[i].confidence))
@@ -191,6 +185,12 @@ class WatchdOcrPipeline:
         for stage in self._stages.values():
             if stage.enabled():
                 stage.execute(self._ctx)
+
+        # Call text output hook
+        self._ctx.translation.text = self._plugin_manager.call_hook(
+            id='watchdocr.processor_pipeline.output_text',
+            data=self._ctx.translation.text
+        )
 
         # Call pipeline finish hook
         self._plugin_manager.call_hook(
