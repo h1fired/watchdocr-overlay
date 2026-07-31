@@ -60,7 +60,7 @@ class OcrContext:
 
         self.text = ''
         self.boxes = tuple()
-        self.parts = {}
+        self.parts = []
         self.total_confidence = 0.
 
 
@@ -75,7 +75,7 @@ class TranslationContext:
         self.success = False
 
         self.text = ''
-        self.parts = {}
+        self.parts = []
 
 
 @dataclass(slots=True)

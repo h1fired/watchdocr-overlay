@@ -15,7 +15,6 @@ import queue
 
 
 LOG_PROCESSOR = 'Processor'
-BOXED_TEXT_SEPARATOR = '\n\n'
 
 
 # Pipeline
