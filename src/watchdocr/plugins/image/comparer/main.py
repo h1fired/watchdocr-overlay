@@ -62,5 +62,5 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         ctx.ocr.ignore = True
         ctx.ocr.success = self._ctx_cache.ocr.success
         ctx.ocr.text = self._ctx_cache.ocr.text
-        ctx.ocr.confidence = self._ctx_cache.ocr.confidence
+        ctx.ocr.total_confidence = self._ctx_cache.ocr.total_confidence
         ctx.ocr.boxes = self._ctx_cache.ocr.boxes

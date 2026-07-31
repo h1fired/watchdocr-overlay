@@ -26,7 +26,7 @@ class LiveWorkflow(WatchdOcrWorkflow):
 
     def _run(self):
         while self._running:
-            boundings = self._processor.context().boundings
+            boundings = self._processor.context().config.boundings
             if not all(b == 0 for b in boundings):
                 self._processor.queue_pipeline(
                     strategy=PipelineStrategy.OCR_TRANSLATION,

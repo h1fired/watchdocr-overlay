@@ -152,11 +152,9 @@ class WatchdOcrPipeline:
     def __init__(
         self,
         plugin_manager: PluginManager,
-        ctx: WatchdOcrRuntimeContext,
         ocr: Ocr,
         translator: Translator
     ):
-        self._ctx = ctx
         self._plugin_manager = plugin_manager
         self._stages: dict[str, PipelineStage] = {
             'image_grabber': ImageGrabberStage(plugin_manager),
@@ -165,29 +163,33 @@ class WatchdOcrPipeline:
         }
         self._strategy = PipelineStrategy.OCR_TRANSLATION
 
-    def execute(self, strategy: PipelineStrategy):
+    def execute(
+        self,
+        ctx: WatchdOcrRuntimeContext,
+        strategy: PipelineStrategy
+    ):
         # Call pipeline start hook
         self._plugin_manager.call_hook(
             id='watchdocr.processor_pipeline.start',
-            data=self._ctx,
+            data=ctx,
         )
 
         self._switch_strategy(strategy)
 
         for stage in self._stages.values():
             if stage.enabled():
-                stage.execute(self._ctx)
+                stage.execute(ctx)
 
         # Call text output hook
-        self._ctx.translation.text = self._plugin_manager.call_hook(
+        ctx.translation.text = self._plugin_manager.call_hook(
             id='watchdocr.processor_pipeline.output_text',
-            data=self._ctx.translation.text
+            data=ctx.translation.text
         )
 
         # Call pipeline finish hook
         self._plugin_manager.call_hook(
             id='watchdocr.processor_pipeline.finish',
-            data=self._ctx,
+            data=ctx,
         )
 
     def current_strategy(self):
@@ -236,7 +238,7 @@ class WatchdOcrProcessorStatus(IntEnum):
 
 
 class WatchdOcrRunner:
-    _Sentinel = None
+    _Sentinel = object()
 
     def __init__(
         self,
@@ -299,7 +301,7 @@ class WatchdOcrRunner:
             if strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
                 self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
                 self._e.clear()
-                self._pipeline.execute(strategy)
+                self._pipeline.execute(self._ctx, strategy)
                 self._send_status(WatchdOcrProcessorStatus.IDLE)
 
                 output = self.create_output_data()
@@ -357,7 +359,6 @@ class WatchdOcrProcessor:
         self._translator = Translator(plugins_manager)
         self._pipeline = WatchdOcrPipeline(
             plugin_manager=plugins_manager,
-            ctx=self._ctx,
             ocr=self._ocr,
             translator=self._translator
         )
