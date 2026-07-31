@@ -313,7 +313,7 @@ class WatchdOcrRunner:
             translated_text=self._ctx.translation.text,
             boxes=self._ctx.ocr.boxes,
             original_parts=self._ctx.ocr.parts,
-            translated_parts=self._ctx.ocr.parts,
+            translated_parts=self._ctx.translation.parts,
             total_confidence=self._ctx.ocr.total_confidence
         )
 
