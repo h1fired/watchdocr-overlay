@@ -149,6 +149,14 @@ class TranslationPipelineStage(PipelineStage):
         ctx.translation.parts = [p for _, p in zip(ctx.ocr.parts, parts)]
 
 
+STRATEGY_STAGES: dict[PipelineStrategy, frozenset[str]] = {
+    PipelineStrategy.ONLY_CONTEXT_CHANGE: frozenset(),
+    PipelineStrategy.OCR_ONLY: frozenset({'image_grabber', 'ocr'}),
+    PipelineStrategy.TRANSLATION_ONLY: frozenset({'translation'}),
+    PipelineStrategy.OCR_TRANSLATION: frozenset({'image_grabber', 'ocr', 'translation'}),
+}
+
+
 class WatchdOcrPipeline:
     def __init__(
         self,
@@ -196,24 +204,10 @@ class WatchdOcrPipeline:
     def current_strategy(self):
         return self._strategy
 
-    def _apply_strategy(self, strategy: PipelineStrategy):
-        match strategy:
-            case PipelineStrategy.ONLY_CONTEXT_CHANGE:
-                self._stages['image_grabber'].set_enabled(False)
-                self._stages['ocr'].set_enabled(False)
-                self._stages['translation'].set_enabled(False)
-            case PipelineStrategy.OCR_ONLY:
-                self._stages['image_grabber'].set_enabled(True)
-                self._stages['ocr'].set_enabled(True)
-                self._stages['translation'].set_enabled(False)
-            case PipelineStrategy.TRANSLATION_ONLY:
-                self._stages['image_grabber'].set_enabled(False)
-                self._stages['ocr'].set_enabled(False)
-                self._stages['translation'].set_enabled(True)
-            case PipelineStrategy.OCR_TRANSLATION:
-                self._stages['image_grabber'].set_enabled(True)
-                self._stages['ocr'].set_enabled(True)
-                self._stages['translation'].set_enabled(True)
+    def _apply_strategy(self, strategy):
+        active = STRATEGY_STAGES[strategy]
+        for name, stage in self._stages.items():
+            stage.set_enabled(name in active)
         self._strategy = strategy
 
 
