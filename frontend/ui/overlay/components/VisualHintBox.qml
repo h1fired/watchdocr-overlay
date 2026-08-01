@@ -32,58 +32,58 @@ Item {
             : Qt.matrix4x4()
     }
 
-    // ShaderEffectSource {
-    //     id: rawBoxCapture
+    ShaderEffectSource {
+        id: rawBoxCapture
 
-    //     visible: false
-    //     live: true
+        visible: false
+        live: true
 
-    //     sourceItem: provider
-    //     sourceRect: Qt.rect(
-    //         root.x + root.internalPadding,
-    //         root.y + root.internalPadding,
-    //         root.width - (root.internalPadding * 2),
-    //         root.height - (root.internalPadding * 2)
-    //     )
-    // }
+        sourceItem: provider
+        sourceRect: Qt.rect(
+            root.x + root.internalPadding,
+            root.y + root.internalPadding,
+            root.width - (root.internalPadding * 2),
+            root.height - (root.internalPadding * 2)
+        )
+    }
 
-    // ShaderEffect {
-    //     id: cleanBackgroundBox
+    ShaderEffect {
+        id: cleanBackgroundBox
 
-    //     property variant source: rawBoxCapture
-    //     property vector2d pixelSize: Qt.vector2d(4, 4)
+        property variant source: rawBoxCapture
+        property vector2d pixelSize: Qt.vector2d(4, 4)
 
-    //     anchors.fill: parent
-    //     layer.enabled: true
-    //     opacity: 0
+        anchors.fill: parent
+        layer.enabled: true
+        opacity: 0
 
-    //     fragmentShader: "qrc:/qml/ui/shaders/average.frag.qsb" 
-    // }
+        fragmentShader: "qrc:/qml/ui/shaders/average.frag.qsb" 
+    }
 
     Rectangle {
         id: boxMask
 
-        visible: true
+        visible: false
 
         anchors.fill: parent
         radius: 6
         color: "black"
     }
 
-    // OpacityMask {
-    //     id: maskedBackground
+    OpacityMask {
+        id: maskedBackground
 
-    //     anchors.fill: parent
+        anchors.fill: parent
 
-    //     source: cleanBackgroundBox
-    //     maskSource: boxMask
-    // }
+        source: cleanBackgroundBox
+        maskSource: boxMask
+    }
 
     // Box text with background blending
     Text {
         id: textLabel
 
-        visible: true
+        visible: false
 
         anchors.fill: parent
         leftPadding: root.internalPadding * 2
@@ -103,56 +103,56 @@ Item {
         color: "white"
     }
 
-    // ShaderEffectSource {
-    //     id: textMaskSource
+    ShaderEffectSource {
+        id: textMaskSource
 
-    //     visible: false
+        visible: false
 
-    //     sourceItem: textLabel
-    //     live: true
-    //     smooth: true
-    //     samples: 4
-    // }
+        sourceItem: textLabel
+        live: true
+        smooth: true
+        samples: 4
+    }
 
-    // ShaderEffect {
-    //     anchors.fill: parent
+    ShaderEffect {
+        anchors.fill: parent
 
-    //     property variant background: cleanBackgroundBox
-    //     property variant textMask: textMaskSource
+        property variant background: cleanBackgroundBox
+        property variant textMask: textMaskSource
 
-    //     fragmentShader: "qrc:/qml/ui/shaders/text_difference.frag.qsb"
+        fragmentShader: "qrc:/qml/ui/shaders/text_difference.frag.qsb"
 
-    //     smooth: true
-    // }
+        smooth: true
+    }
 
     function _buildMatrix() {
-        var c = root.coordinates  // [x0,y0, x1,y1, x2,y2, x3,y3] absolute
+        let c = root.coordinates  // [x0,y0, x1,y1, x2,y2, x3,y3] absolute
         // Translate to local space (subtract item's top-left position)
-        var local = [
+        let local = [
             c[0] - root.x,  c[1] - root.y,   // TL
             c[2] - root.x,  c[3] - root.y,   // TR
             c[4] - root.x,  c[5] - root.y,   // BR
             c[6] - root.x,  c[7] - root.y    // BL
         ]
         
-        var E = root.internalPadding
-        var W = root.width - 2 * E
-        var H = root.height - 2 * E
+        let E = root.internalPadding
+        let W = root.width - 2 * E
+        let H = root.height - 2 * E
 
         return quadToMatrix4x4(local, W, H, E)
     }
 
     // Maps item coordinates [E..W+E] x [E..H+E] → arbitrary quad q[]
     function quadToMatrix4x4(q, W, H, E) {
-        var x0 = q[0], y0 = q[1]
-        var x1 = q[2], y1 = q[3]
-        var x2 = q[4], y2 = q[5]
-        var x3 = q[6], y3 = q[7]
+        let x0 = q[0], y0 = q[1]
+        let x1 = q[2], y1 = q[3]
+        let x2 = q[4], y2 = q[5]
+        let x3 = q[6], y3 = q[7]
 
-        var dx1 = x1 - x2, dx2 = x3 - x2, dx3 = x0 - x1 + x2 - x3
-        var dy1 = y1 - y2, dy2 = y3 - y2, dy3 = y0 - y1 + y2 - y3
+        let dx1 = x1 - x2, dx2 = x3 - x2, dx3 = x0 - x1 + x2 - x3
+        let dy1 = y1 - y2, dy2 = y3 - y2, dy3 = y0 - y1 + y2 - y3
 
-        var a, b, c = x0, d, e, f = y0, g, hh
+        let a, b, c = x0, d, e, f = y0, g, hh
 
         if (dx3 === 0 && dy3 === 0) {
             // Affine (parallelogram) case
@@ -161,7 +161,7 @@ Item {
             g = 0;        hh = 0
         } else {
             // Perspective case
-            var det = dx1 * dy2 - dx2 * dy1
+            let det = dx1 * dy2 - dx2 * dy1
             if (det === 0) det = 0.0001
             g  = (dx3 * dy2 - dx2 * dy3) / det
             hh = (dx1 * dy3 - dx3 * dy1) / det
@@ -169,20 +169,20 @@ Item {
             d = y1 - y0 + g * y1;  e = y3 - y0 + hh * y3
         }
 
-        var sx = W > 0 ? 1 / W : 0
-        var sy = H > 0 ? 1 / H : 0
+        let sx = W > 0 ? 1 / W : 0
+        let sy = H > 0 ? 1 / H : 0
 
-        var m00 = a * sx
-        var m01 = b * sy
-        var m03 = -a * sx * E - b * sy * E + c
+        let m00 = a * sx
+        let m01 = b * sy
+        let m03 = -a * sx * E - b * sy * E + c
 
-        var m10 = d * sx
-        var m11 = e * sy
-        var m13 = -d * sx * E - e * sy * E + f
+        let m10 = d * sx
+        let m11 = e * sy
+        let m13 = -d * sx * E - e * sy * E + f
 
-        var m30 = g * sx
-        var m31 = hh * sy
-        var m33 = -g * sx * E - hh * sy * E + 1
+        let m30 = g * sx
+        let m31 = hh * sy
+        let m33 = -g * sx * E - hh * sy * E + 1
 
         return Qt.matrix4x4(
             m00, m01, 0, m03,
