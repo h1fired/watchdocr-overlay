@@ -174,7 +174,7 @@ class WatchdOcrPipeline:
             data=ctx,
         )
 
-        self._switch_strategy(strategy)
+        self._apply_strategy(strategy)
 
         for stage in self._stages.values():
             if stage.enabled():
@@ -195,7 +195,7 @@ class WatchdOcrPipeline:
     def current_strategy(self):
         return self._strategy
 
-    def _switch_strategy(self, strategy: PipelineStrategy):
+    def _apply_strategy(self, strategy: PipelineStrategy):
         match strategy:
             case PipelineStrategy.ONLY_CONTEXT_CHANGE:
                 self._stages['image_grabber'].set_enabled(False)
