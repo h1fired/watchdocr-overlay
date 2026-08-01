@@ -236,12 +236,8 @@ class WatchdOcrProcessorStatus(IntEnum):
 class WatchdOcrRunner:
     _Sentinel = object()
 
-    def __init__(
-        self,
-        ctx: WatchdOcrRuntimeContext,
-        pipeline: WatchdOcrPipeline
-    ):
-        self._ctx = ctx
+    def __init__(self, pipeline: WatchdOcrPipeline):
+        self._ctx = WatchdOcrRuntimeContext()
         self._pipeline = pipeline
         self._q = queue.Queue()
         self._th = None
@@ -311,6 +307,9 @@ class WatchdOcrRunner:
     def wait_for_exec_finish(self):
         self._e.wait()
 
+    def clean_current_pipelines(self):
+        self._q.queue.clear()
+
     def create_output_data(self):
         return WatchdOcrOutput(
             strategy=self._pipeline.current_strategy(),
@@ -321,6 +320,9 @@ class WatchdOcrRunner:
             translated_parts=self._ctx.translation.parts,
             total_confidence=self._ctx.ocr.total_confidence
         )
+
+    def context(self):
+        return self._ctx.model_copy(deep=True)
 
     def register_output_callback(self, cb: Callable[[WatchdOcrOutput], None]):
         self._output_callback = cb
@@ -339,9 +341,6 @@ class WatchdOcrRunner:
         if self._area_preview_callback and self._ctx.image is not None:
             self._area_preview_callback(image)
 
-    def clean_current_pipelines(self):
-        self._q.queue.clear()
-
 
 class StrategyTask(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -357,7 +356,6 @@ class WatchdOcrProcessor:
         event_system: EventSystem
     ):
         self._eventsys = event_system
-        self._ctx = WatchdOcrRuntimeContext()
         self._ocr = Ocr(plugins_manager)
         self._translator = Translator(plugins_manager)
         self._pipeline = WatchdOcrPipeline(
@@ -365,7 +363,7 @@ class WatchdOcrProcessor:
             ocr=self._ocr,
             translator=self._translator
         )
-        self._runner = WatchdOcrRunner(self._ctx, self._pipeline)
+        self._runner = WatchdOcrRunner(self._pipeline)
         self._runner.register_output_callback(self._on_output)
         self._runner.register_status_callback(self._on_status)
         self._runner.register_area_preview_callback(self._on_area_preview)
@@ -398,7 +396,7 @@ class WatchdOcrProcessor:
         self._runner.put(task)
 
     def context(self):
-        return self._ctx.model_copy(deep=True)
+        return self._runner.context()
 
     def wait_for_pipeline_finish(self):
         return self._runner.wait_for_exec_finish()
