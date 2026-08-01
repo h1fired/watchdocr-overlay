@@ -38,8 +38,8 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         hash2 = imagehash.average_hash(image, HASH_SIZE)
         diff = hash1 - hash2
 
-        # Cache image
-        self._image_hash_cache = imagehash.average_hash(image, HASH_SIZE)
+        # Cache image hash
+        self._image_hash_cache = hash2
 
         # Return cached data if images are similar
         if diff <= IMAGE_DIFF_TOLERANCE and self._ctx_cache:
@@ -63,3 +63,4 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         ctx.ocr.text = self._ctx_cache.ocr.text
         ctx.ocr.total_confidence = self._ctx_cache.ocr.total_confidence
         ctx.ocr.boxes = self._ctx_cache.ocr.boxes
+        ctx.ocr.parts = self._ctx_cache.ocr.parts
