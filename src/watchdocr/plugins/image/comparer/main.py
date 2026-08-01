@@ -3,7 +3,6 @@ from src.common.utils.logging import log
 from src.watchdocr.processor.processor import WatchdOcrRuntimeContext
 from PIL import Image
 import imagehash
-import copy
 
 
 __plugin_meta__ = {
@@ -39,8 +38,8 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         hash2 = imagehash.average_hash(image, HASH_SIZE)
         diff = hash1 - hash2
 
-        # Cache image
-        self._image_hash_cache = imagehash.average_hash(image, HASH_SIZE)
+        # Cache image hash
+        self._image_hash_cache = hash2
 
         # Return cached data if images are similar
         if diff <= IMAGE_DIFF_TOLERANCE and self._ctx_cache:
@@ -55,7 +54,7 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
 
     @hook('watchdocr.processor_pipeline.finish')
     def on_processor_pipeline_finish(self, ctx: WatchdOcrRuntimeContext):
-        self._ctx_cache = copy.deepcopy(ctx)
+        self._ctx_cache = ctx.model_copy(deep=True)
         return ctx
 
     def _update_context(self, ctx: WatchdOcrRuntimeContext):
@@ -64,3 +63,4 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         ctx.ocr.text = self._ctx_cache.ocr.text
         ctx.ocr.total_confidence = self._ctx_cache.ocr.total_confidence
         ctx.ocr.boxes = self._ctx_cache.ocr.boxes
+        ctx.ocr.parts = self._ctx_cache.ocr.parts

@@ -6,7 +6,7 @@ from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.adapter import OcrTranslatorTextAdapter
-from dataclasses import dataclass, asdict
+from pydantic import BaseModel, ConfigDict
 from enum import IntEnum, auto
 from threading import Thread, Event
 from PIL import Image
@@ -104,8 +104,11 @@ class OcrPipelineStage(PipelineStage):
         ctx.ocr.text = data.text
         ctx.ocr.total_confidence = data.confidence
 
-        ctx.ocr.boxes = tuple(OcrBox(b.boundings, b.confidence) for b in data.boxes)
-        ctx.ocr.parts = [p.text for p in data.boxes]
+        ctx.ocr.boxes = tuple(OcrBox(
+            boundings=b.boundings,
+            confidence=b.confidence
+        ) for b in data.boxes)
+        ctx.ocr.parts = tuple(p.text for p in data.boxes)
 
 
 class TranslationPipelineStage(PipelineStage):
@@ -146,7 +149,7 @@ class TranslationPipelineStage(PipelineStage):
         full_text, parts = text_adapter.unpack_mapped_string(data.translated_text)
 
         ctx.translation.text = full_text
-        ctx.translation.parts = [p for _, p in zip(ctx.ocr.parts, parts)]
+        ctx.translation.parts = tuple(p for _, p in zip(ctx.ocr.parts, parts))
 
 
 STRATEGY_STAGES: dict[PipelineStrategy, frozenset[str]] = {
@@ -212,18 +215,16 @@ class WatchdOcrPipeline:
 
 
 # Output
-@dataclass(slots=True)
-class WatchdOcrOutput:
+class WatchdOcrOutput(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
     strategy: PipelineStrategy
     original_text: str
     translated_text: str
-    boxes: tuple[tuple, float]
-    original_parts: list[str]
-    translated_parts: list[str]
+    boxes: tuple[OcrBox, ...]
+    original_parts: tuple[str, ...]
+    translated_parts: tuple[str, ...]
     total_confidence: float
-
-    def to_dict(self):
-        return asdict(self)
 
 
 # Processor
@@ -235,12 +236,8 @@ class WatchdOcrProcessorStatus(IntEnum):
 class WatchdOcrRunner:
     _Sentinel = object()
 
-    def __init__(
-        self,
-        ctx: WatchdOcrRuntimeContext,
-        pipeline: WatchdOcrPipeline
-    ):
-        self._ctx = ctx
+    def __init__(self, pipeline: WatchdOcrPipeline):
+        self._ctx = WatchdOcrRuntimeContext()
         self._pipeline = pipeline
         self._q = queue.Queue()
         self._th = None
@@ -251,12 +248,12 @@ class WatchdOcrRunner:
         self._e = Event()
         self._e.set()
 
-    def put(self, strategy: PipelineStrategy):
+    def put(self, task: 'StrategyTask'):
         log.debug(
-            'Queueing strategy: %s', strategy.name,
+            'Queueing strategy: %s', task.strategy.name,
             extra={'title': LOG_PROCESSOR}
         )
-        self._q.put(strategy)
+        self._q.put(task)
 
     def start(self):
         log.info(
@@ -287,26 +284,33 @@ class WatchdOcrRunner:
 
     def _run(self):
         while self._running:
-            strategy: PipelineStrategy = self._q.get()
+            task: StrategyTask = self._q.get()
 
-            if strategy is self._Sentinel:
+            if task is self._Sentinel:
                 break
 
-            if strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
+            self._ctx.update_config(task.context_data)
+
+            if task.strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
                 self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
                 self._e.clear()
-                self._pipeline.execute(self._ctx, strategy)
+                self._pipeline.execute(self._ctx, task.strategy)
                 self._send_status(WatchdOcrProcessorStatus.IDLE)
 
                 output = self.create_output_data()
                 if self._output_callback:
                     self._output_callback(output)
 
-                self._send_area_preview(self._ctx.image)
+                if task.strategy in (PipelineStrategy.OCR_ONLY,
+                                     PipelineStrategy.OCR_TRANSLATION):
+                    self._send_area_preview(self._ctx.image)
                 self._e.set()
 
     def wait_for_exec_finish(self):
         self._e.wait()
+
+    def clean_current_pipelines(self):
+        self._q.queue.clear()
 
     def create_output_data(self):
         return WatchdOcrOutput(
@@ -318,6 +322,9 @@ class WatchdOcrRunner:
             translated_parts=self._ctx.translation.parts,
             total_confidence=self._ctx.ocr.total_confidence
         )
+
+    def context(self):
+        return self._ctx.model_copy(deep=True)
 
     def register_output_callback(self, cb: Callable[[WatchdOcrOutput], None]):
         self._output_callback = cb
@@ -333,11 +340,15 @@ class WatchdOcrRunner:
             self._status_callback(status)
 
     def _send_area_preview(self, image: Image.Image):
-        if self._area_preview_callback and self._ctx.image is not None:
+        if self._area_preview_callback:
             self._area_preview_callback(image)
 
-    def clean_current_pipelines(self):
-        self._q.queue.clear()
+
+class StrategyTask(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    strategy: PipelineStrategy
+    context_data: dict
 
 
 class WatchdOcrProcessor:
@@ -347,7 +358,6 @@ class WatchdOcrProcessor:
         event_system: EventSystem
     ):
         self._eventsys = event_system
-        self._ctx = WatchdOcrRuntimeContext()
         self._ocr = Ocr(plugins_manager)
         self._translator = Translator(plugins_manager)
         self._pipeline = WatchdOcrPipeline(
@@ -355,7 +365,7 @@ class WatchdOcrProcessor:
             ocr=self._ocr,
             translator=self._translator
         )
-        self._runner = WatchdOcrRunner(self._ctx, self._pipeline)
+        self._runner = WatchdOcrRunner(self._pipeline)
         self._runner.register_output_callback(self._on_output)
         self._runner.register_status_callback(self._on_status)
         self._runner.register_area_preview_callback(self._on_area_preview)
@@ -383,11 +393,12 @@ class WatchdOcrProcessor:
             strategy.name,
             extra={'title': LOG_PROCESSOR}
         )
-        self._ctx.update_config(context_data)
-        self._runner.put(strategy)
+
+        task = StrategyTask(strategy=strategy, context_data=context_data)
+        self._runner.put(task)
 
     def context(self):
-        return self._ctx
+        return self._runner.context()
 
     def wait_for_pipeline_finish(self):
         return self._runner.wait_for_exec_finish()
@@ -395,7 +406,7 @@ class WatchdOcrProcessor:
     def _on_output(self, data: WatchdOcrOutput):
         self._eventsys.dispatch(
             event=Events.PROCESSOR_RESULT_RECEIVED,
-            data={'data': data.to_dict()}
+            data={'data': data.model_dump()}
         )
 
     def _on_status(self, status: WatchdOcrProcessorStatus):
