@@ -118,40 +118,61 @@ Item {
             c[4] - root.x,  c[5] - root.y,   // BR
             c[6] - root.x,  c[7] - root.y    // BL
         ]
-        // srcW/srcH = item dimensions (maps unit rect → local quad)
-        return quadToMatrix4x4(local, root.width, root.height)
+        
+        var E = root.internalPadding
+        var W = root.width - 2 * E
+        var H = root.height - 2 * E
+
+        return quadToMatrix4x4(local, W, H, E)
     }
-    // Maps unit-square [0..srcW] x [0..srcH] → arbitrary quad q[]
-    // q = [x0,y0, x1,y1, x2,y2, x3,y3] in TL,TR,BR,BL order
-    function quadToMatrix4x4(q, srcW, srcH) {
+
+    // Maps item coordinates [E..W+E] x [E..H+E] → arbitrary quad q[]
+    function quadToMatrix4x4(q, W, H, E) {
         var x0 = q[0], y0 = q[1]
         var x1 = q[2], y1 = q[3]
         var x2 = q[4], y2 = q[5]
         var x3 = q[6], y3 = q[7]
+
         var dx1 = x1 - x2, dx2 = x3 - x2, dx3 = x0 - x1 + x2 - x3
         var dy1 = y1 - y2, dy2 = y3 - y2, dy3 = y0 - y1 + y2 - y3
-        var a, b, c, d, e, f, g, hh
+
+        var a, b, c = x0, d, e, f = y0, g, hh
+
         if (dx3 === 0 && dy3 === 0) {
-            // Affine (parallelogram) case — no perspective terms needed
-            a = x1 - x0;  b = x3 - x0;  c = x0
-            d = y1 - y0;  e = y3 - y0;  f = y0
-            g = 0;         hh = 0
+            // Affine (parallelogram) case
+            a = x1 - x0;  b = x3 - x0
+            d = y1 - y0;  e = y3 - y0
+            g = 0;        hh = 0
         } else {
+            // Perspective case
             var det = dx1 * dy2 - dx2 * dy1
+            if (det === 0) det = 0.0001
             g  = (dx3 * dy2 - dx2 * dy3) / det
             hh = (dx1 * dy3 - dx3 * dy1) / det
-            a = x1 - x0 + g * x1;  b = x3 - x0 + hh * x3;  c = x0
-            d = y1 - y0 + g * y1;  e = y3 - y0 + hh * y3;  f = y0
+            a = x1 - x0 + g * x1;  b = x3 - x0 + hh * x3
+            d = y1 - y0 + g * y1;  e = y3 - y0 + hh * y3
         }
-        var sx = srcW !== 0 ? 1 / srcW : 0
-        var sy = srcH !== 0 ? 1 / srcH : 0
-        // Qt.matrix4x4 is column-major in storage but row-major in constructor:
-        // Qt.matrix4x4(m00,m01,m02,m03, m10,m11,m12,m13, ...)
+
+        var sx = W > 0 ? 1 / W : 0
+        var sy = H > 0 ? 1 / H : 0
+
+        var m00 = a * sx
+        var m01 = b * sy
+        var m03 = -a * sx * E - b * sy * E + c
+
+        var m10 = d * sx
+        var m11 = e * sy
+        var m13 = -d * sx * E - e * sy * E + f
+
+        var m30 = g * sx
+        var m31 = hh * sy
+        var m33 = -g * sx * E - hh * sy * E + 1
+
         return Qt.matrix4x4(
-            a*sx,  b*sy,  0,  c,
-            d*sx,  e*sy,  0,  f,
-            0,     0,     1,  0,
-            g*sx,  hh*sy, 0,  1
+            m00, m01, 0, m03,
+            m10, m11, 0, m13,
+            0,   0,   1, 0,
+            m30, m31, 0, m33
         )
     }
 }
