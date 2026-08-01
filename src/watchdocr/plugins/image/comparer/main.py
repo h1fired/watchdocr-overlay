@@ -3,7 +3,6 @@ from src.common.utils.logging import log
 from src.watchdocr.processor.processor import WatchdOcrRuntimeContext
 from PIL import Image
 import imagehash
-import copy
 
 
 __plugin_meta__ = {
@@ -55,7 +54,7 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
 
     @hook('watchdocr.processor_pipeline.finish')
     def on_processor_pipeline_finish(self, ctx: WatchdOcrRuntimeContext):
-        self._ctx_cache = copy.deepcopy(ctx)
+        self._ctx_cache = ctx.model_copy(deep=True)
         return ctx
 
     def _update_context(self, ctx: WatchdOcrRuntimeContext):
