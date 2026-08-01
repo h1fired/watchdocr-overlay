@@ -7,11 +7,27 @@ Item {
     required property ImageProvider provider
     required property string text
     property int internalPadding: 0
+    property var boundings: []
     property var coordinates: []
     property bool perspectiveMode: true
+    property bool perspectiveSupported: true
+    readonly property var _c: coordinates ?? []
+
+    x: perspectiveSupported && root.perspective
+        ? _c[0] - root.internalPadding
+        : boundings[0] - root.internalPadding
+    y: perspectiveSupported && root.perspective
+        ? _c[1] - root.internalPadding
+        : boundings[1] - root.internalPadding
+    width: perspectiveSupported && root.perspective
+        ? Math.sqrt(Math.pow(_c[2] - _c[0], 2) + Math.pow(_c[3] - _c[1], 2)) + root.internalPadding * 2
+        : boundings[2] - boundings[0] + root.internalPadding * 2
+    height: perspectiveSupported && root.perspective
+        ? Math.sqrt(Math.pow(_c[6] - _c[0], 2) + Math.pow(_c[7] - _c[1], 2)) + root.internalPadding * 2
+        : boundings[3] - boundings[1] + root.internalPadding * 2
 
     transform: Matrix4x4 {
-        matrix: root.perspective
+        matrix: root.perspective && root.perspectiveSupported
             ? root._buildMatrix()
             : Qt.matrix4x4()
     }
