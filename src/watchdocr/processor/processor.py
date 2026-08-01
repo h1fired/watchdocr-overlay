@@ -6,7 +6,7 @@ from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.adapter import OcrTranslatorTextAdapter
-from dataclasses import dataclass, asdict
+from pydantic import BaseModel, ConfigDict
 from enum import IntEnum, auto
 from threading import Thread, Event
 from PIL import Image
@@ -104,7 +104,10 @@ class OcrPipelineStage(PipelineStage):
         ctx.ocr.text = data.text
         ctx.ocr.total_confidence = data.confidence
 
-        ctx.ocr.boxes = tuple(OcrBox(b.boundings, b.confidence) for b in data.boxes)
+        ctx.ocr.boxes = tuple(OcrBox(
+            boundings=b.boundings,
+            confidence=b.confidence
+        ) for b in data.boxes)
         ctx.ocr.parts = [p.text for p in data.boxes]
 
 
@@ -212,18 +215,16 @@ class WatchdOcrPipeline:
 
 
 # Output
-@dataclass(slots=True)
-class WatchdOcrOutput:
+class WatchdOcrOutput(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
     strategy: PipelineStrategy
     original_text: str
     translated_text: str
-    boxes: tuple[tuple, float]
-    original_parts: list[str]
-    translated_parts: list[str]
+    boxes: tuple[OcrBox, ...]
+    original_parts: tuple[str, ...]
+    translated_parts: tuple[str, ...]
     total_confidence: float
-
-    def to_dict(self):
-        return asdict(self)
 
 
 # Processor
@@ -395,7 +396,7 @@ class WatchdOcrProcessor:
     def _on_output(self, data: WatchdOcrOutput):
         self._eventsys.dispatch(
             event=Events.PROCESSOR_RESULT_RECEIVED,
-            data={'data': data.to_dict()}
+            data={'data': data.model_dump()}
         )
 
     def _on_status(self, status: WatchdOcrProcessorStatus):
