@@ -108,7 +108,7 @@ class OcrPipelineStage(PipelineStage):
             boundings=b.boundings,
             confidence=b.confidence
         ) for b in data.boxes)
-        ctx.ocr.parts = [p.text for p in data.boxes]
+        ctx.ocr.parts = tuple(p.text for p in data.boxes)
 
 
 class TranslationPipelineStage(PipelineStage):
@@ -149,7 +149,7 @@ class TranslationPipelineStage(PipelineStage):
         full_text, parts = text_adapter.unpack_mapped_string(data.translated_text)
 
         ctx.translation.text = full_text
-        ctx.translation.parts = [p for _, p in zip(ctx.ocr.parts, parts)]
+        ctx.translation.parts = tuple(p for _, p in zip(ctx.ocr.parts, parts))
 
 
 STRATEGY_STAGES: dict[PipelineStrategy, frozenset[str]] = {
@@ -301,7 +301,9 @@ class WatchdOcrRunner:
                 if self._output_callback:
                     self._output_callback(output)
 
-                self._send_area_preview(self._ctx.image)
+                if task.strategy in (PipelineStrategy.OCR_ONLY,
+                                     PipelineStrategy.OCR_TRANSLATION):
+                    self._send_area_preview(self._ctx.image)
                 self._e.set()
 
     def wait_for_exec_finish(self):
@@ -338,7 +340,7 @@ class WatchdOcrRunner:
             self._status_callback(status)
 
     def _send_area_preview(self, image: Image.Image):
-        if self._area_preview_callback and self._ctx.image is not None:
+        if self._area_preview_callback:
             self._area_preview_callback(image)
 
 

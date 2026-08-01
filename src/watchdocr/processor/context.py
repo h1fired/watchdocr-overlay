@@ -14,7 +14,7 @@ class ContextModel(BaseModel):
 
     def clear(self):
         for name, info in self.__class__.model_fields.items():
-            default_value = info.default if info.default is not None else None
+            default_value = info.default
             setattr(self, name, default_value)
 
 
