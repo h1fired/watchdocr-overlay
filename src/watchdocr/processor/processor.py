@@ -252,12 +252,12 @@ class WatchdOcrRunner:
         self._e = Event()
         self._e.set()
 
-    def put(self, strategy: PipelineStrategy):
+    def put(self, task: 'StrategyTask'):
         log.debug(
-            'Queueing strategy: %s', strategy.name,
+            'Queueing strategy: %s', task.strategy.name,
             extra={'title': LOG_PROCESSOR}
         )
-        self._q.put(strategy)
+        self._q.put(task)
 
     def start(self):
         log.info(
@@ -288,15 +288,17 @@ class WatchdOcrRunner:
 
     def _run(self):
         while self._running:
-            strategy: PipelineStrategy = self._q.get()
+            task: StrategyTask = self._q.get()
 
-            if strategy is self._Sentinel:
+            if task is self._Sentinel:
                 break
 
-            if strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
+            self._ctx.update_config(task.context_data)
+
+            if task.strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
                 self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
                 self._e.clear()
-                self._pipeline.execute(self._ctx, strategy)
+                self._pipeline.execute(self._ctx, task.strategy)
                 self._send_status(WatchdOcrProcessorStatus.IDLE)
 
                 output = self.create_output_data()
@@ -339,6 +341,13 @@ class WatchdOcrRunner:
 
     def clean_current_pipelines(self):
         self._q.queue.clear()
+
+
+class StrategyTask(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    strategy: PipelineStrategy
+    context_data: dict
 
 
 class WatchdOcrProcessor:
@@ -384,8 +393,9 @@ class WatchdOcrProcessor:
             strategy.name,
             extra={'title': LOG_PROCESSOR}
         )
-        self._ctx.update_config(context_data)
-        self._runner.put(strategy)
+
+        task = StrategyTask(strategy=strategy, context_data=context_data)
+        self._runner.put(task)
 
     def context(self):
         return self._ctx
