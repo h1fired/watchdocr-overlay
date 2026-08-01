@@ -398,7 +398,7 @@ class WatchdOcrProcessor:
         self._runner.put(task)
 
     def context(self):
-        return self._ctx
+        return self._ctx.model_copy(deep=True)
 
     def wait_for_pipeline_finish(self):
         return self._runner.wait_for_exec_finish()
