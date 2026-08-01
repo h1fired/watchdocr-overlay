@@ -26,6 +26,7 @@ Item {
         anchors.fill: parent
 
         provider: areaPreview
+        perspectiveMode: Backend.Settings.values.visual_hints_perspective_enabled
     }
 
     function clear() {

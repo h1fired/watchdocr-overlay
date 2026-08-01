@@ -8,10 +8,10 @@ Item {
     required property string text
     property int internalPadding: 0
     property var coordinates: []
+    property bool perspectiveMode: true
 
     transform: Matrix4x4 {
-        // Recompute whenever coordinates or size change
-        matrix: root.coordinates.length === 8
+        matrix: root.perspective
             ? root._buildMatrix()
             : Qt.matrix4x4()
     }
