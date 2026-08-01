@@ -55,7 +55,7 @@ class OcrContext:
     total_confidence: float = 0.
 
     def clear(self):
-        self.success = None
+        self.success = False
         self.ignore = False
 
         self.text = ''
@@ -95,8 +95,8 @@ class WatchdOcrRuntimeContext:
         self.ocr.clear()
         self.translation.clear()
 
-    def update_config(self, data: dict, __target: Any | None = None):
-        target = __target if __target is not None else self.config
+    def update_config(self, data: dict, _target: Any | None = None):
+        target = _target if _target is not None else self.config
         field_names = {f.name for f in fields(target)}
 
         for key, value in data.items():

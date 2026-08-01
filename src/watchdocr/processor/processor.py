@@ -132,6 +132,7 @@ class TranslationPipelineStage(PipelineStage):
             target_lang=ctx.config.target_language
         )
 
+        ctx.translation.success = data.success
         if not data.success:
             log.error(
                 'Translation failed. Reusing original text.',
