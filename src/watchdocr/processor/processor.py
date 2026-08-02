@@ -161,8 +161,14 @@ class ImagePostprocessingPipelineState(PipelineStage):
         self._text_remover = text_remover
 
     def execute(self, ctx):
+        log.info(
+            'Starting Image Postprocessing Pipeline Stage...',
+            extra={'title': LOG_PROCESSOR}
+        )
+
         boxes = tuple(b.boundings for b in ctx.ocr.boxes)
         fimage = self._text_remover.filter_image(ctx.image, boxes)
+        ctx.postprocessing.text_cleared_image = fimage
 
 
 STRATEGY_STAGES: dict[PipelineStrategy, frozenset[str]] = {
@@ -260,6 +266,7 @@ class WatchdOcrRunner:
         self._output_callback = None
         self._status_callback = None
         self._area_preview_callback = None
+        self._text_cleared_image_callback = None
         self._e = Event()
         self._e.set()
 
@@ -319,6 +326,7 @@ class WatchdOcrRunner:
                 if task.strategy in (PipelineStrategy.OCR_ONLY,
                                      PipelineStrategy.OCR_TRANSLATION):
                     self._send_area_preview(self._ctx.image)
+                    self._send_text_cleared_image(self._ctx.postprocessing.text_cleared_image)
                 self._e.set()
 
     def wait_for_exec_finish(self):
@@ -350,6 +358,9 @@ class WatchdOcrRunner:
     def register_area_preview_callback(self, cb: Callable[[Image.Image], None]):
         self._area_preview_callback = cb
 
+    def register_text_cleared_image_callback(self, cb: Callable[[Image.Image], None]):
+        self._text_cleared_image_callback = cb
+
     def _send_status(self, status: WatchdOcrProcessorStatus):
         if self._status_callback:
             self._status_callback(status)
@@ -357,6 +368,10 @@ class WatchdOcrRunner:
     def _send_area_preview(self, image: Image.Image):
         if self._area_preview_callback:
             self._area_preview_callback(image)
+
+    def _send_text_cleared_image(self, image: Image.Image):
+        if self._text_cleared_image_callback:
+            self._text_cleared_image_callback(image)
 
 
 class StrategyTask(BaseModel):
@@ -386,6 +401,7 @@ class WatchdOcrProcessor:
         self._runner.register_output_callback(self._on_output)
         self._runner.register_status_callback(self._on_status)
         self._runner.register_area_preview_callback(self._on_area_preview)
+        self._runner.register_text_cleared_image_callback(self._on_text_cleared_image)
 
     def run(self):
         log.info(
@@ -438,6 +454,12 @@ class WatchdOcrProcessor:
             data={'image': image}
         )
 
+    def _on_text_cleared_image(self, image: Image.Image):
+        self._eventsys.dispatch(
+            event=Events.PROCESSOR_TEXT_CLEARED_IMAGE_CHANGED,
+            data={'image': image}
+        )
+
     def clean_current_pipelines(self):
         log.info(
             'Cleaning current runner pipelines queue...',
@@ -463,8 +485,13 @@ class ProcessorAreaImageChangeEvent(IEvent):
     image: Image.Image
 
 
+class ProcessorTextClearedImageChangeEvent(IEvent):
+    image: Image.Image
+
+
 class Events:
     PROCESSOR_ACTIVE_CHANGED = ProcessorActiveChanged
     PROCESSOR_RESULT_RECEIVED = ProcessorResultReceivedEvent
     PROCESSOR_STATUS_CHANGED = ProcessorStateChangeEvent
     PROCESSOR_AREA_IMAGE_CHANGED = ProcessorAreaImageChangeEvent
+    PROCESSOR_TEXT_CLEARED_IMAGE_CHANGED = ProcessorTextClearedImageChangeEvent

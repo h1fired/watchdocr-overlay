@@ -10,6 +10,7 @@ class PreviewViewModel(QmlViewModel):
 
     previewUpdated = Signal()
     previewAreaUpdated = Signal()
+    textClearedImageUpdated = Signal()
 
     def onLoaded(self):
         self.getEventSystem().listen(self.onEvent)
@@ -18,7 +19,8 @@ class PreviewViewModel(QmlViewModel):
         match event:
             case Events.PROCESSOR_AREA_IMAGE_CHANGED:
                 self.onPreviewAreaImage(data.image)
-                self.previewAreaUpdated.emit()
+            case Events.PROCESSOR_TEXT_CLEARED_IMAGE_CHANGED:
+                self.onTextClearedImage(data.image)
 
     @Slot()
     def requestAllScreensPreview(self):
@@ -38,3 +40,10 @@ class PreviewViewModel(QmlViewModel):
         provider = providers['preview_area']
         provider.setImage(image)
         self.previewAreaUpdated.emit()
+
+    def onTextClearedImage(self, image):
+        from frontend.core import GuiCoreApplication
+        providers = GuiCoreApplication().image_providers()
+        provider = providers['text_cleared_overlay']
+        provider.setImage(image)
+        self.textClearedImageUpdated.emit()

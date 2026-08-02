@@ -55,10 +55,15 @@ class TranslationContext(ContextModel):
     parts: tuple[str, ...] = ()
 
 
+class PostprocessingContext(ContextModel):
+    text_cleared_image: Optional[Image.Image] = None
+
+
 class WatchdOcrRuntimeContext(ContextModel):
     config: RuntimeConfig = RuntimeConfig()
     ocr: OcrContext = OcrContext()
     translation: TranslationContext = TranslationContext()
+    postprocessing: PostprocessingContext = PostprocessingContext()
     image: Optional[Image.Image] = None
 
     def update_config(self, data: dict):

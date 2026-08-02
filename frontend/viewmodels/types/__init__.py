@@ -13,7 +13,8 @@ def registerUtilsQmlTypes():
 def registerQmlImageProviders(engine: QQmlApplicationEngine):
     providers = {
         'preview_screens': ImageProvider(),
-        'preview_area': ImageProvider()
+        'preview_area': ImageProvider(),
+        'text_cleared_overlay': ImageProvider(),
     }
 
     for name, provider in providers.items():
