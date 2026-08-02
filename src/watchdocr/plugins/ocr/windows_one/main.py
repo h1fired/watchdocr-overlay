@@ -55,8 +55,9 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
             box = OcrBoxData(
                 text=line.text,
                 boundings=line_boundings,
+                confidence=line_confidence,
                 coordinates=line_coordinates,
-                confidence=line_confidence
+                has_perspective=True
             )
             boxes.append(box)
         return boxes

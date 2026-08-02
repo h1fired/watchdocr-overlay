@@ -7,7 +7,8 @@ Item {
     required property ImageProvider provider
     property var boxes: ([])
     property var parts: ([])
-    property int _boxExpansion: 2
+    property bool perspectiveMode: true
+    property int _boxExpansion: height > 12 ? 2 : 0
 
     Item {
         x: provider.x
@@ -22,19 +23,22 @@ Item {
                 required property int index
                 required property var modelData
 
-                x: modelData.boundings[0] - root._boxExpansion
-                y: modelData.boundings[1] - root._boxExpansion
-                width: modelData.boundings[2] - modelData.boundings[0] + (root._boxExpansion * 2)
-                height: modelData.boundings[3] - modelData.boundings[1] + (root._boxExpansion * 2)
-
                 provider: root.provider
+
                 text: root.parts[index]
                 internalPadding: root._boxExpansion
+
+                perspectiveMode: root.perspectiveMode
+                perspectiveSupported: modelData.has_perspective
+
+                coordinates: modelData.coordinates
+                boundings: modelData.boundings
             }
         }
     }
 
     function clear() {
         root.boxes = ([]);
+        root.parts = ([]);
     }
 }

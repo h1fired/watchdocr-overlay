@@ -13,6 +13,7 @@ class OcrBoxData:
     boundings: tuple
     confidence: float
 
+    has_perspective: bool = False
     coordinates: tuple = tuple()
 
 
