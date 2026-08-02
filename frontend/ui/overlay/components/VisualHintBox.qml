@@ -126,15 +126,16 @@ Item {
     }
 
     function _buildMatrix() {
-        let c = root.coordinates  // [x0,y0, x1,y1, x2,y2, x3,y3] absolute
-        // Translate to local space (subtract item's top-left position)
+        let c = root.coordinates
+
+        // Translate to local space
         let local = [
             c[0] - root.x,  c[1] - root.y,   // TL
             c[2] - root.x,  c[3] - root.y,   // TR
             c[4] - root.x,  c[5] - root.y,   // BR
             c[6] - root.x,  c[7] - root.y    // BL
         ]
-        
+
         let E = root.internalPadding
         let W = root.width - 2 * E
         let H = root.height - 2 * E
@@ -142,7 +143,6 @@ Item {
         return quadToMatrix4x4(local, W, H, E)
     }
 
-    // Maps item coordinates [E..W+E] x [E..H+E] → arbitrary quad q[]
     function quadToMatrix4x4(q, W, H, E) {
         let x0 = q[0], y0 = q[1]
         let x1 = q[2], y1 = q[3]
