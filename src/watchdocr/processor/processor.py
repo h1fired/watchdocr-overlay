@@ -6,6 +6,7 @@ from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.adapter import OcrTranslatorTextAdapter
+from src.watchdocr.processor.textremover import ImageTextRemover
 from pydantic import BaseModel, ConfigDict
 from enum import IntEnum, auto
 from threading import Thread, Event
@@ -154,11 +155,21 @@ class TranslationPipelineStage(PipelineStage):
         ctx.translation.parts = tuple(p for _, p in zip(ctx.ocr.parts, parts))
 
 
+class ImagePostprocessingPipelineState(PipelineStage):
+    def __init__(self, plugin_manager, text_remover: ImageTextRemover):
+        super().__init__(plugin_manager)
+        self._text_remover = text_remover
+
+    def execute(self, ctx):
+        boxes = tuple(b.boundings for b in ctx.ocr.boxes)
+        fimage = self._text_remover.filter_image(ctx.image, boxes)
+
+
 STRATEGY_STAGES: dict[PipelineStrategy, frozenset[str]] = {
     PipelineStrategy.ONLY_CONTEXT_CHANGE: frozenset(),
-    PipelineStrategy.OCR_ONLY: frozenset({'image_grabber', 'ocr'}),
+    PipelineStrategy.OCR_ONLY: frozenset({'image_grabber', 'ocr', 'postprocessing'}),
     PipelineStrategy.TRANSLATION_ONLY: frozenset({'translation'}),
-    PipelineStrategy.OCR_TRANSLATION: frozenset({'image_grabber', 'ocr', 'translation'}),
+    PipelineStrategy.OCR_TRANSLATION: frozenset({'image_grabber', 'ocr', 'translation', 'postprocessing'}),
 }
 
 
@@ -167,13 +178,15 @@ class WatchdOcrPipeline:
         self,
         plugin_manager: PluginManager,
         ocr: Ocr,
-        translator: Translator
+        translator: Translator,
+        text_remover: ImageTextRemover
     ):
         self._plugin_manager = plugin_manager
         self._stages: dict[str, PipelineStage] = {
             'image_grabber': ImageGrabberStage(plugin_manager),
             'ocr': OcrPipelineStage(plugin_manager, ocr),
-            'translation': TranslationPipelineStage(plugin_manager, translator)
+            'translation': TranslationPipelineStage(plugin_manager, translator),
+            'postprocessing': ImagePostprocessingPipelineState(plugin_manager, text_remover)
         }
         self._strategy = PipelineStrategy.OCR_TRANSLATION
 
@@ -362,10 +375,12 @@ class WatchdOcrProcessor:
         self._eventsys = event_system
         self._ocr = Ocr(plugins_manager)
         self._translator = Translator(plugins_manager)
+        self._text_remover = ImageTextRemover(plugins_manager)
         self._pipeline = WatchdOcrPipeline(
             plugin_manager=plugins_manager,
             ocr=self._ocr,
-            translator=self._translator
+            translator=self._translator,
+            text_remover=self._text_remover
         )
         self._runner = WatchdOcrRunner(self._pipeline)
         self._runner.register_output_callback(self._on_output)

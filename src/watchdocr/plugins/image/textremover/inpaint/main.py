@@ -21,12 +21,12 @@ class InpaintTextRemoverPlugin(ImageTextRemoverPlugin):
         image = np.array(image)
         mask = np.array(mask)
 
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         mask_e = cv2.dilate(mask, kernel)
 
         dst = cv2.inpaint(image, mask_e, 2, cv2.INPAINT_NS)
 
-        feather = cv2.GaussianBlur(mask_e, (21, 21), 0).astype(np.float32) / 255.0
+        feather = cv2.GaussianBlur(mask_e, (7, 7), 0).astype(np.float32) / 255.0
         feather = feather[..., None]
         dst = (
             image.astype(np.float32) * (1 - feather) +
@@ -44,4 +44,7 @@ class InpaintTextRemoverPlugin(ImageTextRemoverPlugin):
             dst_b.astype(np.float32) * alpha
         ).astype(np.uint8)
 
-        return Image.fromarray(dst)
+        # Remove background by mask
+        dst = np.dstack((dst, mask_e))
+
+        return Image.fromarray(dst, 'RGBA')

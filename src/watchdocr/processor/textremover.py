@@ -26,6 +26,6 @@ class ImageTextRemover:
 
     def _create_mask(self, width: int, height: int, boxes: tuple):
         mask = np.zeros((height, width), dtype=np.uint8)
-        for x, y, w, h in boxes:
-            cv2.rectangle(mask, (x, y), (x + w, y + h), 255, thickness=-1)
+        for x1, y1, x2, y2 in boxes:
+            cv2.rectangle(mask, (x1, y1), (x2, y2), 255, thickness=-1)
         return Image.fromarray(mask)
