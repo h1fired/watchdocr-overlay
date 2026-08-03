@@ -2,6 +2,7 @@ import QtQuick
 import Qt5Compat.GraphicalEffects
 import App.Backend
 import "qrc:/qml/ui/overlay/components"
+import "qrc:/qml/ui/overlay/components/visualhint"
 
 Item {
     id: root
@@ -20,25 +21,25 @@ Item {
         layer.enabled: true
     }
 
-    VisualHintContainer {
-        id: container
+    VisualHints {
+        id: visualHints
 
-        anchors.fill: parent
-
-        provider: areaPreview
-        perspectiveMode: Backend.Settings.values.visual_hints_perspective_enabled
+        x: areaPreview.x
+        y: areaPreview.y
+        width: areaPreview.width
+        height: areaPreview.height
     }
 
     function clear() {
-        container.clear();
+        visualHints.clear();
     }
 
     Connections {
         target: Backend.Processor
         function onResultReceived(json) {
             let data = JSON.parse(json);
-            container.parts = data.translated_parts;
-            container.boxes = data.boxes;
+            visualHints.boxes = data.boxes;
+            visualHints.parts = data.translated_parts;
         }
     }
 

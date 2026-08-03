@@ -37,9 +37,11 @@
     <file>ui/overlay/components/TranslationSelector.qml</file>
     <file>ui/overlay/components/TranslationSelectorButton.qml</file>
     <file>ui/overlay/components/TranslationSelectorMenu.qml</file>
-    <file>ui/overlay/components/VisualHintBox.qml</file>
-    <file>ui/overlay/components/VisualHintContainer.qml</file>
     <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
+    <file>ui/overlay/components/visualhint/SolidFilterDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/SolidTextDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/VisualHintContainer.qml</file>
+    <file>ui/overlay/components/visualhint/VisualHints.qml</file>
     <file>ui/preloader/AppPreloader.qml</file>
     <file>ui/preloader/AppPreloaderWindow.qml</file>
     <file>ui/preloader/LoaderAnim.qml</file>
