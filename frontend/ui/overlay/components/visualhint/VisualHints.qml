@@ -6,11 +6,11 @@ Item {
 
     enum Style {
         Solid,
-        SimpleInpaint
-        // AccurateInpaint,
+        SimpleInpaint,
+        AccurateInpaint
     }
 
-    property int style: VisualHints.Style.SimpleInpaint
+    property int style: VisualHints.Style.AccurateInpaint
     property alias boxes: container.boxes
     property alias parts: container.parts
     property bool usePerspective: false
@@ -25,6 +25,8 @@ Item {
             switch (root.style) {
                 case VisualHints.Style.SimpleInpaint:
                     return filterDelegateSimpleInpaint;
+                case VisualHints.Style.AccurateInpaint:
+                    return filterDelegateAccurateInpaint;
                 default:
                     return filterDelegateSolid;
             }
@@ -32,6 +34,8 @@ Item {
         textDelegate: {
             switch (root.style) {
                 case VisualHints.Style.SimpleInpaint:
+                    return textDelegateSimpleInpaint;
+                case VisualHints.Style.AccurateInpaint:
                     return textDelegateSimpleInpaint;
                 default:
                     return textDelegateSolid;
@@ -58,6 +62,14 @@ Item {
         SimpleInpaintFilterDelegate {
             usePerspective: root.usePerspective
             provider: root.provider
+        }
+    }
+
+    Component {
+        id: filterDelegateAccurateInpaint
+
+        AccurateInpaintFilterDelegate {
+            usePerspective: root.usePerspective
         }
     }
 

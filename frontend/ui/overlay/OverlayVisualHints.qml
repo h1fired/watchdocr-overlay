@@ -48,6 +48,7 @@ Item {
 
     Connections {
         target: Backend.Preview
+
         function onPreviewAreaUpdated() {
             areaPreview.update();
         }
