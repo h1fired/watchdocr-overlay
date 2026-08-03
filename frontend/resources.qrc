@@ -38,6 +38,8 @@
     <file>ui/overlay/components/TranslationSelectorButton.qml</file>
     <file>ui/overlay/components/TranslationSelectorMenu.qml</file>
     <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
+    <file>ui/overlay/components/visualhint/FilterDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/MatrixFilterDelegate.qml</file>
     <file>ui/overlay/components/visualhint/SolidFilterDelegate.qml</file>
     <file>ui/overlay/components/visualhint/SolidTextDelegate.qml</file>
     <file>ui/overlay/components/visualhint/VisualHintContainer.qml</file>

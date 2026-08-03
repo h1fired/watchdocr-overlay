@@ -1,17 +1,40 @@
 import QtQuick
 
-Repeater {
-    property var boxes: []
+MatrixFilterDelegate {
+    id: root
 
-    model: parent.visible ? boxes : 0
+    Repeater {
 
-    Rectangle {
-        x: modelData.boundings[0]
-        y: modelData.boundings[1]
-        width: modelData.boundings[2] - modelData.boundings[0]
-        height: modelData.boundings[3] - modelData.boundings[1]
+        model: parent.visible ? root.boxes : 0
 
-        radius: 6
-        color: "black"
+        Rectangle {
+            id: box
+
+            readonly property var _c: modelData.coordinates ?? []
+            readonly property var _b: modelData.boundings ?? []
+            readonly property bool _hasPerspective: root.usePerspective && modelData.has_perspective
+
+            x: box._hasPerspective
+                ? _c[0]
+                : _b[0]
+            y: box._hasPerspective
+                ? _c[1]
+                : _b[1]
+            width: box._hasPerspective
+                ? Math.sqrt(Math.pow(_c[2] - _c[0], 2) + Math.pow(_c[3] - _c[1], 2))
+                : _b[2] - _b[0]
+            height: box._hasPerspective
+                ? Math.sqrt(Math.pow(_c[6] - _c[0], 2) + Math.pow(_c[7] - _c[1], 2))
+                : _b[3] - _b[1]
+
+            transform: Matrix4x4 {
+                matrix: box._hasPerspective
+                    ? root.buildMatrix(box.x, box.y, box.width, box.height, box._c)
+                    : Qt.matrix4x4()
+            }
+
+            radius: 6
+            color: "black"
+        }
     }
 }

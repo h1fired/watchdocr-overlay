@@ -28,6 +28,8 @@ Item {
         y: areaPreview.y
         width: areaPreview.width
         height: areaPreview.height
+
+        usePerspective: Backend.Settings.values.visual_hints_perspective_enabled
     }
 
     function clear() {

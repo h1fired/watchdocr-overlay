@@ -12,6 +12,7 @@ Item {
     property int style: VisualHints.Style.Solid
     property alias boxes: container.boxes
     property alias parts: container.parts
+    property bool usePerspective: false
 
     VisualHintContainer {
         id: container
@@ -41,6 +42,7 @@ Item {
 
         SolidFilterDelegate {
             boxes: root.boxes
+            usePerspective: root.usePerspective
         }
     }
 
