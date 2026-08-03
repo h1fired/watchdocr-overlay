@@ -1,6 +1,6 @@
 import QtQuick
 
-MatrixFilterDelegate {
+MatrixDelegate {
     id: root
 
     Repeater {

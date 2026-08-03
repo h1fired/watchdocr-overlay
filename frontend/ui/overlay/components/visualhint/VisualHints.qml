@@ -34,14 +34,14 @@ Item {
     }
 
     function clear() {
-        container.clear();
+        root.boxes = [];
+        root.parts = [];
     }
 
     Component {
         id: filterDelegateSolid
 
         SolidFilterDelegate {
-            boxes: root.boxes
             usePerspective: root.usePerspective
         }
     }
@@ -50,7 +50,7 @@ Item {
         id: textDelegateSolid
 
         SolidTextDelegate {
-            text: modelData
+            usePerspective: root.usePerspective
         }
     }
 }

@@ -5,32 +5,27 @@ Item {
 
     property var boxes: []
     property var parts: []
-    property alias filterDelegate: loader.sourceComponent
-    property alias textDelegate: textRepeater.delegate
+    property alias filterDelegate: filterLoader.sourceComponent
+    property alias textDelegate: textLoader.sourceComponent
 
     Loader {
-        id: loader
+        id: filterLoader
     
         anchors.fill: parent
-    }
 
-    Repeater {
-        id: textRepeater
-
-        model: root.visible ? root.parts : 0
-
-        onItemAdded: (index, item) => {
-            if (root.boxes[index]) {
-                item.x = root.boxes[index].boundings[0];
-                item.y = root.boxes[index].boundings[1];
-                item.width = root.boxes[index].boundings[2] - root.boxes[index].boundings[0];
-                item.height = root.boxes[index].boundings[3] - root.boxes[index].boundings[1];
-            }
+        onLoaded: {
+            item.boxes = Qt.binding(() => root.boxes);
         }
     }
 
-    function clear() {
-        root.boxes = ([]);
-        root.parts = ([]);
+    Loader {
+        id: textLoader
+    
+        anchors.fill: parent
+
+        onLoaded: {
+            item.parts = Qt.binding(() => root.parts);
+            item.boxes = Qt.binding(() => root.boxes);
+        }
     }
 }

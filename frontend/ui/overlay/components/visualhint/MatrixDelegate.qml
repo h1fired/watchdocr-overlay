@@ -1,6 +1,6 @@
 import QtQuick
 
-FilterDelegate {
+Delegate {
     id: root
 
     function buildMatrix(x, y, w, h, coordinates) {
