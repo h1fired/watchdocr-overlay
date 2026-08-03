@@ -30,6 +30,7 @@ Item {
         height: areaPreview.height
 
         usePerspective: Backend.Settings.values.visual_hints_perspective_enabled
+        provider: areaPreview
     }
 
     function clear() {

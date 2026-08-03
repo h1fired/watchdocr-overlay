@@ -1,18 +1,20 @@
 import QtQuick
+import "qrc:/qml/ui/overlay/components"
 
 Item {
     id: root
 
     enum Style {
-        Solid
-        // SimpleInpaint,
+        Solid,
+        SimpleInpaint
         // AccurateInpaint,
     }
 
-    property int style: VisualHints.Style.Solid
+    property int style: VisualHints.Style.SimpleInpaint
     property alias boxes: container.boxes
     property alias parts: container.parts
     property bool usePerspective: false
+    required property ImageProvider provider
 
     VisualHintContainer {
         id: container
@@ -21,12 +23,16 @@ Item {
 
         filterDelegate: {
             switch (root.style) {
+                case VisualHints.Style.SimpleInpaint:
+                    return filterDelegateSimpleInpaint;
                 default:
                     return filterDelegateSolid;
             }
         }
         textDelegate: {
             switch (root.style) {
+                case VisualHints.Style.SimpleInpaint:
+                    return textDelegateSimpleInpaint;
                 default:
                     return textDelegateSolid;
             }
@@ -47,10 +53,28 @@ Item {
     }
 
     Component {
+        id: filterDelegateSimpleInpaint
+
+        SimpleInpaintFilterDelegate {
+            usePerspective: root.usePerspective
+            provider: root.provider
+        }
+    }
+
+    Component {
         id: textDelegateSolid
 
         SolidTextDelegate {
             usePerspective: root.usePerspective
+        }
+    }
+
+    Component {
+        id: textDelegateSimpleInpaint
+
+        SimpleInpaintTextDelegate {
+            usePerspective: root.usePerspective
+            provider: root.provider
         }
     }
 }
