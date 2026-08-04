@@ -38,7 +38,6 @@
     <file>ui/overlay/components/TranslationSelectorButton.qml</file>
     <file>ui/overlay/components/TranslationSelectorMenu.qml</file>
     <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
-    <file>ui/overlay/components/visualhint/AccurateInpaintFilterDelegate.qml</file>
     <file>ui/overlay/components/visualhint/Delegate.qml</file>
     <file>ui/overlay/components/visualhint/MatrixDelegate.qml</file>
     <file>ui/overlay/components/visualhint/SimpleInpaintFilterDelegate.qml</file>
