@@ -35,28 +35,14 @@ MatrixDelegate {
                     : Qt.matrix4x4()
             }
 
-            Text {
+            VisualHintText {
                 id: textLabel
 
                 anchors.fill: parent
 
-                text: root.parts[index] ?? ""
-                
-                padding: 0
                 leftPadding: root.rectMargin * 2
-
-                fontSizeMode: Text.Fit
-                font.pixelSize: height
-                font.weight: 600
-                minimumPixelSize: 2
-
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-
-                renderType: Text.QtRendering
-                antialiasing: true
-
-                color: "white"
+                
+                text: root.parts[index] ?? ""
             }
         }
     }

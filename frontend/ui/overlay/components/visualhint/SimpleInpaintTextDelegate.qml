@@ -38,29 +38,16 @@ MatrixDelegate {
                     : Qt.matrix4x4()
             }
 
-            Text {
+            VisualHintText {
                 id: textLabel
 
                 visible: false
 
                 anchors.fill: parent
 
-                text: root.parts[index] ?? ""
-                
-                padding: 0
                 leftPadding: root.rectMargin * 2
-
-                fontSizeMode: Text.Fit
-                font.pixelSize: height
-                font.weight: 600
-                minimumPixelSize: 2
-
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-
-                color: "white"
-
-                renderType: Text.NativeRendering
+                
+                text: root.parts[index] ?? ""
             }
 
             ShaderEffectSource {
