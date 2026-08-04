@@ -10,7 +10,7 @@ Item {
         AccurateInpaint
     }
 
-    property int style: VisualHints.Style.AccurateInpaint
+    property int style: VisualHints.Style.SimpleInpaint
     property alias boxes: container.boxes
     property alias parts: container.parts
     property bool usePerspective: false
