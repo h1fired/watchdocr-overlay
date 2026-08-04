@@ -9,7 +9,7 @@ Item {
         SimpleInpaint
     }
 
-    property int style: VisualHints.Style.Solid
+    property int style: VisualHints.Style.SimpleInpaint
     property alias boxes: container.boxes
     property alias parts: container.parts
     property bool usePerspective: false

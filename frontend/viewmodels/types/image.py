@@ -47,6 +47,9 @@ class ImageProvider(QQuickImageProvider):
         super().__init__(QQuickImageProvider.Image)
         self._image = None
 
+    def getImage(self):
+        return self._image
+
     def setImage(self, image: Image.Image):
         self._image = ImageQt.ImageQt(image.convert('RGBA'))
 

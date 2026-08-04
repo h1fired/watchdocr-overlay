@@ -1,12 +1,19 @@
 import QtQuick
+import App.ImageText
 import "qrc:/qml/ui/overlay/components"
 
 MatrixDelegate {
     id: root
 
     required property ImageProvider provider
-    
     rectMargin: 2
+
+    TextColorDetector {
+        id: detector
+
+        rects: root.boxes
+        image: provider.providerId
+    }
 
     Repeater {
         model: parent.visible ? root.boxes : 0
@@ -14,7 +21,6 @@ MatrixDelegate {
         Item {
             id: box
 
-            // required property int index
             readonly property var _c: root.expandQuad(modelData.coordinates, root.rectMargin) ?? []
             readonly property var _b: modelData.boundings ?? []
             readonly property bool _hasPerspective: root.usePerspective && modelData.has_perspective
@@ -41,44 +47,12 @@ MatrixDelegate {
             VisualHintText {
                 id: textLabel
 
-                visible: false
-
                 anchors.fill: parent
 
                 leftPadding: root.rectMargin * 2
                 
                 text: root.parts[index] ?? ""
-            }
-
-            ShaderEffectSource {
-                id: rawBoxCapture
-
-                visible: false
-                live: true
-
-                sourceItem: provider
-                sourceRect: {
-                    const topLeft = box.mapToItem(provider, 0, 0)
-                    return Qt.rect(box.x, box.y, box.width, box.height)
-                }
-            }
-
-            ShaderEffectSource {
-                id: textMaskSource
-
-                visible: false
-
-                sourceItem: textLabel
-                live: true
-            }
-
-            ShaderEffect {
-                anchors.fill: parent
-
-                property variant background: rawBoxCapture
-                property variant textMask: textMaskSource
-
-                fragmentShader: "qrc:/qml/ui/shaders/text_difference.frag.qsb"
+                color: detector.colors[index] ?? "#FFFFFF"
             }
         }
     }
