@@ -18,7 +18,6 @@ class PreviewViewModel(QmlViewModel):
         match event:
             case Events.PROCESSOR_AREA_IMAGE_CHANGED:
                 self.onPreviewAreaImage(data.image)
-                self.previewAreaUpdated.emit()
 
     @Slot()
     def requestAllScreensPreview(self):
