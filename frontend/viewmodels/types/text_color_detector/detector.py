@@ -74,29 +74,21 @@ def _detect_text_color_from_crop(crop_arr, assume_minority_is_text=True):
         return "#{:02x}{:02x}{:02x}".format(*(int(c) for c in rgb))
 
     return {
-        "text_rgb": tuple(int(c) for c in text_rgb),
         "text_hex": to_hex(text_rgb),
-        "text_pixel_count": int(text_mask.sum()),
-        "background_rgb": tuple(int(c) for c in bg_rgb),
         "background_hex": to_hex(bg_rgb),
-        "background_pixel_count": int(bg_mask.sum()),
-        "otsu_threshold": thresh,
     }
 
 
 def detect_text_colors(qimage, rects, assume_minority_is_text=True, as_hex=True):
     img = qimage_to_pil(qimage)
     img_arr = np.array(img).astype(np.float64)
-    H, W = img_arr.shape[:2]
 
     results = []
-    for (x, y, w, h) in rects:
-        x0, y0 = max(0, int(x)), max(0, int(y))
-        x1, y1 = min(W, int(x + w)), min(H, int(y + h))
-        if x1 <= x0 or y1 <= y0:
+    for (x1, y1, x2, y2) in rects:
+        if x2 <= x1 or y2 <= y1:
             results.append("#000000" if as_hex else {})
             continue
-        crop_arr = img_arr[y0:y1, x0:x1]
+        crop_arr = img_arr[y1:y2, x1:x2]
         info = _detect_text_color_from_crop(crop_arr, assume_minority_is_text)
         results.append(info["text_hex"] if as_hex else info)
 
