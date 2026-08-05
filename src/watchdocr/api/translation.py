@@ -27,9 +27,7 @@ class TranslationAPI(KernelAPI):
         processor.queue_pipeline(
             strategy=PipelineStrategy.TRANSLATION_ONLY,
             context_data={
-                'translation': {
-                    'source_language': code
-                }
+                'source_language': code
             }
         )
 
@@ -38,8 +36,6 @@ class TranslationAPI(KernelAPI):
         processor.queue_pipeline(
             strategy=PipelineStrategy.TRANSLATION_ONLY,
             context_data={
-                'translation': {
-                    'target_language': code
-                }
+                'target_language': code
             }
         )

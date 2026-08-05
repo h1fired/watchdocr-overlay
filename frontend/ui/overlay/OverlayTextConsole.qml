@@ -150,6 +150,7 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         acceptedButtons: Qt.RightButton
+                        cursorShape: Qt.IBeamCursor
 
                         onClicked: (mouse) => {
                             contextMenu.x = mouse.x

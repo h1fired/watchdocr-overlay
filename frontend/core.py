@@ -155,6 +155,9 @@ class GuiCoreApplication(metaclass=Singleton):
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 
+        # Destroy frontend content before quit
+        self._app.aboutToQuit.connect(self.destroy)
+
     def destroy(self):
         _qmlLinkerCore.destroyContent()
 
@@ -167,6 +170,9 @@ class GuiCoreApplication(metaclass=Singleton):
         if self._tray:
             self._tray.show()
         return self._app.exec()
+
+    def engine(self):
+        return self._engine
 
     def window(self):
         return self._window

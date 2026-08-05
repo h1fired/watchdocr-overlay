@@ -3,6 +3,7 @@ from pathlib import Path
 import yaml
 from config import config
 from dataclasses import dataclass
+from src.common.utils.logging import log
 
 
 @dataclass
@@ -10,7 +11,7 @@ class SettingField:
     label: str
     description: str = ''
     modifiable: bool = True
-    reset_on_reload: bool = False
+    runtime_only: bool = False
     group: str = 'General'
     field_type: str | None = None
 
@@ -19,7 +20,7 @@ class SettingField:
             'label': self.label,
             'description': self.description,
             'modifiable': self.modifiable,
-            'reset_on_reload': self.reset_on_reload,
+            'runtime_only': self.runtime_only,
             'group': self.group,
             'field_type': self.field_type,
         }
@@ -53,10 +54,19 @@ class UserSettings(BaseModel):
     text_viewer_show: bool = Field(
         default=False,
         json_schema_extra=SettingField(
-            reset_on_reload=True,
+            runtime_only=True,
             label='Text viewer',
             description='Render interactive text viewer in non-overlay mode',
             group='Visual',
+        ).as_dict(),
+    )
+    visual_hints_perspective_enabled: bool = Field(
+        default=True,
+        json_schema_extra=SettingField(
+            label='Perspective visual hints',
+            description='Transform the visual hint according to the original',
+            modifiable=True,
+            group='Visual'
         ).as_dict(),
     )
     screens_preview_enabled: bool = Field(
@@ -112,6 +122,12 @@ class UserSettings(BaseModel):
     def save(self, path: Path = config.USER_SETTINGS_PATH) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         data = self.model_dump()
+
+        for name in data.copy().keys():
+            field = UserSettings.model_fields.get(name)
+            if field.json_schema_extra['runtime_only']:
+                data.pop(name)
+
         with open(path, 'w', encoding='utf-8') as f:
             yaml.safe_dump(data, f, default_flow_style=False)
 
@@ -128,13 +144,15 @@ class UserSettings(BaseModel):
 
                 for name in data.keys():
                     field = cls.model_fields.get(name)
-                    if field.json_schema_extra.reset_on_reload:
+                    if field.json_schema_extra['runtime_only']:
                         data[name] = field.default
 
             return cls.model_validate(data)
         except (ValidationError, Exception) as e:
-            print(f'Warning: Failed to load config ({e}). Using defaults.')
-            return cls()
+            log.warning(f'Failed to load config ({e}). Using defaults.')
+            default_prefs = cls()
+            default_prefs.save(path)
+            return default_prefs
 
     @classmethod
     def modifiable_fields(cls) -> list[dict]:

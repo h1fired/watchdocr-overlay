@@ -1,18 +1,31 @@
 from src.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
 from src.watchdocr.plugins.ocr.filter import OcrImageFilter
 from PIL import Image
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from enum import IntFlag
 from config import config
 import re
 
 
 @dataclass(slots=True, frozen=True)
+class OcrBoxData:
+    text: str
+    boundings: tuple
+    confidence: float
+
+    has_perspective: bool = False
+    coordinates: tuple = tuple()
+
+
+@dataclass(slots=True, frozen=True)
 class OcrData:
     success: bool
     text: str
-    boxes: tuple
+    boxes: tuple[OcrBoxData, ...]
     confidence: float
+
+    def to_dict(self):
+        return asdict(self)
 
 
 class OcrOptimization(IntFlag):

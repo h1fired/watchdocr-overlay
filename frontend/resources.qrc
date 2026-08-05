@@ -15,6 +15,7 @@
     <file>ui/overlay/OverlayControlPanel.qml</file>
     <file>ui/overlay/OverlayScreensPreview.qml</file>
     <file>ui/overlay/OverlaySelectionArea.qml</file>
+    <file>ui/overlay/OverlaySelectionAreaHint.qml</file>
     <file>ui/overlay/OverlayTextConsole.qml</file>
     <file>ui/overlay/OverlayTextViewer.qml</file>
     <file>ui/overlay/OverlayVisualHints.qml</file>
@@ -37,9 +38,16 @@
     <file>ui/overlay/components/TranslationSelector.qml</file>
     <file>ui/overlay/components/TranslationSelectorButton.qml</file>
     <file>ui/overlay/components/TranslationSelectorMenu.qml</file>
-    <file>ui/overlay/components/VisualHintBox.qml</file>
-    <file>ui/overlay/components/VisualHintContainer.qml</file>
     <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
+    <file>ui/overlay/components/visualhint/Delegate.qml</file>
+    <file>ui/overlay/components/visualhint/MatrixDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/SimpleInpaintFilterDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/SimpleInpaintTextDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/SolidFilterDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/SolidTextDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/VisualHintContainer.qml</file>
+    <file>ui/overlay/components/visualhint/VisualHints.qml</file>
+    <file>ui/overlay/components/visualhint/VisualHintText.qml</file>
     <file>ui/preloader/AppPreloader.qml</file>
     <file>ui/preloader/AppPreloaderWindow.qml</file>
     <file>ui/preloader/LoaderAnim.qml</file>
@@ -68,5 +76,6 @@
   </qresource>
   <qresource prefix="/qml">
     <file>ui/shaders\average.frag.qsb</file>
+    <file>ui/shaders\text_difference.frag.qsb</file>
   </qresource>
 </RCC>

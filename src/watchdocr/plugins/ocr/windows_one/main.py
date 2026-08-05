@@ -1,5 +1,5 @@
 from src.common.plugin import DownloadResource, DownloadablePlugin
-from src.watchdocr.plugins.ocr import OcrPlugin, OcrData
+from src.watchdocr.plugins.ocr import OcrPlugin, OcrData, OcrBoxData
 from src.watchdocr.plugins.ocr.windows_one.engine import OcrEngine, OcrLine
 from PIL import Image
 
@@ -42,27 +42,33 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
             words = line.words
 
             if words:
-                xs = [coord for w in words for coord in w.boundings[0::2]]
-                ys = [coord for w in words for coord in w.boundings[1::2]]
-                confidences = [w.confidence for w in words if w.confidence is not None]
-                line_confidence = sum(confidences) / len(confidences) if confidences else 0.
+                confs = [w.confidence for w in words if w.confidence is not None]
+                line_confidence = sum(confs) / len(confs) if confs else 0.
             elif line.boundings:
-                xs = line.boundings[0::2]
-                ys = line.boundings[1::2]
                 line_confidence = 0.
             else:
                 continue
 
-            x, y, x2, y2 = min(xs), min(ys), max(xs), max(ys)
+            line_coordinates = tuple([int(b / scale) for b in line.boundings])
+            line_boundings = self._coords_to_boundings(line.boundings, scale)
 
-            boxes.append((
-                line.text,
-                (
-                    int(x / scale),
-                    int(y / scale),
-                    int(x2 / scale),
-                    int(y2 / scale)
-                ),
-                line_confidence
-            ))
+            box = OcrBoxData(
+                text=line.text,
+                boundings=line_boundings,
+                confidence=line_confidence,
+                coordinates=line_coordinates,
+                has_perspective=True
+            )
+            boxes.append(box)
         return boxes
+
+    def _coords_to_boundings(self, bbox: tuple[int, ...], scale: float):
+        xs = bbox[0::2]
+        ys = bbox[1::2]
+
+        x1 = min(xs) // scale
+        y1 = min(ys) // scale
+        x2 = max(xs) // scale
+        y2 = max(ys) // scale
+
+        return (x1, y1, x2, y2)
