@@ -36,7 +36,7 @@ def otsu_threshold(gray):
 
 
 def qimage_to_pil(qimage):
-    return fromqimage(qimage).convert("RGB")
+    return fromqimage(qimage).convert('RGB')
 
 
 def _detect_text_color_from_crop(crop_arr, assume_minority_is_text=True):
@@ -71,11 +71,11 @@ def _detect_text_color_from_crop(crop_arr, assume_minority_is_text=True):
     bg_rgb = crop_arr[bg_mask].mean(axis=0) if bg_mask.sum() else text_rgb
 
     def to_hex(rgb):
-        return "#{:02x}{:02x}{:02x}".format(*(int(c) for c in rgb))
+        return '#{:02x}{:02x}{:02x}'.format(*(int(c) for c in rgb))
 
     return {
-        "text_hex": to_hex(text_rgb),
-        "background_hex": to_hex(bg_rgb),
+        'text_hex': to_hex(text_rgb),
+        'background_hex': to_hex(bg_rgb),
     }
 
 
@@ -86,10 +86,10 @@ def detect_text_colors(qimage, rects, assume_minority_is_text=True, as_hex=True)
     results = []
     for (x1, y1, x2, y2) in rects:
         if x2 <= x1 or y2 <= y1:
-            results.append("#000000" if as_hex else {})
+            results.append('#000000' if as_hex else {})
             continue
         crop_arr = img_arr[y1:y2, x1:x2]
         info = _detect_text_color_from_crop(crop_arr, assume_minority_is_text)
-        results.append(info["text_hex"] if as_hex else info)
+        results.append(info['text_hex'] if as_hex else info)
 
     return results
