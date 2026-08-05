@@ -280,7 +280,7 @@ wheels = [
 
 [[package]]
 name = "ocr-overlay"
-version = "0.1.21a0"
+version = "0.1.3a0"
 source = { virtual = "." }
 dependencies = [
     { name = "dotenv" },
