@@ -30,7 +30,8 @@ from PySide6.QtCore import (
     QModelIndex,
     QAbstractProxyModel,
     QRegularExpression,
-    QSortFilterProxyModel
+    QSortFilterProxyModel,
+    QRunnable
 )
 from PySide6.QtGui import (
     QKeySequence,
