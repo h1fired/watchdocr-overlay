@@ -1,5 +1,5 @@
-from qt.core import QObject, Property, Signal, Slot, QThreadPool, QRunnable
-from qt.gui import QImage, QColor
+from qt.core import QObject, Property, Signal, QThreadPool, QRunnable
+from qt.gui import QImage
 from .detector import detect_text_colors
 
 
@@ -20,6 +20,10 @@ class TextColorDetector(QObject):
         self._colors = []
         self._active_tasks = []
 
+        self._image_provider = None
+        self._image_changed = False
+        self._rects_changed = False
+
     @classmethod
     def pool(cls):
         if cls._pool is None:
@@ -32,6 +36,14 @@ class TextColorDetector(QObject):
 
     def setImageProvider(self, provider: str):
         self._image_id = provider
+
+        from frontend.core import GuiCoreApplication
+        engine = GuiCoreApplication().engine()
+        if self._image_provider:
+            self._image_provider.imageChanged.disconnect(self._on_provider_image_change)
+        self._image_provider = engine.imageProvider(self._image_id)
+        self._image_provider.imageChanged.connect(self._on_provider_image_change)
+
         self.imageProviderChanged.emit()
 
     image = Property(str, getImageProvider, setImageProvider, notify=imageProviderChanged)
@@ -42,7 +54,9 @@ class TextColorDetector(QObject):
     def setRects(self, rects: list):
         boundings = [b['boundings'] for b in rects]
         self._rects = boundings
+        self._rects_changed = True
         self.rectsChanged.emit()
+
         self.update()
 
     rects = Property('QVariantList', getRects, setRects, notify=rectsChanged)
@@ -58,11 +72,16 @@ class TextColorDetector(QObject):
 
     def update(self):
         if not len(self._rects) or not self._image_id:
+            self.setColors([])
+            return
+        elif not self._image_changed or not self._rects_changed:
+            self.setColors([])
             return
 
-        from frontend.core import GuiCoreApplication
-        engine = GuiCoreApplication().engine()
-        provider = engine.imageProvider(self._image_id)
+        self._image_changed = False
+        self._rects_changed = False
+
+        provider = self._image_provider
 
         if not provider:
             return
@@ -81,6 +100,10 @@ class TextColorDetector(QObject):
         self._active_tasks.remove(task)
         self.setColors(colors)
 
+    def _on_provider_image_change(self):
+        self._image_changed = True
+        self.update()
+
 
 class _Task(QObject, QRunnable):
     done = Signal(object, list)
@@ -92,5 +115,8 @@ class _Task(QObject, QRunnable):
         self._rects = rects
 
     def run(self):
-        colors = detect_text_colors(self._image, self._rects)
+        try:
+            colors = detect_text_colors(self._image, self._rects)
+        except Exception:
+            colors = []
         self.done.emit(self, colors)

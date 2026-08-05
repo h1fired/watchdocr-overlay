@@ -43,6 +43,8 @@ class AnimatedImage(QQuickPaintedItem):
 
 
 class ImageProvider(QQuickImageProvider):
+    imageChanged = Signal()
+
     def __init__(self):
         super().__init__(QQuickImageProvider.Image)
         self._image = None
@@ -52,6 +54,7 @@ class ImageProvider(QQuickImageProvider):
 
     def setImage(self, image: Image.Image):
         self._image = ImageQt.ImageQt(image.convert('RGBA'))
+        self.imageChanged.emit()
 
     def requestImage(self, id, size, requestedSize):
         if self._image is None:
