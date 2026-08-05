@@ -216,9 +216,7 @@ if __name__ == '__main__':
     finder = PluginPackageFinder('src.watchdocr.plugins')
     builder.compiler_params.hidden_packages.extend(finder.find_packages())
 
-    builder.compiler_params.hidden_packages.append('winrt')
     builder.compiler_params.custom_flags.append('--include-qt-plugins=qml')
-    builder.compiler_params.custom_flags.append('--include-windows-runtime-dlls=yes')
     builder.compiler_params.custom_flags.append('--windows-disable-console')
 
     builder.add_removable_file('qt6webenginecore.dll')
