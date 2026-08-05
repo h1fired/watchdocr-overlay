@@ -36,10 +36,16 @@ def otsu_threshold(gray):
 
 
 def qimage_to_pil(qimage):
-    return fromqimage(qimage).convert('RGB')
+    return fromqimage(qimage).convert("RGB")
 
 
-def _detect_text_color_from_crop(crop_arr, assume_minority_is_text=True):
+def _detect_text_color_from_crop(crop_arr):
+    if crop_arr.size == 0 or crop_arr.shape[0] == 0 or crop_arr.shape[1] == 0:
+        return {
+            'text_hex': '#FFFFFF',
+            'background_hex': '#000000'
+        }
+
     gray = (
         0.299 * crop_arr[:, :, 0]
         + 0.587 * crop_arr[:, :, 1]
@@ -51,24 +57,25 @@ def _detect_text_color_from_crop(crop_arr, assume_minority_is_text=True):
     dark_mask = gray <= thresh
     light_mask = ~dark_mask
 
-    dark_count = int(dark_mask.sum())
-    light_count = int(light_mask.sum())
+    border = np.zeros_like(dark_mask, dtype=bool)
+    border[0, :] = True
+    border[-1, :] = True
+    border[:, 0] = True
+    border[:, -1] = True
 
-    if assume_minority_is_text:
-        text_mask, bg_mask = (
-            (dark_mask, light_mask) if dark_count < light_count else (light_mask, dark_mask)
-        )
+    dark_border_frac = dark_mask[border].mean() if border.any() else 0.0
+    light_border_frac = light_mask[border].mean() if border.any() else 0.0
+
+    if dark_border_frac > light_border_frac:
+        bg_mask, text_mask = dark_mask, light_mask
     else:
-        text_mask, bg_mask = (
-            (dark_mask, light_mask) if dark_count > light_count else (light_mask, dark_mask)
-        )
+        bg_mask, text_mask = light_mask, dark_mask
 
-    # Guard against an empty mask (e.g. a totally uniform crop)
     if text_mask.sum() == 0:
         text_mask, bg_mask = bg_mask, text_mask
 
-    text_rgb = crop_arr[text_mask].mean(axis=0)
-    bg_rgb = crop_arr[bg_mask].mean(axis=0) if bg_mask.sum() else text_rgb
+    text_rgb = np.median(crop_arr[text_mask], axis=0)
+    bg_rgb = np.median(crop_arr[bg_mask], axis=0) if bg_mask.sum() else text_rgb
 
     def to_hex(rgb):
         return '#{:02x}{:02x}{:02x}'.format(*(int(c) for c in rgb))
@@ -79,17 +86,18 @@ def _detect_text_color_from_crop(crop_arr, assume_minority_is_text=True):
     }
 
 
-def detect_text_colors(qimage, rects, assume_minority_is_text=True, as_hex=True):
+def detect_text_colors(qimage, rects):
     img = qimage_to_pil(qimage)
     img_arr = np.array(img).astype(np.float64)
 
     results = []
     for (x1, y1, x2, y2) in rects:
         if x2 <= x1 or y2 <= y1:
-            results.append('#000000' if as_hex else {})
+            results.append('#FFFFFF')
             continue
+
         crop_arr = img_arr[y1:y2, x1:x2]
-        info = _detect_text_color_from_crop(crop_arr, assume_minority_is_text)
-        results.append(info['text_hex'] if as_hex else info)
+        info = _detect_text_color_from_crop(crop_arr)
+        results.append(info['text_hex'])
 
     return results

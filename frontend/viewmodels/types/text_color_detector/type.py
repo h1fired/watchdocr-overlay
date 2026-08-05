@@ -75,7 +75,6 @@ class TextColorDetector(QObject):
             self.setColors([])
             return
         elif not self._image_changed or not self._rects_changed:
-            self.setColors([])
             return
 
         self._image_changed = False
