@@ -52,6 +52,15 @@ Item {
         anchors.fill: parent
     }
 
+    OverlaySelectionAreaHint {
+        visible: !root.controlsVisible && selectionArea.boxValid
+
+        x: selectionArea.area.box.x
+        y: selectionArea.area.box.y
+        width: selectionArea.area.box.width
+        height: selectionArea.area.box.height
+    }
+
     ScreenArea {
         monitor: mouseTrackedMonitor
         enableMonitorMouseTracking: textViewer.dragging
