@@ -296,7 +296,7 @@ class PluginResourceDownloader:
             yield (0, 0)
             return
 
-        r = requests.get(dres.url, stream=True)
+        r = requests.get(dres.url, stream=True, timeout=5)
 
         if not r.ok:
             raise requests.RequestException()
@@ -307,8 +307,7 @@ class PluginResourceDownloader:
         filesize = int(filesize) if filesize else 0
 
         # Create plugin directory
-        if not os.path.exists(dpath):
-            os.mkdir(dpath)
+        os.makedirs(dpath, exist_ok=True)
 
         # Download resource in temp file
         temp_storage_filepath = os.path.join(dpath, f'.{config.APP_NAME.lower()}_cache')
@@ -317,7 +316,7 @@ class PluginResourceDownloader:
             bytes_downloaded = 0
             for chunk in r.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
                 f.write(chunk)
-                bytes_downloaded += DOWNLOAD_CHUNK_SIZE
+                bytes_downloaded += len(chunk)
 
                 yield filesize, bytes_downloaded
 
