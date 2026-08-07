@@ -268,6 +268,8 @@ class PluginResourceDownloader:
             return True
 
         for index, plugin in enumerate(plugins):
+            self._observable.notify('name', plugin.meta.name)
+
             resource = plugin.get_download_resource()
             download_path = plugin.get_resource_path()
 
