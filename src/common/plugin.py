@@ -255,17 +255,22 @@ class PluginResourceDownloader:
         plugins = self._manager.get_realizations(DownloadablePlugin)
         length = len(plugins)
         if length <= 0:
-            return
+            return True
 
         for index, plugin in enumerate(plugins):
             resource = plugin.get_download_resource()
             download_path = plugin.get_resource_path()
 
-            for ts, cs in self._download_resource(resource, download_path):
-                progress = self._calculate_progress(index+1, length, ts, cs)
-                self._observable.notify('progress', progress)
-            plugin.on_after_download()
-            # log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
+            try:
+                for ts, cs in self._download_resource(resource, download_path):
+                    progress = self._calculate_progress(index+1, length, ts, cs)
+                    self._observable.notify('progress', progress)
+
+                plugin.on_after_download()
+            except Exception as e:
+                log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
+                return False
+        return True
 
     def observe(self, trigger: str, callback: Callable):
         self._observable.register(trigger, callback)
@@ -310,7 +315,7 @@ class PluginResourceDownloader:
         if index <= 0:
             return 0.
 
-        progress_per_index = 1 / total_indexes
+        progress_per_index = 1. / total_indexes
         curr_index_progress = progress_per_index * (index - 1)
         size_progress = current_bytes / total_bytes
 
