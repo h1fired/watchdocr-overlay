@@ -9,7 +9,6 @@ from collections import defaultdict
 import pkgutil
 import importlib
 import requests
-import io
 import zipfile
 import os
 import re
@@ -234,43 +233,6 @@ class DownloadablePlugin(Plugin):
     def on_after_download(self):
         pass
 
-    def download_resource(self):
-        rpath = self.get_resource_path()
-        resource_exists_file_path = os.path.join(rpath, RESOURCE_EXISTS_FILENAME)
-
-        log_title = self.meta.name
-
-        if os.path.exists(resource_exists_file_path):
-            log.info(
-                'Resource data already downloaded. Get cached',
-                extra={'title': log_title}
-            )
-            return
-
-        try:
-            resource = self.get_download_resource()
-            log.info(
-                'Trying to download resource data from: %s', resource.url,
-                extra={'title': log_title}
-            )
-            r = requests.get(url=resource.url)
-
-            if r.ok:
-                zip = zipfile.ZipFile(io.BytesIO(r.content))
-                zip.extractall(rpath)
-
-                # Create create file for checking
-                # if data is already downloaded
-                with open(resource_exists_file_path, 'w'):
-                    pass
-
-            log.info(
-                'Resource data successfully downloaded',
-                extra={'title': log_title}
-            )
-        except Exception as e:
-            raise PluginError('Failed to download resource') from e
-
     def get_download_resource(self) -> DownloadResource:
         raise NotImplementedError
 
@@ -281,6 +243,9 @@ class DownloadablePlugin(Plugin):
         )
 
 
+DOWNLOAD_CHUNK_SIZE = 1024*16
+
+
 class PluginResourceDownloader:
     def __init__(self, manager: PluginManager):
         self._manager = manager
@@ -288,18 +253,66 @@ class PluginResourceDownloader:
 
     def start_download(self):
         plugins = self._manager.get_realizations(DownloadablePlugin)
+        length = len(plugins)
+        if length <= 0:
+            return
 
-        try:
-            length = len(plugins)
-            for index, plugin in enumerate(plugins):
-                plugin.download_resource()
-                plugin.on_after_download()
-                progress = round(index+1 / length, 1)
+        for index, plugin in enumerate(plugins):
+            resource = plugin.get_download_resource()
+            download_path = plugin.get_resource_path()
+
+            for ts, cs in self._download_resource(resource, download_path):
+                progress = self._calculate_progress(index+1, length, ts, cs)
                 self._observable.notify('progress', progress)
-                return True
-        except Exception as e:
-            log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
-            return False
+            plugin.on_after_download()
+            # log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
 
     def observe(self, trigger: str, callback: Callable):
         self._observable.register(trigger, callback)
+
+    def _download_resource(self, dres: DownloadResource, dpath: str):
+        r = requests.get(dres.url, stream=True)
+
+        if not r.ok:
+            raise requests.RequestException()
+
+        # Get resource size
+        headers = r.headers
+        filesize = headers.get('content-length', '')
+        filesize = int(filesize) if filesize else 0
+
+        # Download resource in temp file
+        temp_storage_filepath = os.path.join(dpath, f'.{config.APP_NAME.lower()}_cache')
+
+        with open(temp_storage_filepath, 'wb') as f:
+            bytes_downloaded = 0
+            for chunk in r.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                f.write(chunk)
+                bytes_downloaded += DOWNLOAD_CHUNK_SIZE
+
+                yield filesize, bytes_downloaded
+
+        # Unpack files from zip
+        with zipfile.ZipFile(temp_storage_filepath) as zip:
+            zip.extractall(dpath)
+
+        # Remove temp file
+        if os.path.exists(temp_storage_filepath):
+            os.remove(temp_storage_filepath)
+
+    def _calculate_progress(
+        self,
+        index: str,
+        total_indexes: int,
+        total_bytes: int,
+        current_bytes: int
+    ):
+        if index <= 0:
+            return 0.
+
+        progress_per_index = 1 / total_indexes
+        curr_index_progress = progress_per_index * (index - 1)
+        size_progress = current_bytes / total_bytes
+
+        progress = curr_index_progress + (size_progress * progress_per_index)
+        return round(progress, 2)
