@@ -229,7 +229,7 @@ class DownloadResource:
 
 
 RESOURCE_EXISTS_FILENAME = '.ready'
-DOWNLOAD_CHUNK_SIZE = 1024*16
+DOWNLOAD_CHUNK_SIZE = 1024*128
 
 
 def file_sha256_sum(filename: str):
@@ -272,9 +272,12 @@ class PluginResourceDownloader:
             download_path = plugin.get_resource_path()
 
             try:
+                prev_progress = 0.
                 for ts, cs in self._download_resource(resource, download_path):
                     progress = self._calculate_progress(index+1, length, ts, cs)
-                    self._observable.notify('progress', progress)
+                    if progress != prev_progress:
+                        self._observable.notify('progress', progress)
+                        prev_progress = progress
 
                 plugin.on_after_download()
             except Exception as e:
