@@ -12,6 +12,7 @@ import requests
 import zipfile
 import os
 import re
+import hashlib
 
 
 LOG_TITLE = 'Plugins'
@@ -224,9 +225,21 @@ class PriorityPlugin(Plugin):
 @dataclass(slots=True)
 class DownloadResource:
     url: str
+    sha256: str | None = None
 
 
 RESOURCE_EXISTS_FILENAME = '.ready'
+DOWNLOAD_CHUNK_SIZE = 1024*16
+
+
+def file_sha256_sum(filename: str):
+    h = hashlib.sha256()
+    b = bytearray(128*1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        while n := f.readinto(mv):
+            h.update(mv[:n])
+    return h.hexdigest()
 
 
 class DownloadablePlugin(Plugin):
@@ -241,9 +254,6 @@ class DownloadablePlugin(Plugin):
             config.PLUGINS_DOWNLOAD_DATA_PATH,
             self.meta.id
         )
-
-
-DOWNLOAD_CHUNK_SIZE = 1024*16
 
 
 class PluginResourceDownloader:
@@ -276,6 +286,11 @@ class PluginResourceDownloader:
         self._observable.register(trigger, callback)
 
     def _download_resource(self, dres: DownloadResource, dpath: str):
+        checkfile_path = os.path.join(dpath, RESOURCE_EXISTS_FILENAME)
+        if os.path.exists(checkfile_path):
+            yield (0, 0)
+            return
+
         r = requests.get(dres.url, stream=True)
 
         if not r.ok:
@@ -285,6 +300,10 @@ class PluginResourceDownloader:
         headers = r.headers
         filesize = headers.get('content-length', '')
         filesize = int(filesize) if filesize else 0
+
+        # Create plugin directory
+        if not os.path.exists(dpath):
+            os.mkdir(dpath)
 
         # Download resource in temp file
         temp_storage_filepath = os.path.join(dpath, f'.{config.APP_NAME.lower()}_cache')
@@ -297,6 +316,14 @@ class PluginResourceDownloader:
 
                 yield filesize, bytes_downloaded
 
+        # Check SHA256 sum
+        if dres.sha256:
+            sum = file_sha256_sum(temp_storage_filepath)
+
+            if sum != dres.sha256:
+                os.remove(temp_storage_filepath)
+                raise PluginError('Invalid resource file SHA256 validation')
+
         # Unpack files from zip
         with zipfile.ZipFile(temp_storage_filepath) as zip:
             zip.extractall(dpath)
@@ -304,6 +331,10 @@ class PluginResourceDownloader:
         # Remove temp file
         if os.path.exists(temp_storage_filepath):
             os.remove(temp_storage_filepath)
+
+        # Add ready check file
+        with open(checkfile_path, 'w'):
+            pass
 
     def _calculate_progress(
         self,
@@ -317,7 +348,11 @@ class PluginResourceDownloader:
 
         progress_per_index = 1. / total_indexes
         curr_index_progress = progress_per_index * (index - 1)
-        size_progress = current_bytes / total_bytes
+
+        try:
+            size_progress = current_bytes / total_bytes
+        except ZeroDivisionError:
+            size_progress = 1.
 
         progress = curr_index_progress + (size_progress * progress_per_index)
         return round(progress, 2)
