@@ -8,7 +8,7 @@ Rectangle {
     property alias label: text.text
     property alias progress: progressBar.value
 
-    implicitWidth: 380
+    implicitWidth: 400
     implicitHeight: column.implicitHeight + (48)
 
     radius: 15
@@ -43,12 +43,16 @@ Rectangle {
         Text {
             id: text
 
+            width: root.width - 48
             anchors.horizontalCenter: parent.horizontalCenter
 
             font.family: "Segoe UI"
             font.weight: 700
             font.pixelSize: 14
             color: text !== "" ? "#FAF9FF" : "#060606"
+
+            horizontalAlignment: Qt.AlignHCenter
+            elide: Text.ElideRight
 
             text: " "
         }
