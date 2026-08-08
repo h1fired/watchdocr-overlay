@@ -6,13 +6,14 @@ from config import config
 from dataclasses import dataclass
 from typing import Any, Type, TypeVar, Callable
 from collections import defaultdict
+from contextlib import suppress
 import pkgutil
 import importlib
 import requests
-import io
 import zipfile
 import os
 import re
+import hashlib
 
 
 LOG_TITLE = 'Plugins'
@@ -225,51 +226,27 @@ class PriorityPlugin(Plugin):
 @dataclass(slots=True)
 class DownloadResource:
     url: str
+    sha256: str | None = None
 
 
 RESOURCE_EXISTS_FILENAME = '.ready'
+DOWNLOAD_CHUNK_SIZE = 1024*128
+DOWNLOAD_TIMEOUT = 10
+
+
+def file_sha256_sum(filename: str):
+    h = hashlib.sha256()
+    b = bytearray(128*1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        while n := f.readinto(mv):
+            h.update(mv[:n])
+    return h.hexdigest()
 
 
 class DownloadablePlugin(Plugin):
     def on_after_download(self):
         pass
-
-    def download_resource(self):
-        rpath = self.get_resource_path()
-        resource_exists_file_path = os.path.join(rpath, RESOURCE_EXISTS_FILENAME)
-
-        log_title = self.meta.name
-
-        if os.path.exists(resource_exists_file_path):
-            log.info(
-                'Resource data already downloaded. Get cached',
-                extra={'title': log_title}
-            )
-            return
-
-        try:
-            resource = self.get_download_resource()
-            log.info(
-                'Trying to download resource data from: %s', resource.url,
-                extra={'title': log_title}
-            )
-            r = requests.get(url=resource.url)
-
-            if r.ok:
-                zip = zipfile.ZipFile(io.BytesIO(r.content))
-                zip.extractall(rpath)
-
-                # Create create file for checking
-                # if data is already downloaded
-                with open(resource_exists_file_path, 'w'):
-                    pass
-
-            log.info(
-                'Resource data successfully downloaded',
-                extra={'title': log_title}
-            )
-        except Exception as e:
-            raise PluginError('Failed to download resource') from e
 
     def get_download_resource(self) -> DownloadResource:
         raise NotImplementedError
@@ -286,20 +263,116 @@ class PluginResourceDownloader:
         self._manager = manager
         self._observable = MappedObservable()
 
-    def start_download(self):
+    def start_download(self) -> bool:
         plugins = self._manager.get_realizations(DownloadablePlugin)
 
-        try:
-            length = len(plugins)
-            for index, plugin in enumerate(plugins):
-                plugin.download_resource()
-                plugin.on_after_download()
-                progress = round(index+1 / length, 1)
-                self._observable.notify('progress', progress)
-                return True
-        except Exception as e:
-            log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
-            return False
+        length = len(plugins)
+        if not length:
+            return True
+
+        for index, plugin in enumerate(plugins, start=1):
+            try:
+                self._download_plugin(plugin, index, length)
+            except Exception:
+                log.exception(
+                    'Failed to download plugin %s', plugin.meta.name,
+                    extra={'title': LOG_TITLE},
+                )
+                return False
+
+        return True
 
     def observe(self, trigger: str, callback: Callable):
         self._observable.register(trigger, callback)
+
+    def _download_plugin(
+        self,
+        plugin: DownloadablePlugin,
+        index: int,
+        total: int
+    ):
+        resource = plugin.get_download_resource()
+        download_path = plugin.get_resource_path()
+
+        last_progress = None
+        for total_size, current_size in self._download_resource(resource, download_path):
+            progress = self._calculate_progress(index, total, total_size, current_size)
+            if progress != last_progress:
+                self._observable.notify('progress', progress)
+                last_progress = progress
+
+        plugin.on_after_download()
+
+    def _download_resource(
+        self,
+        download_res: DownloadResource,
+        download_path: str
+    ):
+        checkfile_path = os.path.join(download_path, RESOURCE_EXISTS_FILENAME)
+        if os.path.exists(checkfile_path):
+            yield 0, 0
+            return
+
+        os.makedirs(download_path, exist_ok=True)
+        archive_path = os.path.join(
+            download_path,
+            f'.{config.APP_NAME.lower()}_cache'
+        )
+
+        try:
+            yield from self._stream_download(download_res.url, archive_path)
+
+            if download_res.sha256:
+                self._verify_sha256(archive_path, download_res.sha256)
+
+            self._extract_archive(archive_path, download_path)
+        finally:
+            with suppress(OSError):
+                os.remove(archive_path)
+
+        with open(checkfile_path, 'w'):
+            pass
+
+    def _stream_download(self, url: str, dest_path: str):
+        with requests.get(url, stream=True, timeout=DOWNLOAD_TIMEOUT) as r:
+            r.raise_for_status()
+
+            total_size = int(r.headers.get('content-length') or 0)
+
+            with open(dest_path, 'wb') as f:
+                bytes_downloaded = 0
+                for chunk in r.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                    f.write(chunk)
+                    bytes_downloaded += len(chunk)
+
+                    yield total_size, bytes_downloaded
+
+    def _verify_sha256(self, filename: str, expected: str):
+        actual_sum = file_sha256_sum(filename)
+        if actual_sum != expected:
+            raise PluginError(f'SHA256 mismatch, expected {expected}, got {actual_sum}')
+
+    def _extract_archive(self, path: str, dest: str):
+        with zipfile.ZipFile(path) as archive:
+            archive.extractall(dest)
+
+    def _calculate_progress(
+        self,
+        index: str,
+        total_indexes: int,
+        total_bytes: int,
+        current_bytes: int
+    ):
+        if index <= 0:
+            return 0.
+
+        progress_per_index = 1. / total_indexes
+        curr_index_progress = progress_per_index * (index - 1)
+
+        try:
+            size_progress = current_bytes / total_bytes
+        except ZeroDivisionError:
+            size_progress = 1.
+
+        progress = curr_index_progress + (size_progress * progress_per_index)
+        return round(progress, 2)
