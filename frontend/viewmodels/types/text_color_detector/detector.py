@@ -1,8 +1,9 @@
 import numpy as np
 from PIL.ImageQt import fromqimage
+from PIL import Image, ImageDraw
 from qt.gui import QColor
-import math
 from dataclasses import dataclass, asdict
+import math
 
 
 def otsu_threshold(gray):
@@ -60,13 +61,12 @@ class DetectColorOutput:
         return asdict(self)
 
 
-def _detect_text_color_from_crop(crop_arr):
-    if crop_arr.size == 0 or crop_arr.shape[0] == 0 or crop_arr.shape[1] == 0:
-        return DetectColorOutput(
-            QColor('#FFFFFF'),
-            False,
-            QColor('#000000')
-        )
+_DEFAULT = DetectColorOutput(QColor('#FFFFFF'), False, QColor('#000000'))
+
+
+def _detect_text_color_from_masked(crop_arr, shape_mask, ring_px=2):
+    if crop_arr.size == 0 or shape_mask.sum() < 4:
+        return _DEFAULT
 
     gray = (
         0.299 * crop_arr[:, :, 0]
@@ -74,19 +74,18 @@ def _detect_text_color_from_crop(crop_arr):
         + 0.114 * crop_arr[:, :, 2]
     )
 
-    thresh = otsu_threshold(gray)
+    thresh = otsu_threshold(gray[shape_mask])
 
-    dark_mask = gray <= thresh
-    light_mask = ~dark_mask
+    dark_mask = (gray <= thresh) & shape_mask
+    light_mask = (gray > thresh) & shape_mask
 
-    border = np.zeros_like(dark_mask, dtype=bool)
-    border[0, :] = True
-    border[-1, :] = True
-    border[:, 0] = True
-    border[:, -1] = True
+    # boundary ring of the polygon, not of the bounding box
+    ring = shape_mask & ~_erode(shape_mask, ring_px)
+    if ring.sum() == 0:
+        ring = shape_mask
 
-    dark_border_frac = dark_mask[border].mean() if border.any() else 0.0
-    light_border_frac = light_mask[border].mean() if border.any() else 0.0
+    dark_border_frac = dark_mask[ring].mean()
+    light_border_frac = light_mask[ring].mean()
 
     if dark_border_frac > light_border_frac:
         bg_mask, text_mask = dark_mask, light_mask
@@ -95,42 +94,88 @@ def _detect_text_color_from_crop(crop_arr):
 
     if text_mask.sum() == 0:
         text_mask, bg_mask = bg_mask, text_mask
+    if text_mask.sum() == 0:
+        return _DEFAULT
 
     text_rgb = np.median(crop_arr[text_mask], axis=0)
     bg_rgb = np.median(crop_arr[bg_mask], axis=0) if bg_mask.sum() else text_rgb
 
-    # Calculate final colors
     text_color = QColor(*(int(c) for c in text_rgb))
     bg_color = QColor(*(int(c) for c in bg_rgb))
 
     border_color = QColor('#000000')
     has_border = color_diff(text_color, bg_color) < 0.1
     if has_border:
-        if text_color.lightness() > 128:
-            border_color = text_color.darker(150)
-        else:
-            border_color = text_color.lighter(150)
+        border_color = (
+            text_color.darker(150) if text_color.lightness() > 128
+            else text_color.lighter(150)
+        )
 
     return DetectColorOutput(text_color, has_border, border_color)
 
 
-def detect_text_colors(qimage, rects: tuple[int, int, int, int]):
+def _polygon_mask(points, x0, y0, w, h):
+    """Rasterize polygon (absolute coords) into a bool mask of the bbox."""
+    m = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(m).polygon(
+        [(float(px) - x0, float(py) - y0) for px, py in points], fill=255
+    )
+    return np.array(m) > 0
+
+
+def _erode(mask, iterations=1):
+    """4-neighbour erosion; outside the array counts as background."""
+    for _ in range(iterations):
+        e = np.zeros_like(mask)
+        e[1:-1, 1:-1] = (
+            mask[1:-1, 1:-1]
+            & mask[:-2, 1:-1] & mask[2:, 1:-1]
+            & mask[1:-1, :-2] & mask[1:-1, 2:]
+        )
+        mask = e
+    return mask
+
+
+def _normalize(region):
+    if not region:
+        raise ValueError('Empty region')
+
+    # already a sequence of point pairs?
+    first = region[0]
+    if isinstance(first, (tuple, list)):
+        return [(float(p[0]), float(p[1])) for p in region]
+
+    if len(region) % 2 != 0:
+        raise ValueError(f'Flat region needs an even number of values, got {len(region)}')
+
+    if len(region) == 4:
+        x1, y1, x2, y2 = map(float, region)
+        return [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
+
+    it = iter(map(float, region))
+    return list(zip(it, it))
+
+
+def detect_text_colors(qimage, regions):
     img = qimage_to_pil(qimage)
     img_arr = np.array(img).astype(np.float64)
+    H, W = img_arr.shape[:2]
 
     results = []
-    for (x1, y1, x2, y2) in rects:
-        if x2 <= x1 or y2 <= y1:
-            output = DetectColorOutput(
-                QColor('#FFFFFF'),
-                False,
-                QColor('#000000')
-            )
-            results.append(output.to_dict())
+    for region in regions:
+        pts = _normalize(region)
+
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        x0, y0 = max(0, int(math.floor(min(xs)))), max(0, int(math.floor(min(ys))))
+        x1, y1 = min(W, int(math.ceil(max(xs)))), min(H, int(math.ceil(max(ys))))
+
+        if x1 <= x0 or y1 <= y0:
+            results.append(_DEFAULT.to_dict())
             continue
 
-        crop_arr = img_arr[y1:y2, x1:x2]
-        info = _detect_text_color_from_crop(crop_arr)
-        results.append(info.to_dict())
+        crop_arr = img_arr[y0:y1, x0:x1]
+        mask = _polygon_mask(pts, x0, y0, x1 - x0, y1 - y0)
+        results.append(_detect_text_color_from_masked(crop_arr, mask).to_dict())
 
     return results
