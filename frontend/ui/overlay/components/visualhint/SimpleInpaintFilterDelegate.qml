@@ -7,6 +7,8 @@ Delegate {
 
     required property ImageProvider provider
 
+    rectMargin: 2
+
     // Background inpaint shader
     ShaderEffectSource {
         id: frameCapture
@@ -49,7 +51,7 @@ Delegate {
 
                 property real tolerance: 0.06
                 property real seam: 0.0
-                property real gradient: 6.0
+                property real gradient: 0.0
 
                 layer.enabled: true
                 opacity: 0
