@@ -9,7 +9,7 @@ MAX_THREAD_COUNT = 3
 class TextColorDetector(QObject):
     imageProviderChanged = Signal()
     rectsChanged = Signal()
-    colorsChanged = Signal()
+    colorsOutputChanged = Signal()
 
     _pool = None
 
@@ -61,18 +61,18 @@ class TextColorDetector(QObject):
 
     rects = Property('QVariantList', getRects, setRects, notify=rectsChanged)
 
-    def getColors(self):
+    def getColorsOutput(self):
         return self._colors
 
-    def setColors(self, colors: list):
+    def setColorsOutput(self, colors: list):
         self._colors = colors
-        self.colorsChanged.emit()
+        self.colorsOutputChanged.emit()
 
-    colors = Property('QVariantList', getColors, notify=colorsChanged)
+    colorsOutput = Property('QVariantList', getColorsOutput, notify=colorsOutputChanged)
 
     def update(self):
         if not len(self._rects) or not self._image_id:
-            self.setColors([])
+            self.setColorsOutput([])
             return
         elif not self._image_changed or not self._rects_changed:
             return
@@ -97,7 +97,7 @@ class TextColorDetector(QObject):
 
     def _on_task_done(self, task, colors):
         self._active_tasks.remove(task)
-        self.setColors(colors)
+        self.setColorsOutput(colors)
 
     def _on_provider_image_change(self):
         self._image_changed = True

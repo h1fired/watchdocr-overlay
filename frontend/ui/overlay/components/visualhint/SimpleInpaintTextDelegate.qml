@@ -52,7 +52,17 @@ MatrixDelegate {
                 leftPadding: root.rectMargin * 2
                 
                 text: root.parts[index] ?? ""
-                color: detector.colors[index] ?? "#FFFFFF"
+                color: detector.colorsOutput[index]
+                    ? detector.colorsOutput[index].text
+                    : "#FFFFFF"
+                style: detector.colorsOutput[index]
+                    && detector.colorsOutput[index].has_border
+                    ? Text.Outline
+                    : Text.Normal
+                styleColor: detector.colorsOutput[index]
+                    && detector.colorsOutput[index].has_border
+                    ? detector.colorsOutput[index].border
+                    : "#000000"
             }
         }
     }

@@ -1,6 +1,8 @@
 import numpy as np
 from PIL.ImageQt import fromqimage
 from qt.gui import QColor
+import math
+from dataclasses import dataclass, asdict
 
 
 def otsu_threshold(gray):
@@ -40,12 +42,31 @@ def qimage_to_pil(qimage):
     return fromqimage(qimage).convert("RGB")
 
 
+def color_diff(color1: QColor, color2: QColor):
+    h1, s1, l1 = color1.hue(), color1.saturation(), color1.lightness()
+    h2, s2, l2 = color2.hue(), color2.saturation(), color2.lightness()
+    d = math.sqrt((h2-h1)**2+(s2-s1)**2+(l2-l1)**2)
+    p = d / math.sqrt(255**2+255**2+255**2)
+    return p
+
+
+@dataclass(slots=True)
+class DetectColorOutput:
+    text: QColor
+    has_border: bool
+    border: QColor
+
+    def to_dict(self):
+        return asdict(self)
+
+
 def _detect_text_color_from_crop(crop_arr):
     if crop_arr.size == 0 or crop_arr.shape[0] == 0 or crop_arr.shape[1] == 0:
-        return {
-            'text_hex': QColor('#FFFFFF'),
-            'background_hex': QColor('#FFFFFF')
-        }
+        return DetectColorOutput(
+            QColor('#FFFFFF'),
+            False,
+            QColor('#000000')
+        )
 
     gray = (
         0.299 * crop_arr[:, :, 0]
@@ -78,27 +99,38 @@ def _detect_text_color_from_crop(crop_arr):
     text_rgb = np.median(crop_arr[text_mask], axis=0)
     bg_rgb = np.median(crop_arr[bg_mask], axis=0) if bg_mask.sum() else text_rgb
 
+    # Calculate final colors
     text_color = QColor(*(int(c) for c in text_rgb))
     bg_color = QColor(*(int(c) for c in bg_rgb))
 
-    return {
-        'text_hex': text_color,
-        'background_hex': bg_color,
-    }
+    border_color = QColor('#000000')
+    has_border = color_diff(text_color, bg_color) < 0.1
+    if has_border:
+        if text_color.lightness() > 128:
+            border_color = text_color.darker(150)
+        else:
+            border_color = text_color.lighter(150)
+
+    return DetectColorOutput(text_color, has_border, border_color)
 
 
-def detect_text_colors(qimage, rects):
+def detect_text_colors(qimage, rects: tuple[int, int, int, int]):
     img = qimage_to_pil(qimage)
     img_arr = np.array(img).astype(np.float64)
 
     results = []
     for (x1, y1, x2, y2) in rects:
         if x2 <= x1 or y2 <= y1:
-            results.append(QColor('#FFFFFF'))
+            output = DetectColorOutput(
+                QColor('#FFFFFF'),
+                False,
+                QColor('#000000')
+            )
+            results.append(output.to_dict())
             continue
 
         crop_arr = img_arr[y1:y2, x1:x2]
         info = _detect_text_color_from_crop(crop_arr)
-        results.append(info['text_hex'])
+        results.append(info.to_dict())
 
     return results
