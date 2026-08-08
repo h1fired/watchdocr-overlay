@@ -6,6 +6,7 @@ from config import config
 from dataclasses import dataclass
 from typing import Any, Type, TypeVar, Callable
 from collections import defaultdict
+from contextlib import suppress
 import pkgutil
 import importlib
 import requests
@@ -230,6 +231,7 @@ class DownloadResource:
 
 RESOURCE_EXISTS_FILENAME = '.ready'
 DOWNLOAD_CHUNK_SIZE = 1024*128
+DOWNLOAD_TIMEOUT = 10
 
 
 def file_sha256_sum(filename: str):
@@ -293,52 +295,48 @@ class PluginResourceDownloader:
     def _download_resource(self, dres: DownloadResource, dpath: str):
         checkfile_path = os.path.join(dpath, RESOURCE_EXISTS_FILENAME)
         if os.path.exists(checkfile_path):
-            yield (0, 0)
+            yield 0, 0
             return
 
-        r = requests.get(dres.url, stream=True, timeout=5)
-
-        if not r.ok:
-            raise requests.RequestException()
-
-        # Get resource size
-        headers = r.headers
-        filesize = headers.get('content-length', '')
-        filesize = int(filesize) if filesize else 0
-
-        # Create plugin directory
         os.makedirs(dpath, exist_ok=True)
+        archive_path = os.path.join(dpath, f'.{config.APP_NAME.lower()}_cache')
 
-        # Download resource in temp file
-        temp_storage_filepath = os.path.join(dpath, f'.{config.APP_NAME.lower()}_cache')
+        try:
+            yield from self._stream_download(dres.url, archive_path)
 
-        with open(temp_storage_filepath, 'wb') as f:
-            bytes_downloaded = 0
-            for chunk in r.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
-                f.write(chunk)
-                bytes_downloaded += len(chunk)
+            if dres.sha256:
+                self._verify_sha256(archive_path, dres.sha256)
 
-                yield filesize, bytes_downloaded
+            self._extract_archive(archive_path, dpath)
+        finally:
+            with suppress(OSError):
+                os.remove(archive_path)
 
-        # Check SHA256 sum
-        if dres.sha256:
-            sum = file_sha256_sum(temp_storage_filepath)
-
-            if sum != dres.sha256:
-                os.remove(temp_storage_filepath)
-                raise PluginError('Invalid resource file SHA256 validation')
-
-        # Unpack files from zip
-        with zipfile.ZipFile(temp_storage_filepath) as zip:
-            zip.extractall(dpath)
-
-        # Remove temp file
-        if os.path.exists(temp_storage_filepath):
-            os.remove(temp_storage_filepath)
-
-        # Add ready check file
         with open(checkfile_path, 'w'):
             pass
+
+    def _stream_download(self, url: str, dest_path: str):
+        with requests.get(url, stream=True, timeout=DOWNLOAD_TIMEOUT) as r:
+            r.raise_for_status()
+
+            total_size = int(r.headers.get('content-length') or 0)
+
+            with open(dest_path, 'wb') as f:
+                bytes_downloaded = 0
+                for chunk in r.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                    f.write(chunk)
+                    bytes_downloaded += len(chunk)
+
+                    yield total_size, bytes_downloaded
+
+    def _verify_sha256(self, filename: str, expected: str):
+        actual_sum = file_sha256_sum(filename)
+        if actual_sum != expected:
+            raise PluginError(f'SHA256 mismatch, expected {expected}, got {actual_sum}')
+
+    def _extract_archive(self, path: str, dest: str):
+        with zipfile.ZipFile(path) as archive:
+            archive.extractall(dest)
 
     def _calculate_progress(
         self,
