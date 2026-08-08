@@ -263,51 +263,69 @@ class PluginResourceDownloader:
         self._manager = manager
         self._observable = MappedObservable()
 
-    def start_download(self):
+    def start_download(self) -> bool:
         plugins = self._manager.get_realizations(DownloadablePlugin)
+
         length = len(plugins)
-        if length <= 0:
+        if not length:
             return True
 
-        for index, plugin in enumerate(plugins):
-            self._observable.notify('name', plugin.meta.name)
-
-            resource = plugin.get_download_resource()
-            download_path = plugin.get_resource_path()
-
+        for index, plugin in enumerate(plugins, start=1):
             try:
-                prev_progress = 0.
-                for ts, cs in self._download_resource(resource, download_path):
-                    progress = self._calculate_progress(index+1, length, ts, cs)
-                    if progress != prev_progress:
-                        self._observable.notify('progress', progress)
-                        prev_progress = progress
-
-                plugin.on_after_download()
-            except Exception as e:
-                log.error('An error occurred. %s', e, extra={'title': LOG_TITLE})
+                self._download_plugin(plugin, index, length)
+            except Exception:
+                log.exception(
+                    'Failed to download plugin %s', plugin.meta.name,
+                    extra={'title': LOG_TITLE},
+                )
                 return False
+
         return True
 
     def observe(self, trigger: str, callback: Callable):
         self._observable.register(trigger, callback)
 
-    def _download_resource(self, dres: DownloadResource, dpath: str):
-        checkfile_path = os.path.join(dpath, RESOURCE_EXISTS_FILENAME)
+    def _download_plugin(
+        self,
+        plugin: DownloadablePlugin,
+        index: int,
+        total: int
+    ):
+        resource = plugin.get_download_resource()
+        download_path = plugin.get_resource_path()
+
+        last_progress = None
+        for total_size, current_size in self._download_resource(resource, download_path):
+            progress = self._calculate_progress(index, total, total_size, current_size)
+            if progress != last_progress:
+                self._observable.notify('progress', progress)
+                last_progress = progress
+
+        plugin.on_after_download()
+
+    def _download_resource(
+        self,
+        download_res: DownloadResource,
+        download_path: str
+    ):
+        checkfile_path = os.path.join(download_path, RESOURCE_EXISTS_FILENAME)
         if os.path.exists(checkfile_path):
             yield 0, 0
             return
 
-        os.makedirs(dpath, exist_ok=True)
-        archive_path = os.path.join(dpath, f'.{config.APP_NAME.lower()}_cache')
+        os.makedirs(download_path, exist_ok=True)
+        archive_path = os.path.join(
+            download_path,
+            f'.{config.APP_NAME.lower()}_cache'
+        )
 
         try:
-            yield from self._stream_download(dres.url, archive_path)
+            yield from self._stream_download(download_res.url, archive_path)
 
-            if dres.sha256:
-                self._verify_sha256(archive_path, dres.sha256)
+            if download_res.sha256:
+                self._verify_sha256(archive_path, download_res.sha256)
 
-            self._extract_archive(archive_path, dpath)
+            self._extract_archive(archive_path, download_path)
         finally:
             with suppress(OSError):
                 os.remove(archive_path)

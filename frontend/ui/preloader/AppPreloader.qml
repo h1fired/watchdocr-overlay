@@ -8,7 +8,7 @@ Rectangle {
     property alias label: text.text
     property alias progress: progressBar.value
 
-    implicitWidth: 400
+    implicitWidth: 360
     implicitHeight: column.implicitHeight + (48)
 
     radius: 15

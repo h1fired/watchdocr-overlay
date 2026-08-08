@@ -19,7 +19,6 @@ class PreloaderWorker(QObject):
         self._loading = False
         self._label = ''
         self._progress = 0.
-        self._current_stage = ''
 
         self._thread = None
 
@@ -51,11 +50,10 @@ class PreloaderWorker(QObject):
         self._thread.start()
 
     def _runner(self):
-        self._createAndApplyLabel()
+        self.setLabel('Downloading resources')
 
         downloader = PluginResourceDownloader(self._manager)
         downloader.observe('progress', self.setProgress)
-        downloader.observe('name', self._onPluginNameChanged)
 
         if not downloader.start_download():
             self.setLabel('An error occured! Exit...')
@@ -68,22 +66,6 @@ class PreloaderWorker(QObject):
         time.sleep(0.5)
 
         self.finished.emit()
-
-    def _createLabel(self):
-        main_lable = 'Downloading resources'
-        if not self._current_stage:
-            return main_lable
-
-        label = '%s - %s' % (main_lable, self._current_stage)
-        return label
-
-    def _createAndApplyLabel(self):
-        label = self._createLabel()
-        self.setLabel(label)
-
-    def _onPluginNameChanged(self, name: str):
-        self._current_stage = name
-        self._createAndApplyLabel()
 
 
 class PreloaderCore(QObject):
