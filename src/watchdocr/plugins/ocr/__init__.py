@@ -10,11 +10,8 @@ import re
 @dataclass(slots=True, frozen=True)
 class OcrBoxData:
     text: str
-    boundings: tuple
-    confidence: float
-
-    has_perspective: bool = False
-    coordinates: tuple = tuple()
+    coordinates: tuple[int, ...] = (0, 0, 0, 0, 0, 0, 0, 0)
+    confidence: float = 0.
 
 
 @dataclass(slots=True, frozen=True)
@@ -23,6 +20,7 @@ class OcrData:
     text: str
     boxes: tuple[OcrBoxData, ...]
     confidence: float
+    has_perspective: bool = False
 
     def to_dict(self):
         return asdict(self)

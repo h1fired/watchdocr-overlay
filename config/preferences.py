@@ -60,15 +60,6 @@ class UserSettings(BaseModel):
             group='Visual',
         ).as_dict(),
     )
-    visual_hints_perspective_enabled: bool = Field(
-        default=True,
-        json_schema_extra=SettingField(
-            label='Perspective visual hints',
-            description='Transform the visual hint according to the original',
-            modifiable=True,
-            group='Visual'
-        ).as_dict(),
-    )
     screens_preview_enabled: bool = Field(
         default=False,
         json_schema_extra=SettingField(
