@@ -1,5 +1,6 @@
 import numpy as np
 from PIL.ImageQt import fromqimage
+from qt.gui import QColor
 
 
 def otsu_threshold(gray):
@@ -42,8 +43,8 @@ def qimage_to_pil(qimage):
 def _detect_text_color_from_crop(crop_arr):
     if crop_arr.size == 0 or crop_arr.shape[0] == 0 or crop_arr.shape[1] == 0:
         return {
-            'text_hex': '#FFFFFF',
-            'background_hex': '#000000'
+            'text_hex': QColor('#FFFFFF'),
+            'background_hex': QColor('#FFFFFF')
         }
 
     gray = (
@@ -77,12 +78,12 @@ def _detect_text_color_from_crop(crop_arr):
     text_rgb = np.median(crop_arr[text_mask], axis=0)
     bg_rgb = np.median(crop_arr[bg_mask], axis=0) if bg_mask.sum() else text_rgb
 
-    def to_hex(rgb):
-        return '#{:02x}{:02x}{:02x}'.format(*(int(c) for c in rgb))
+    text_color = QColor(*(int(c) for c in text_rgb))
+    bg_color = QColor(*(int(c) for c in bg_rgb))
 
     return {
-        'text_hex': to_hex(text_rgb),
-        'background_hex': to_hex(bg_rgb),
+        'text_hex': text_color,
+        'background_hex': bg_color,
     }
 
 
@@ -93,7 +94,7 @@ def detect_text_colors(qimage, rects):
     results = []
     for (x1, y1, x2, y2) in rects:
         if x2 <= x1 or y2 <= y1:
-            results.append('#FFFFFF')
+            results.append(QColor('#FFFFFF'))
             continue
 
         crop_arr = img_arr[y1:y2, x1:x2]
