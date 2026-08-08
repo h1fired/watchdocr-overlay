@@ -12,7 +12,6 @@ Item {
     property int style: VisualHints.Style.SimpleInpaint
     property alias boxes: container.boxes
     property alias parts: container.parts
-    property bool usePerspective: false
     required property ImageProvider provider
 
     VisualHintContainer {
@@ -46,16 +45,13 @@ Item {
     Component {
         id: filterDelegateSolid
 
-        SolidFilterDelegate {
-            usePerspective: root.usePerspective
-        }
+        SolidFilterDelegate {}
     }
 
     Component {
         id: filterDelegateSimpleInpaint
 
         SimpleInpaintFilterDelegate {
-            usePerspective: root.usePerspective
             provider: root.provider
         }
     }
@@ -63,16 +59,13 @@ Item {
     Component {
         id: textDelegateSolid
 
-        SolidTextDelegate {
-            usePerspective: root.usePerspective
-        }
+        SolidTextDelegate {}
     }
 
     Component {
         id: textDelegateSimpleInpaint
 
         SimpleInpaintTextDelegate {
-            usePerspective: root.usePerspective
             provider: root.provider
         }
     }
