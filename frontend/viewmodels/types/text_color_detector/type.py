@@ -8,7 +8,7 @@ MAX_THREAD_COUNT = 3
 
 class TextColorDetector(QObject):
     imageProviderChanged = Signal()
-    rectsChanged = Signal()
+    coordinatesChanged = Signal()
     colorsOutputChanged = Signal()
 
     _pool = None
@@ -16,13 +16,13 @@ class TextColorDetector(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._image_id = ''
-        self._rects = []
+        self._coords = []
         self._colors = []
         self._active_tasks = []
 
         self._image_provider = None
         self._image_changed = False
-        self._rects_changed = False
+        self._coordinates_changed = False
 
     @classmethod
     def pool(cls):
@@ -48,18 +48,18 @@ class TextColorDetector(QObject):
 
     image = Property(str, getImageProvider, setImageProvider, notify=imageProviderChanged)
 
-    def getRects(self):
-        return self._rects
+    def getCoordinates(self):
+        return self._coords
 
-    def setRects(self, rects: list):
-        boundings = [b['boundings'] for b in rects]
-        self._rects = boundings
-        self._rects_changed = True
-        self.rectsChanged.emit()
+    def setCoordinates(self, coordinates: list):
+        coordinates = [b['coordinates'] for b in coordinates]
+        self._coords = coordinates
+        self._coordinates_changed = True
+        self.coordinatesChanged.emit()
 
         self.update()
 
-    rects = Property('QVariantList', getRects, setRects, notify=rectsChanged)
+    coordinates = Property('QVariantList', getCoordinates, setCoordinates, notify=coordinatesChanged)
 
     def getColorsOutput(self):
         return self._colors
@@ -71,14 +71,14 @@ class TextColorDetector(QObject):
     colorsOutput = Property('QVariantList', getColorsOutput, notify=colorsOutputChanged)
 
     def update(self):
-        if not len(self._rects) or not self._image_id:
+        if not len(self._coords) or not self._image_id:
             self.setColorsOutput([])
             return
-        elif not self._image_changed or not self._rects_changed:
+        elif not self._image_changed or not self._coordinates_changed:
             return
 
         self._image_changed = False
-        self._rects_changed = False
+        self._coordinates_changed = False
 
         provider = self._image_provider
 
@@ -89,7 +89,7 @@ class TextColorDetector(QObject):
         if image is None or image.isNull():
             return
 
-        task = _Task(image, self._rects)
+        task = _Task(image, self._coords)
         task.done.connect(self._on_task_done)
         self._active_tasks.append(task)
 
@@ -107,15 +107,15 @@ class TextColorDetector(QObject):
 class _Task(QObject, QRunnable):
     done = Signal(object, list)
 
-    def __init__(self, image: QImage, rects: list):
+    def __init__(self, image: QImage, coordinates: list):
         QObject.__init__(self)
         QRunnable.__init__(self)
         self._image = image
-        self._rects = rects
+        self._coords = coordinates
 
     def run(self):
         try:
-            colors = detect_text_colors(self._image, self._rects)
+            colors = detect_text_colors(self._image, self._coords)
         except Exception:
             colors = []
         self.done.emit(self, colors)

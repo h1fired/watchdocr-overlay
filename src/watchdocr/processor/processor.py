@@ -105,9 +105,8 @@ class OcrPipelineStage(PipelineStage):
         ctx.ocr.total_confidence = data.confidence
 
         ctx.ocr.boxes = tuple(OcrBox(
-            boundings=b.boundings,
-            confidence=b.confidence,
             coordinates=b.coordinates,
+            confidence=b.confidence,
             has_perspective=b.has_perspective
         ) for b in data.boxes)
         ctx.ocr.parts = tuple(p.text for p in data.boxes)

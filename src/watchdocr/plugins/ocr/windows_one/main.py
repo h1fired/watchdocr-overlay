@@ -54,25 +54,12 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
                 continue
 
             line_coordinates = tuple([int(b / scale) for b in line.boundings])
-            line_boundings = self._coords_to_boundings(line.boundings, scale)
 
             box = OcrBoxData(
                 text=line.text,
-                boundings=line_boundings,
-                confidence=line_confidence,
                 coordinates=line_coordinates,
+                confidence=line_confidence,
                 has_perspective=True
             )
             boxes.append(box)
         return boxes
-
-    def _coords_to_boundings(self, bbox: tuple[int, ...], scale: float):
-        xs = bbox[0::2]
-        ys = bbox[1::2]
-
-        x1 = min(xs) // scale
-        y1 = min(ys) // scale
-        x2 = max(xs) // scale
-        y2 = max(ys) // scale
-
-        return (x1, y1, x2, y2)

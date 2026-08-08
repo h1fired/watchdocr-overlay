@@ -11,7 +11,7 @@ MatrixDelegate {
     TextColorDetector {
         id: detector
 
-        rects: root.boxes
+        coordinates: root.boxes
         image: provider.providerId
     }
 

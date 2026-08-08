@@ -25,7 +25,6 @@ class RuntimeConfig(ContextModel):
 
 
 class OcrBox(ContextModel):
-    boundings: tuple[int, int, int, int]
     confidence: float
     has_perspective: bool
     coordinates: tuple[int, int, int, int, int, int, int, int]

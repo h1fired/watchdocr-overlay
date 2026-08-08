@@ -10,11 +10,10 @@ import re
 @dataclass(slots=True, frozen=True)
 class OcrBoxData:
     text: str
-    boundings: tuple
-    confidence: float
+    coordinates: tuple[int, ...] = (0, 0, 0, 0, 0, 0, 0, 0)
+    confidence: float = 0.
 
     has_perspective: bool = False
-    coordinates: tuple = tuple()
 
 
 @dataclass(slots=True, frozen=True)
