@@ -13,8 +13,6 @@ class OcrBoxData:
     coordinates: tuple[int, ...] = (0, 0, 0, 0, 0, 0, 0, 0)
     confidence: float = 0.
 
-    has_perspective: bool = False
-
 
 @dataclass(slots=True, frozen=True)
 class OcrData:
@@ -22,6 +20,7 @@ class OcrData:
     text: str
     boxes: tuple[OcrBoxData, ...]
     confidence: float
+    has_perspective: bool = False
 
     def to_dict(self):
         return asdict(self)

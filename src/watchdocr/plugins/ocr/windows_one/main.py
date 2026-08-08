@@ -38,7 +38,7 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
     def recognizable(self, image: Image.Image, scale: float):
         res = self._api.recognize(image)
         boxes = self._parse_boxes(res.lines, scale)
-        return OcrData(True, res.text, tuple(boxes), 0.)
+        return OcrData(True, res.text, tuple(boxes), 0., True)
 
     def _parse_boxes(self, rlines: tuple[OcrLine, ...], scale: float):
         boxes = []
@@ -59,7 +59,6 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
                 text=line.text,
                 coordinates=line_coordinates,
                 confidence=line_confidence,
-                has_perspective=True
             )
             boxes.append(box)
         return boxes

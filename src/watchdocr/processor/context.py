@@ -26,7 +26,6 @@ class RuntimeConfig(ContextModel):
 
 class OcrBox(ContextModel):
     confidence: float
-    has_perspective: bool
     coordinates: tuple[int, int, int, int, int, int, int, int]
 
     @field_validator('confidence')
