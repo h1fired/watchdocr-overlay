@@ -40,7 +40,8 @@
     <file>ui/overlay/components/TranslationSelectorMenu.qml</file>
     <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
     <file>ui/overlay/components/visualhint/Delegate.qml</file>
-    <file>ui/overlay/components/visualhint/MatrixDelegate.qml</file>
+    <file>ui/overlay/components/visualhint/MatrixDelegateBox.qml</file>
+    <file>ui/overlay/components/visualhint/MatrixUtils.js</file>
     <file>ui/overlay/components/visualhint/SimpleInpaintFilterDelegate.qml</file>
     <file>ui/overlay/components/visualhint/SimpleInpaintTextDelegate.qml</file>
     <file>ui/overlay/components/visualhint/SolidFilterDelegate.qml</file>
