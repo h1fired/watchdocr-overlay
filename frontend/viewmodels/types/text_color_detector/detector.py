@@ -43,14 +43,6 @@ def qimage_to_pil(qimage):
     return fromqimage(qimage).convert("RGB")
 
 
-def color_diff(color1: QColor, color2: QColor):
-    h1, s1, l1 = color1.hue(), color1.saturation(), color1.lightness()
-    h2, s2, l2 = color2.hue(), color2.saturation(), color2.lightness()
-    d = math.sqrt((h2-h1)**2+(s2-s1)**2+(l2-l1)**2)
-    p = d / math.sqrt(255**2+255**2+255**2)
-    return p
-
-
 @dataclass(slots=True)
 class DetectColorOutput:
     text: QColor
@@ -103,15 +95,7 @@ def _detect_text_color_from_masked(crop_arr, shape_mask, ring_px=2):
     text_color = QColor(*(int(c) for c in text_rgb))
     bg_color = QColor(*(int(c) for c in bg_rgb))
 
-    border_color = QColor('#000000')
-    has_border = color_diff(text_color, bg_color) < 0.1
-    if has_border:
-        border_color = (
-            text_color.darker(150) if text_color.lightness() > 128
-            else text_color.lighter(150)
-        )
-
-    return DetectColorOutput(text_color, has_border, border_color)
+    return DetectColorOutput(text_color, True, bg_color)
 
 
 def _polygon_mask(points, x0, y0, w, h):
