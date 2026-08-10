@@ -6,13 +6,14 @@ Item {
 
     required property var coordinates
     readonly property var _c: coordinates
+    readonly property var _size: MatrixUtils.quadSize(_c)
 
     x: _c[0]
     y: _c[1]
-    width: Math.sqrt(Math.pow(_c[2] - _c[0], 2) + Math.pow(_c[3] - _c[1], 2))
-    height: Math.sqrt(Math.pow(_c[6] - _c[0], 2) + Math.pow(_c[7] - _c[1], 2))
+    width: _size.width
+    height: _size.height
 
     transform: Matrix4x4 {
-        matrix: MatrixUtils.buildMatrix(root.x, root.y, root.width, root.height, root._c)
+        matrix: MatrixUtils.buildMatrix(root._c)
     }
 }
