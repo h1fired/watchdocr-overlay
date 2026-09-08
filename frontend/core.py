@@ -15,6 +15,8 @@ from frontend.viewmodels.types import (
     registerQmlImageProviders
 )
 from config import config
+import qasync
+import asyncio
 import ctypes
 import os
 
@@ -169,7 +171,12 @@ class GuiCoreApplication(metaclass=Singleton):
     def exec(self):
         if self._tray:
             self._tray.show()
-        return self._app.exec()
+        qasync.run(self._exec())
+
+    async def _exec(self):
+        close_event = asyncio.Event()
+        self._app.aboutToQuit.connect(close_event.set)
+        await close_event.wait()
 
     def engine(self):
         return self._engine
