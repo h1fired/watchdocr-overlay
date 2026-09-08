@@ -12,7 +12,8 @@ __plugin_meta__ = {
 __plugin_main__ = 'WindowsOneOcrPlugin'
 
 
-RESOURCE_PATH = 'https://github.com/h1fired/watchdocr-overlay/releases/download/v0.1.0/watchdocr_windowsone_ocr_data.zip'
+RESOURCE_URL = 'https://github.com/h1fired/watchdocr-overlay/releases/download/v0.1.0/watchdocr_windowsone_ocr_data.zip'
+RESOURCE_SHA256 = '03c4b49f0f4e863b1027e19ae84575c2c399870818d9c56bfc347e09711f74bf'
 
 
 class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
@@ -23,7 +24,10 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
         self._api = OcrEngine(dlls_path=dlls_path)
 
     def get_download_resource(self):
-        return DownloadResource(RESOURCE_PATH)
+        return DownloadResource(
+            url=RESOURCE_URL,
+            sha256=RESOURCE_SHA256
+        )
 
     def get_priority(self):
         return 1
@@ -34,7 +38,7 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
     def recognizable(self, image: Image.Image, scale: float):
         res = self._api.recognize(image)
         boxes = self._parse_boxes(res.lines, scale)
-        return OcrData(True, res.text, tuple(boxes), 0.)
+        return OcrData(True, res.text, tuple(boxes), 0., True)
 
     def _parse_boxes(self, rlines: tuple[OcrLine, ...], scale: float):
         boxes = []
@@ -50,25 +54,11 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
                 continue
 
             line_coordinates = tuple([int(b / scale) for b in line.boundings])
-            line_boundings = self._coords_to_boundings(line.boundings, scale)
 
             box = OcrBoxData(
                 text=line.text,
-                boundings=line_boundings,
-                confidence=line_confidence,
                 coordinates=line_coordinates,
-                has_perspective=True
+                confidence=line_confidence,
             )
             boxes.append(box)
         return boxes
-
-    def _coords_to_boundings(self, bbox: tuple[int, ...], scale: float):
-        xs = bbox[0::2]
-        ys = bbox[1::2]
-
-        x1 = min(xs) // scale
-        y1 = min(ys) // scale
-        x2 = max(xs) // scale
-        y2 = max(ys) // scale
-
-        return (x1, y1, x2, y2)

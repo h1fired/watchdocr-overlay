@@ -89,38 +89,43 @@ Rectangle {
         MouseArea {
             id: mouseResize
 
+            property point startPos: Qt.point(0, 0)
+
             anchors.fill: parent
 
             hoverEnabled: true
             cursorShape: Qt.SizeFDiagCursor
 
-            drag.target: parent
-            drag.axis: Drag.XAndYAxis
+            onPressed: {
+                startPos = Qt.point(mouseX, mouseY);
+            }
 
             onMouseXChanged: {
-                if (drag.active) {
-                    let expWidth = root.width + mouseX;
-                    if (expWidth < root.minimumWidth)
-                        expWidth = root.minimumWidth;
+                if (!pressed)
+                    return
 
-                    let maxWidth = root.parent.width - root.x - root.dragMargin;
-                    expWidth = clampTo(expWidth, 0, maxWidth);
+                let expWidth = root.width + mouseX - startPos.x;
+                if (expWidth < root.minimumWidth)
+                    expWidth = root.minimumWidth;
 
-                    root.width = expWidth;
-                }
+                let maxWidth = root.parent.width - root.x - root.dragMargin;
+                expWidth = clampTo(expWidth, 0, maxWidth);
+
+                root.width = expWidth;
             }
 
             onMouseYChanged: {
-                if (drag.active) {
-                    let expHeight = root.height + mouseY;
-                    if (expHeight < root.minimumHeight)
-                        expHeight = root.minimumHeight;
+                if (!pressed)
+                    return
 
-                    let maxHeight = root.parent.height - root.y - root.dragMargin;
-                    expHeight = clampTo(expHeight, 0, maxHeight);
+                let expHeight = root.height + mouseY - startPos.y;
+                if (expHeight < root.minimumHeight)
+                    expHeight = root.minimumHeight;
 
-                    root.height = expHeight;
-                }
+                let maxHeight = root.parent.height - root.y - root.dragMargin;
+                expHeight = clampTo(expHeight, 0, maxHeight);
+
+                root.height = expHeight;
             }
 
             function clampTo(value, min, max) {

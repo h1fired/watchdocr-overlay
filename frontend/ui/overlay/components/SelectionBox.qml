@@ -23,14 +23,19 @@ Item {
 
     Rectangle {
         id: borderRect
+
         anchors.fill: parent
+        anchors.margins: -1
+
         color: "transparent"
+
         border.color: root.borderColor
         border.width: root.borderWidth
     }
 
     component ResizeHandle: Item {
         id: handle
+
         width: root.handleSize
         height: root.handleSize
 
@@ -165,8 +170,8 @@ Item {
 
     // Top-Left corner handle
     ResizeHandle {
-        x: -12
-        y: -12
+        x: -15
+        y: -15
         cursor: Qt.SizeFDiagCursor
         direction: "tl"
         isCorner: true
@@ -175,7 +180,7 @@ Item {
     // Top edge handle
     ResizeHandle {
         x: (root.width - width) / 2
-        y: -12
+        y: -13
         cursor: Qt.SizeVerCursor
         direction: "t"
     }
@@ -183,7 +188,7 @@ Item {
     // Top-Right corner handle
     ResizeHandle {
         x: root.width - 12
-        y: -12
+        y: -15
         cursor: Qt.SizeBDiagCursor
         direction: "tr"
         isCorner: true
@@ -191,7 +196,7 @@ Item {
 
     // Right edge handle
     ResizeHandle {
-        x: root.width - 12
+        x: root.width - 10
         y: (root.height - height) / 2
         cursor: Qt.SizeHorCursor
         direction: "r"
@@ -200,7 +205,7 @@ Item {
     // Bottom-Right corner handle
     ResizeHandle {
         x: root.width - 12
-        y: root.height - 12
+        y: root.height - 9
         cursor: Qt.SizeFDiagCursor
         direction: "br"
         isCorner: true
@@ -209,15 +214,15 @@ Item {
     // Bottom edge handle
     ResizeHandle {
         x: (root.width - width) / 2
-        y: root.height - 12
+        y: root.height - 10
         cursor: Qt.SizeVerCursor
         direction: "b"
     }
 
     // Bottom-Left corner handle
     ResizeHandle {
-        x: -12
-        y: root.height - 12
+        x: -15
+        y: root.height - 9
         cursor: Qt.SizeBDiagCursor
         direction: "bl"
         isCorner: true
@@ -225,7 +230,7 @@ Item {
 
     // Left edge handle
     ResizeHandle {
-        x: -12
+        x: -13
         y: (root.height - height) / 2
         cursor: Qt.SizeHorCursor
         direction: "l"

@@ -2,69 +2,61 @@ import QtQuick
 import Qt5Compat.GraphicalEffects
 import "qrc:/qml/ui/overlay/components"
 
-MatrixDelegate {
+Delegate {
     id: root
 
     required property ImageProvider provider
+
+    rectMargin: 2
+
+    // Background inpaint shader
+    ShaderEffectSource {
+        id: frameCapture
+
+        visible: false
+        live: true
+        recursive: false
+        sourceItem: root.provider
+        textureSize: Qt.size(root.provider.width, root.provider.height)
+    }
 
     Repeater {
 
         model: parent.visible ? root.boxes : 0
 
-        Item {
+        MatrixDelegateBox {
             id: box
 
-            readonly property var _c: root.expandQuad(modelData.coordinates, root.rectMargin) ?? []
-            readonly property var _b: modelData.boundings ?? []
-            readonly property bool _hasPerspective: root.usePerspective && modelData.has_perspective
+            required property var modelData
 
-            x: box._hasPerspective
-                ? _c[0]
-                : _b[0] - root.rectMargin
-            y: box._hasPerspective
-                ? _c[1]
-                : _b[1] - root.rectMargin
-            width: box._hasPerspective
-                ? Math.sqrt(Math.pow(_c[2] - _c[0], 2) + Math.pow(_c[3] - _c[1], 2))
-                : _b[2] - _b[0] + (root.rectMargin * 2)
-            height: box._hasPerspective
-                ? Math.sqrt(Math.pow(_c[6] - _c[0], 2) + Math.pow(_c[7] - _c[1], 2))
-                : _b[3] - _b[1] + (root.rectMargin * 2)
+            coordinates: root.expandQuad(modelData.coordinates, root.rectMargin)
 
-            transform: Matrix4x4 {
-                matrix: box._hasPerspective
-                    ? root.buildMatrix(box.x, box.y, box.width, box.height, box._c)
-                    : Qt.matrix4x4()
-            }
-
-            // Inpaint
-            ShaderEffectSource {
-                id: rawBoxCapture
-
-                visible: false
-
-                live: true
-                sourceItem: root.provider
-                sourceRect: Qt.rect(
-                    box.x,
-                    box.y,
-                    box.width,
-                    box.height
-                )
-            }
+            readonly property real ringRadius: Math.max(8, box.height * 0.25)
 
             ShaderEffect {
                 id: cleanBackgroundBox
 
-                property variant source: rawBoxCapture
-                property vector2d pixelSize: Qt.vector2d(4, 4)
-
                 anchors.fill: parent
+
+                property variant source: frameCapture
+
+                property vector2d q0: Qt.vector2d(box.coordinates[0] / root.width,
+                                                  box.coordinates[1] / root.height)
+                property vector2d q1: Qt.vector2d(box.coordinates[2] / root.width,
+                                                  box.coordinates[3] / root.height)
+                property vector2d q2: Qt.vector2d(box.coordinates[4] / root.width,
+                                                  box.coordinates[5] / root.height)
+                property vector2d q3: Qt.vector2d(box.coordinates[6] / root.width,
+                                                  box.coordinates[7] / root.height)
+
+                property real tolerance: 0.06
+                property real seam: 0.0
+                property real gradient: 0.0
 
                 layer.enabled: true
                 opacity: 0
 
-                fragmentShader: "qrc:/qml/ui/shaders/average.frag.qsb" 
+                fragmentShader: "qrc:/qml/ui/shaders/average.frag.qsb"
             }
 
             Rectangle {

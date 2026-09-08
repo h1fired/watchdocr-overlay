@@ -8,6 +8,9 @@ class OcrTranslatorTextAdapter:
         self._separator = separator
 
     def generate_mapped_string(self, full_text: str, parts: tuple[str]):
+        if full_text == '':
+            return ''
+
         mapped_text = (
             f'{full_text}{self._separator}' +
             self._separator.join(parts)

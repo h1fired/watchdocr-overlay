@@ -50,9 +50,9 @@ class PreloaderWorker(QObject):
         self._thread.start()
 
     def _runner(self):
-        # Plugin downloader
+        self.setLabel('Downloading resources')
+
         downloader = PluginResourceDownloader(self._manager)
-        self.setLabel('Downloading resources...')
         downloader.observe('progress', self.setProgress)
 
         if not downloader.start_download():
