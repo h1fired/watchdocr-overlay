@@ -2,20 +2,26 @@ from pydantic import BaseModel, ConfigDict
 from typing import Sequence, Dict, Any
 from types import SimpleNamespace
 from src.backend.common.ex import UniqueError
+from src.backend.core.plugin import PluginManager
 
 
 class StageContext(BaseModel):
-    pass
+    model_config = ConfigDict(validate_assignment=True)
 
 
 class Stage:
     name: str
     context_model: type[StageContext]
 
-    def __init__(self, **kwargs):
+    def __init__(self, plugins_manager: PluginManager, **kwargs):
         assert hasattr(self, 'name')
         assert hasattr(self, 'context_model'), '"context_model" property is not set'
         self._deps = SimpleNamespace(**kwargs)
+        self._plugins = plugins_manager
+
+    @property
+    def plugins(self):
+        return self._plugins
 
     async def run(
         self,
@@ -60,15 +66,23 @@ class PipelineConfig(BaseModel):
 class Pipeline:
     spec: PipelineSpec
 
-    def __init__(self):
+    def __init__(self, plugins_manager: PluginManager):
         assert hasattr(self, 'spec'), '"spec" property is not set'
         if not self._validate_stages_uniqueness(self.spec.stages):
             raise UniqueError('Stages IDs are not unique')
+        self._plugins = plugins_manager
+
+    @property
+    def plugins(self):
+        return self._plugins
 
     async def run(self, config: PipelineConfig = PipelineConfig()):
         stages: Sequence[Stage] = []
         for s in self.spec.stages:
-            obj = s(**config.dependencies.get(s.name, {}))
+            obj = s(
+                plugins_manager=self._plugins,
+                **config.dependencies.get(s.name, {})
+            )
             stages.append(obj)
 
         ctxs = {}
