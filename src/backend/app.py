@@ -20,6 +20,7 @@ class WatchdOcrCore:
     def _register_plugins(self):
         self._plugins_manager = PluginManager(self._eventsys)
         self._plugins_manager.add_entry_point(config.PLUGINS_BACKEND_ENTRY_POINT)
+        self._plugins_manager.init()
 
     def _register_processors(self):
         self._ocr_translate_p = OcrTranslationProcessor(
