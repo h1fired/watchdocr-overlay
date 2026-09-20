@@ -1,5 +1,5 @@
-from src.common.plugin import PluginManager
-from src.common.utils.logging import log
+from src.backend.common.plugin import PluginManager
+from src.backend.common.utils.logging import log
 from src.backend.plugins.ocr import OcrPlugin, OcrBoxData
 from PIL import Image
 from pydantic import BaseModel, ConfigDict, field_validator

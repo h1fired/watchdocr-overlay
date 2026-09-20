@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .event import IEvent, EventSystem, EventData
-from ..common.utils.logging import log
+from .utils.logging import log
 from common.observable import MappedObservable
 from config import config
 from dataclasses import dataclass
@@ -35,7 +35,7 @@ class PluginDiscovery:
         log.info('Adding entry point directory: %s', dir, extra={'title': LOG_TITLE})
         self._p_entries.append(dir)
 
-    async def discover(self):
+    def discover(self):
         modules = []
 
         log.info('Starting plugin discovery...', extra={'title': LOG_TITLE})
@@ -108,9 +108,9 @@ class PluginManager:
 
         self._discovery = PluginDiscovery()
 
-    async def init(self):
+    def init(self):
         log.info('Initializing plugins...', extra={'title': LOG_TITLE})
-        for name in await self._discovery.discover():
+        for name in self._discovery.discover():
             module = importlib.import_module(name)
 
             id = module.__plugin_meta__['id']
@@ -148,11 +148,11 @@ class PluginManager:
             )
 
         # Register on_event callback for event system
-        async def on_event(event: IEvent, data: EventData):
+        def on_event(event: IEvent, data: EventData):
             for instance in self._plugins:
                 if isinstance(instance, EventPlugin):
                     instance.on_event(event, data)
-        await self._eventsys.listen(on_event)
+        self._eventsys.listen(on_event)
         self._initialized = True
 
     def add_entry_point(self, dir: str):
@@ -204,18 +204,18 @@ def hook(id: str):
 
 
 class LaunchPlugin(Plugin):
-    async def on_startup(self):
+    def on_startup(self):
         pass
 
 
 class EventPlugin(Plugin):
     __eventsys__: EventSystem = None
 
-    async def on_event(self, event: IEvent, data: EventData):
+    def on_event(self, event: IEvent, data: EventData):
         pass
 
-    async def fire(self, event: IEvent, data: dict[str, Any]):
-        await self.__eventsys__.dispatch(event, data)
+    def fire(self, event: IEvent, data: dict[str, Any]):
+        self.__eventsys__.dispatch(event, data)
 
 
 class PriorityPlugin(Plugin):

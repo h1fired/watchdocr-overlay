@@ -32,4 +32,4 @@ class AppConfigOBJ(NoSetAttributeLazy):
         return getattr(self, name.upper())
 
 
-config = AppConfig().load()
+config: default = AppConfig().load()

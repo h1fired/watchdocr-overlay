@@ -1,6 +1,6 @@
-from src.common.plugin import PluginManager
+from src.backend.common.plugin import PluginManager
 from src.backend.plugins.translation import TranslatorPlugin
-from src.common.utils.logging import log
+from src.backend.common.utils.logging import log
 
 
 class Translator:

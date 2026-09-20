@@ -1,0 +1,1 @@
+from src.backend.ocrtranslate.processor import OcrTranslationProcessor

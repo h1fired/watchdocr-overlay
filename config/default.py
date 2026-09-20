@@ -22,6 +22,7 @@ QML_WINDOW_FILE = ':/qml/ui/MainWindow.qml'
 
 PRELOADER_WINDOW_FILE = ':/qml/ui/preloader/AppPreloaderWindow.qml'
 
+PLUGINS_BACKEND_ENTRY_POINT = 'src.backend.plugins'
 PLUGINS_DOWNLOAD_DATA_PATH = Path(
     create_dir(os.environ['LOCALAPPDATA'], APP_NAME),
     'plugdata'
