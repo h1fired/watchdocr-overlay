@@ -34,7 +34,10 @@ class Stage:
             for name, attr in force_data.items():
                 setattr(ctx, name, attr)
 
-        return await self.runnable(ctx, prev_ctx)
+        ctx = await self.runnable(ctx, prev_ctx)
+        if not ctx:
+            raise RuntimeError('Stage should return context object, not None')
+        return ctx
 
     async def runnable(
         self,
@@ -56,9 +59,8 @@ class PipelineSpec(BaseModel):
 
 
 class PipelineConfig(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    skip_stages: list[str] = []
+    ignored_stages: list[str] = []
+    allowed_stages: list[str] = []
     dependencies: dict[str, dict] = {}
     force_context_data: dict[str, dict] = {}
 
@@ -79,9 +81,10 @@ class Pipeline:
     async def run(self, config: PipelineConfig = PipelineConfig()):
         stages: Sequence[Stage] = []
         for s in self.spec.stages:
+            dependencies = config.dependencies.get(s.name, {})
             obj = s(
                 plugins_manager=self._plugins,
-                **config.dependencies.get(s.name, {})
+                **dependencies
             )
             stages.append(obj)
 
@@ -89,7 +92,8 @@ class Pipeline:
         prev_ctx = None
         for stage in stages:
             force_data = config.force_context_data.get(stage.name, {})
-            if stage.name in config.skip_stages:
+
+            if not self._stage_allowed(stage, config):
                 prev_ctx = stage.context_model(**force_data)
             else:
                 prev_ctx = await stage.run(prev_ctx, force_data)
@@ -109,6 +113,14 @@ class Pipeline:
         names = [s.name for s in stages]
         unique_names = set(names)
         return len(names) == len(unique_names)
+
+    def _stage_allowed(self, stage: type[Stage], config: PipelineConfig):
+        stage_allowed = True
+        if ass := config.allowed_stages:
+            stage_allowed = stage.name in ass
+        elif iss := config.ignored_stages:
+            stage_allowed = stage.name not in iss
+        return stage_allowed
 
 
 class PipelineOutput(BaseModel):

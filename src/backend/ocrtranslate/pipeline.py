@@ -8,9 +8,12 @@ from src.backend.ocrtranslate.translator import Translator
 from src.backend.ocrtranslate.image import ScreenGrabber
 from src.backend.ocrtranslate.adapter import OcrTranslatorTextAdapter
 from PIL import Image
+from pydantic import ConfigDict
 
 
 class ImageCaptureContext(StageContext):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     box: tuple[int, int, int, int] = (0, 0, 0, 0)
     image: Image.Image | None = None
 
@@ -100,7 +103,7 @@ class TranslationStage(Stage):
     ):
         # Skip if OCR pipeline if failed
         if not prev_ctx.success:
-            return
+            return ctx
 
         translator: Translator = self.deps.translator
 
@@ -119,7 +122,7 @@ class TranslationStage(Stage):
         ctx.success = response.success
         if not response.success:
             ctx.translated_text = response.translated_text
-            return
+            return ctx
 
         # Generate translated boxes from output
         full_text, parts = text_adapter.unpack_mapped_string(response.translated_text)
@@ -127,19 +130,21 @@ class TranslationStage(Stage):
         ctx.translated_text = full_text
         ctx.parts = tuple(p for _, p in zip(prev_ctx.parts, parts))
 
+        return ctx
+
 
 class TranslationOutput(PipelineOutput):
     original_text: str = ''
     translated_text: str = ''
     boxes: tuple[OcrBox, ...] = tuple()
-    original_parts = tuple[str, ...] = tuple()
-    translated_parts = tuple[str, ...] = tuple()
+    original_parts: tuple[str, ...] = tuple()
+    translated_parts: tuple[str, ...] = tuple()
     total_confidence: float = 0.
 
 
 class OcrTranslationPipeline(Pipeline):
     spec = PipelineSpec(
-        stages=[ImageCaptureContext, OcrStage, TranslationStage],
+        stages=[ImageCaptureStage, OcrStage, TranslationStage],
         output_model=TranslationOutput
     )
 

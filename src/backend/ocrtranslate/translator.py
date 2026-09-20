@@ -12,7 +12,10 @@ class Translator:
     def translate(self, text: str, source_lang: str, target_lang: str):
         apis = self._plugins_manager.get_realizations(TranslatorPlugin)
         if not len(apis):
-            log.error('No Translation backend plugins found!', extra={'title': 'Translation'})
+            log.error(
+                'No Translation backend plugins found!',
+                extra={'title': 'Translation'}
+            )
             raise ValueError('Translator backend plugins not found')
         api = sorted(apis, key=lambda e: e.get_priority())[0]
         return api.translate(text, source_lang, target_lang)
