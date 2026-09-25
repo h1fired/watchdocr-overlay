@@ -5,10 +5,5 @@ from src.backend.transport.grpc.ocrtranslate.v1.service import (
 )
 
 
-services = [
-    (OcrTranslateService, OcrTranslateDispatcher),
-]
-
-
 class WatchdOcrGRPCServer(GRPCServer):
     pass

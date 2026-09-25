@@ -1,6 +1,6 @@
-from src.common.plugin import DownloadResource, DownloadablePlugin
-from src.watchdocr.plugins.ocr import OcrPlugin, OcrData, OcrBoxData
-from src.watchdocr.plugins.ocr.windows_one.engine import OcrEngine, OcrLine
+from src.backend.common.plugin import DownloadResource, DownloadablePlugin
+from src.backend.plugins.ocr import OcrPlugin, OcrData, OcrBoxData
+from src.backend.plugins.ocr.windows_one.engine import OcrEngine, OcrLine
 from PIL import Image
 
 

@@ -1,4 +1,4 @@
-from src.common.plugin import HookPlugin, hook
+from src.backend.common.plugin import HookPlugin, hook
 import re
 
 

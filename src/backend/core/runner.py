@@ -12,7 +12,7 @@ class Runner:
         if self._task and not self._task.done():
             return
         self._running = True
-        self._task = asyncio.create_task(self._run())
+        await self._run()
 
     async def stop(self):
         self._running = False

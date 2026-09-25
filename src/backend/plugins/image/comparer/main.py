@@ -1,5 +1,5 @@
-from src.common.plugin import HookPlugin, hook, LaunchPlugin
-from src.common.utils.logging import log
+from src.backend.common.plugin import HookPlugin, hook, LaunchPlugin
+from src.backend.common.utils.logging import log
 from src.watchdocr.processor.processor import WatchdOcrRuntimeContext
 from PIL import Image
 import imagehash

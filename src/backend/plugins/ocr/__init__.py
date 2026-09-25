@@ -1,5 +1,5 @@
-from src.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
-from src.watchdocr.plugins.ocr.filter import OcrImageFilter
+from src.backend.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
+from src.backend.plugins.ocr.filter import OcrImageFilter
 from PIL import Image
 from dataclasses import dataclass, asdict
 from enum import IntFlag

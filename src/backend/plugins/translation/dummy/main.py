@@ -1,4 +1,4 @@
-from src.watchdocr.plugins.translation import TranslatorPlugin, TranslationData
+from src.backend.plugins.translation import TranslatorPlugin, TranslationData
 
 
 __plugin_meta__ = {

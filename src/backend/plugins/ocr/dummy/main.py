@@ -1,4 +1,4 @@
-from src.watchdocr.plugins.ocr import OcrPlugin, OcrData
+from src.backend.plugins.ocr import OcrPlugin, OcrData
 from PIL import Image
 
 

@@ -1,4 +1,4 @@
-from src.watchdocr.plugins.image.textremover import ImageTextRemoverPlugin
+from src.backend.plugins.image.textremover import ImageTextRemoverPlugin
 from PIL import Image
 import numpy as np
 import cv2

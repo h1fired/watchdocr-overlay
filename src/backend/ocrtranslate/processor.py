@@ -25,3 +25,12 @@ class OcrTranslationProcessor:
                 }
             }
         )
+
+    async def start(self):
+        await self._runner.start()
+
+    async def stop(self):
+        await self._runner.stop()
+
+    async def request(self, task: OcrTranslationTask):
+        await self._runner.put(task)

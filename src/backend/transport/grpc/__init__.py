@@ -1,1 +1,1 @@
-from .server import WatchdOcrGRPCServer, services
+from .server import *

@@ -36,12 +36,12 @@ class OcrTranslationRunner(Runner):
         config = PipelineConfig()
 
         strategy, data = item.strategy, item.context_data
+        config.force_context_data = data
         if strategy == ExecutionStrategy.ALL:
             pass
         elif strategy == ExecutionStrategy.OCR_ONLY:
             config.ignored_stages = ['translation']
         elif strategy == ExecutionStrategy.RETRANSLATE:
-            config.force_context_data = data
             config.allowed_stages = ['translation']
 
         config.dependencies = self._dependencies

@@ -1,4 +1,4 @@
-from src.common.plugin import PriorityPlugin
+from src.backend.common.plugin import PriorityPlugin
 from PIL import Image
 
 

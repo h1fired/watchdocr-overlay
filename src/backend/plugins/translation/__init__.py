@@ -1,4 +1,4 @@
-from src.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
+from src.backend.common.plugin import LaunchPlugin, EventPlugin, PriorityPlugin
 from dataclasses import dataclass
 
 
