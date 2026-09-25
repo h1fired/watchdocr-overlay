@@ -1,0 +1,10 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+service OcrTranslateService {
+    rpc request_recognize(OcrTranslateRequest) returns (google.protobuf.Empty);
+}
+
+message OcrTranslateRequest {
+    repeated int32 bounding = 2;
+}

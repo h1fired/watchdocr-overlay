@@ -1,18 +1,22 @@
 from src.backend.ocrtranslate import OcrTranslationProcessor
 from src.backend.common.plugin import PluginManager
 from src.backend.common.event import EventSystem
+from src.backend.transport.grpc import WatchdOcrGRPCServer
 from config import config
+import asyncio
 
 
 class WatchdOcrCore:
     def __init__(self):
         self._eventsys = None
         self._plugins_manager = None
+        self._grpc_server = None
 
-    def load(self):
+    async def load(self):
         self._register_event_system()
         self._register_plugins()
         self._register_processors()
+        await self._register_grpc_server()
 
     def _register_event_system(self):
         self._eventsys = EventSystem()
@@ -27,10 +31,15 @@ class WatchdOcrCore:
             plugins=self._plugins_manager
         )
 
+    async def _register_grpc_server(self):
+        self._grpc_server = WatchdOcrGRPCServer(config.GPRC_HOST)
+        await self._grpc_server.run()
+        await self._grpc_server.wait_for_termination()
+
 
 def app():
     core = WatchdOcrCore()
-    core.load()
+    asyncio.run(core.load())
 
 
 if __name__ == '__main__':
