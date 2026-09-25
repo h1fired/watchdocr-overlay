@@ -3,8 +3,13 @@ import "google/protobuf/empty.proto";
 
 service OcrTranslateService {
     rpc request_recognize(OcrTranslateRequest) returns (google.protobuf.Empty);
+    rpc stream_results(google.protobuf.Empty) returns (stream OcrTranslateResult);
 }
 
 message OcrTranslateRequest {
     repeated int32 bounding = 2;
+}
+
+message OcrTranslateResult {
+    bool success = 1;
 }

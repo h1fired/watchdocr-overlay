@@ -3,7 +3,7 @@ from src.backend.core.pipeline import PipelineConfig
 from src.backend.ocrtranslate.pipeline import OcrTranslationPipeline
 from pydantic import BaseModel, ConfigDict
 from enum import IntEnum
-from typing import Any
+from typing import Any, Callable
 
 
 class ExecutionStrategy(IntEnum):
@@ -28,6 +28,7 @@ class OcrTranslationRunner(Runner):
         super().__init__()
         self._pipeline = pipeline
         self._dependencies = dependencies
+        self._cb_output = None
 
     async def put(self, item: OcrTranslationTask):
         return await super().put(item)
@@ -46,5 +47,9 @@ class OcrTranslationRunner(Runner):
 
         config.dependencies = self._dependencies
 
-        # TODO: Need to emit output (callback etc.)
-        _ = await self._pipeline.run(config)
+        output = await self._pipeline.run(config)
+        if self._cb_output:
+            await self._cb_output(output)
+
+    def add_output_callback(self, cb: Callable):
+        self._cb_output = cb

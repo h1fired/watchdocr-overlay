@@ -7,6 +7,7 @@ from src.backend.ocrtranslate.runner import (
 from src.backend.ocrtranslate.ocr import Ocr
 from src.backend.ocrtranslate.translator import Translator
 from src.common.plugin import PluginManager
+from typing import Callable
 
 
 class OcrTranslationProcessor:
@@ -34,3 +35,6 @@ class OcrTranslationProcessor:
 
     async def request(self, task: OcrTranslationTask):
         await self._runner.put(task)
+
+    def add_output_callback(self, cb: Callable):
+        self._runner.add_output_callback(cb)
