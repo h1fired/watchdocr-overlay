@@ -1,7 +1,7 @@
 from src.backend.ocrtranslate import OcrTranslationProcessor
 from src.backend.common.plugin import PluginManager
 from src.backend.common.event import EventSystem
-from src.backend.transport.grpc import WatchdOcrGRPCServer
+from src.backend.transport.grpc import WatchdOcrGRPCServer, services
 from config import config
 import asyncio
 
@@ -33,6 +33,10 @@ class WatchdOcrCore:
 
     async def _register_grpc_server(self):
         self._grpc_server = WatchdOcrGRPCServer(config.GPRC_HOST)
+        for s_cls, d_cls in services:
+            dispatcher = d_cls()
+            service = s_cls(dispatcher)
+            self._grpc_server.register_service(service)
         await self._grpc_server.run()
         await self._grpc_server.wait_for_termination()
 

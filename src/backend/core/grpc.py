@@ -6,6 +6,7 @@ class GRPCServer:
         self._host = host
         self._server = None
         self._is_alive = False
+        self._services = []
 
     async def run(self):
         if self._is_alive:
@@ -25,6 +26,9 @@ class GRPCServer:
         if not self._is_alive:
             return
         await self._server.wait_for_termination()
+
+    def register_service(self, service: 'GRPCService'):
+        self._services.append(service)
 
 
 class UseDispatcher:
