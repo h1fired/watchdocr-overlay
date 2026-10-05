@@ -7,17 +7,27 @@ from src.backend.ocrtranslate.processor import (
     ExecutionStrategy
 )
 import asyncio
+from google.protobuf.empty_pb2 import Empty
 
 
 class OcrTranslateService(
     GRPCService,
     ocrtranslate_pb2_grpc.OcrTranslateServiceServicer
 ):
+    def add_to_server(self, server):
+        ocrtranslate_pb2_grpc.add_OcrTranslateServiceServicer_to_server(self, server)
+
     async def request_recognize(self, request: OcrTranslateRequest, context):
         await self._dispatcher.request_recognize(request)
+        return Empty()
 
     async def stream_results(self, request, context):
-        await self._dispatcher.stream_results()
+        async for result in self._dispatcher.stream_results():
+            yield OcrTranslateResult(
+                success=True,
+                original_text=result.original_text,
+                translated_text=result.translated_text
+            )
 
 
 class OcrTranslateDispatcher(UseDispatcher):
@@ -27,7 +37,7 @@ class OcrTranslateDispatcher(UseDispatcher):
         self._results = asyncio.Queue()
 
         async def _on_output(output):
-            self._results.put(output)
+            await self._results.put(output)
 
         self._processor.add_output_callback(_on_output)
 
@@ -44,5 +54,4 @@ class OcrTranslateDispatcher(UseDispatcher):
 
     async def stream_results(self):
         while result := await self._results.get():
-            result = OcrTranslateResult(success=True)
             yield result

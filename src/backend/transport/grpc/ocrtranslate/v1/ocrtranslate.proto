@@ -12,4 +12,6 @@ message OcrTranslateRequest {
 
 message OcrTranslateResult {
     bool success = 1;
+    string original_text = 2;
+    string translated_text = 3;
 }

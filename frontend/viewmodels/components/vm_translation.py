@@ -126,28 +126,18 @@ class TranslationViewModel(QmlViewModel):
         self.loadTargetLanguages()
 
     def getProviderName(self):
-        api = self.getApi(TranslationAPI)
-        return api.get_provider_name()
+        # TODO: Implement
+        return "Dummy"
 
     providerName = Property(str, getProviderName, notify=providerNameChanged)
 
     def loadSourceLanguages(self):
-        api = self.getApi(TranslationAPI)
-        languages = [
-            {'code': k, 'name': LANGUAGES_VERBOSE.get(k, 'Unknown')}
-            for k in api.get_source_languages().keys()
-        ]
-        self._sl_model.provideData(languages)
-        self.sourceLanguagesChanged.emit()
+        # TODO: Implement
+        pass
 
     def loadTargetLanguages(self):
-        api = self.getApi(TranslationAPI)
-        languages = [
-            {'code': k, 'name': LANGUAGES_VERBOSE.get(k, 'Unknown')}
-            for k in api.get_target_languages().keys()
-        ]
-        self._tl_model.provideData(languages)
-        self.targetLanguagesChanged.emit()
+        # TODO: Implement
+        pass
 
     def getSourceLanguages(self):
         return self._sl_model_proxy
@@ -166,10 +156,10 @@ class TranslationViewModel(QmlViewModel):
 
     @Slot(str)
     def setSourceLanguage(self, code: str):
-        api = self.getApi(TranslationAPI)
-        api.set_source_language(code)
+        # TODO: Implement
+        pass
 
     @Slot(str)
     def setTargetLanguage(self, code: str):
-        api = self.getApi(TranslationAPI)
-        api.set_target_language(code)
+        # TODO: Implement
+        pass

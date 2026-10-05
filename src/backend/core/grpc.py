@@ -11,8 +11,14 @@ class GRPCServer:
     async def run(self):
         if self._is_alive:
             return
+
         self._server = grpc.aio.server()
         self._server.add_insecure_port(self._host)
+
+        # Load services
+        for service in self._services:
+            service.add_to_server(self._server)
+
         await self._server.start()
         self._is_alive = True
 

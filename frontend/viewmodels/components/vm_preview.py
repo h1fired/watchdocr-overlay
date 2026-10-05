@@ -1,8 +1,6 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
 from qt.core import Signal, Slot
-from src.common.event import IEvent, EventData
 from src.watchdocr.processor.image import ScreenGrabber
-from src.watchdocr.processor.processor import Events
 
 
 class PreviewViewModel(QmlViewModel):
@@ -10,14 +8,6 @@ class PreviewViewModel(QmlViewModel):
 
     previewUpdated = Signal()
     previewAreaUpdated = Signal()
-
-    def onLoaded(self):
-        self.getEventSystem().listen(self.onEvent)
-
-    def onEvent(self, event: IEvent, data: EventData):
-        match event:
-            case Events.PROCESSOR_AREA_IMAGE_CHANGED:
-                self.onPreviewAreaImage(data.image)
 
     @Slot()
     def requestAllScreensPreview(self):

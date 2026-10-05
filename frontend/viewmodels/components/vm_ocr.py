@@ -10,7 +10,7 @@ class OcrViewModel(QmlViewModel):
     providerNameChanged = Signal()
 
     def getProviderName(self):
-        api = self.getApi(OcrAPI)
-        return api.get_provider_name()
+        # TODO: Implement
+        return "Dummy"
 
     providerName = Property(str, getProviderName, notify=providerNameChanged)

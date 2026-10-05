@@ -134,12 +134,7 @@ class GuiCoreApplication(metaclass=Singleton):
                 _qmlSystemObj.setVisible(True)
         self._tray.showTriggered.connect(onTrayShowTriggered)
 
-    def load(
-        self,
-        api_collection: KernelAPICollection,
-        eventsys: EventSystem,
-        load_viewmodels=True
-    ):
+    def load(self, load_viewmodels=True):
         engine = QQmlApplicationEngine()
         engine.load(config.QML_WINDOW_FILE)
         if not engine.rootObjects():
@@ -153,7 +148,7 @@ class GuiCoreApplication(metaclass=Singleton):
         self._image_providers = registerQmlImageProviders(engine)
 
         if load_viewmodels:
-            _qmlLinkerCore.initialize(self._window, api_collection, eventsys)
+            _qmlLinkerCore.initialize(self._window)
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 
