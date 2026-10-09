@@ -1,6 +1,6 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from src.watchdocr.plugins.translation.types import LANGUAGES_VERBOSE
-from qt.core import (
+from src.backend.plugins.translation.types import LANGUAGES_VERBOSE
+from frontend.qt.core import (
     Qt,
     Property,
     Signal,

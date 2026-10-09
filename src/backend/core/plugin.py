@@ -1,7 +1,7 @@
 from __future__ import annotations
 from .event import IEvent, EventSystem, EventData
 from ..common.utils.logging import log
-from common.observable import MappedObservable
+from ..common.observable import MappedObservable
 from config import config
 from dataclasses import dataclass
 from typing import Any, Type, TypeVar, Callable

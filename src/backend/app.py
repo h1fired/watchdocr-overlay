@@ -8,9 +8,10 @@ from src.backend.transport.grpc import (
 )
 from config import config
 import asyncio
+import argparse
 
 
-class WatchdOcrCore:
+class WatchdOcrBackend:
     def __init__(self):
         self._eventsys = None
         self._plugins_manager = None
@@ -20,7 +21,6 @@ class WatchdOcrCore:
         self._register_event_system()
         self._register_plugins()
         await self._register_processors()
-        await self._register_grpc_server()
 
     def _register_event_system(self):
         self._eventsys = EventSystem()
@@ -36,8 +36,8 @@ class WatchdOcrCore:
         )
         asyncio.create_task(self._ocr_translate_p.start())
 
-    async def _register_grpc_server(self):
-        self._grpc_server = WatchdOcrGRPCServer(config.GPRC_HOST)
+    async def run(self, host: str, port: int):
+        self._grpc_server = WatchdOcrGRPCServer(f'{host}:{port}')
 
         async def register_services():
             ocr_translate_d = OcrTranslateDispatcher(self._ocr_translate_p)
@@ -48,11 +48,12 @@ class WatchdOcrCore:
         await self._grpc_server.run()
 
 
-def app():
-    core = WatchdOcrCore()
+def app(host: str, port: int):
+    core = WatchdOcrBackend()
 
     async def wait():
         await core.load()
+        await core.run(host, port)
         try:
             await asyncio.Event().wait()
         finally:
@@ -62,4 +63,10 @@ def app():
 
 
 if __name__ == '__main__':
-    app()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host')
+    parser.add_argument('--port', type=int)
+
+    args = parser.parse_args()
+
+    app(args.host, args.port)

@@ -1,4 +1,4 @@
-from qt.qml import qmlRegisterSingletonType, qmlRegisterType, QQmlApplicationEngine
+from frontend.qt.qml import qmlRegisterSingletonType, qmlRegisterType, QQmlApplicationEngine
 from frontend.viewmodels.types.screen import ScreenManager
 from frontend.viewmodels.types.mouse import MouseTracker
 from frontend.viewmodels.types.image import ImageProvider, AnimatedImage

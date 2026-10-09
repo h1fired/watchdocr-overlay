@@ -1,5 +1,5 @@
 from frontend.common.grpc import GRPCStub
-from src.backend.transport.grpc.ocrtranslate.v1 import (
+from grpc_proto.v1.ocrtranslate import (
     ocrtranslate_pb2,
     ocrtranslate_pb2_grpc
 )

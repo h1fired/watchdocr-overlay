@@ -1,5 +1,8 @@
-from . import ocrtranslate_pb2_grpc
-from .ocrtranslate_pb2 import OcrTranslateRequest, OcrTranslateResult
+from grpc_proto.v1.ocrtranslate import ocrtranslate_pb2_grpc
+from grpc_proto.v1.ocrtranslate.ocrtranslate_pb2 import (
+    OcrTranslateRequest,
+    OcrTranslateResult
+)
 from src.backend.core.grpc import GRPCService, UseDispatcher
 from src.backend.ocrtranslate.processor import (
     OcrTranslationProcessor,

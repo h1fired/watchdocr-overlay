@@ -1,6 +1,6 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import Signal, Slot
-from src.watchdocr.processor.image import ScreenGrabber
+from frontend.qt.core import Signal, Slot
+from src.backend.ocrtranslate.image import ScreenGrabber
 
 
 class PreviewViewModel(QmlViewModel):

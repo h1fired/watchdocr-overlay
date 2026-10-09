@@ -1,5 +1,5 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import Property, Signal
+from frontend.qt.core import Property, Signal
 
 
 class OcrViewModel(QmlViewModel):

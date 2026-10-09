@@ -1,6 +1,5 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import Signal, Slot, QRect, Property
-from src.watchdocr.workflow.workflows import OnetimeWorkflow, LiveWorkflow
+from frontend.qt.core import Signal, Slot, QRect, Property
 
 
 class ProcessorViewModel(QmlViewModel):
@@ -36,12 +35,14 @@ class ProcessorViewModel(QmlViewModel):
     recognizerStatus = Property(int, getRecognizerStatus, notify=recognizerStatusChanged)
 
     def convertModeStrToType(self, mode: str):
-        workflow = None
-        if mode == 'onetime':
-            workflow = OnetimeWorkflow
-        elif mode == 'live':
-            workflow = LiveWorkflow
-        return workflow
+        # workflow = None
+        # if mode == 'onetime':
+        #     workflow = OnetimeWorkflow
+        # elif mode == 'live':
+        #     workflow = LiveWorkflow
+        # return workflow
+        # TODO: Implement
+        pass
 
     @Slot(bool)
     def enableWorkflowManager(self, value: bool):

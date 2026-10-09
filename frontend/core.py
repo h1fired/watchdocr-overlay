@@ -1,10 +1,10 @@
 from common.utils.meta import Singleton
-from qt.qml import (
+from frontend.qt.qml import (
     QQmlApplicationEngine,
     qmlRegisterSingletonType,
     qmlRegisterSingletonInstance
 )
-from qt.core import QApplication, QUrl, QObject, Signal, Property
+from frontend.qt.core import QApplication, QUrl, QObject, Signal, Property
 from frontend.ui.tray import SystemTray
 from frontend.viewmodels import WatchdOcrLinkerCore
 from frontend.viewmodels.types.focus import FocusHelper

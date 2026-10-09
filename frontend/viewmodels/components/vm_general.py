@@ -1,7 +1,7 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
 from frontend.utils import ghotkey
-from qt.core import Slot
-from qt.utils import invokeFunc
+from frontend.qt.core import Slot
+from frontend.qt.utils import invokeFunc
 
 
 _ignore_flag = False

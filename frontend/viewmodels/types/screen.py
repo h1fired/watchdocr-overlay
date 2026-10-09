@@ -1,4 +1,4 @@
-from qt.core import QGuiApplication, QObject, Property, Signal, QRect
+from frontend.qt.core import QGuiApplication, QObject, Property, Signal, QRect
 
 
 class ScreenManager(QObject):
