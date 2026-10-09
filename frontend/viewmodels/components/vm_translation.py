@@ -1,5 +1,4 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from src.watchdocr.api.translation import TranslationAPI
 from src.watchdocr.plugins.translation.types import LANGUAGES_VERBOSE
 from qt.core import (
     Qt,
@@ -107,7 +106,6 @@ class LanguageFilterProxyModel(QSortFilterProxyModel):
 
 class TranslationViewModel(QmlViewModel):
     _name = 'Translation'
-    _needed_api = (TranslationAPI,)
 
     sourceLanguagesChanged = Signal()
     targetLanguagesChanged = Signal()

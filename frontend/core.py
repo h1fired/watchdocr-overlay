@@ -5,8 +5,6 @@ from qt.qml import (
     qmlRegisterSingletonInstance
 )
 from qt.core import QApplication, QUrl, QObject, Signal, Property
-from src.common.api import KernelAPICollection
-from src.common.event import EventSystem
 from frontend.ui.tray import SystemTray
 from frontend.viewmodels import WatchdOcrLinkerCore
 from frontend.viewmodels.types.focus import FocusHelper
@@ -14,6 +12,8 @@ from frontend.viewmodels.types import (
     registerUtilsQmlTypes,
     registerQmlImageProviders
 )
+from frontend.api.grpc.client import WatchdOcrGRPCClient
+from frontend.api.grpc import OcrTranslateStub
 from config import config
 import qasync
 import asyncio
@@ -155,6 +155,10 @@ class GuiCoreApplication(metaclass=Singleton):
         # Destroy frontend content before quit
         self._app.aboutToQuit.connect(self.destroy)
 
+        # Exec API
+        loop = asyncio.get_event_loop()
+        loop.create_task(self._register_grpc_stubs())
+
     def destroy(self):
         _qmlLinkerCore.destroyContent()
 
@@ -187,3 +191,11 @@ class GuiCoreApplication(metaclass=Singleton):
 
     def tray(self):
         return self._tray
+
+    async def _register_grpc_stubs(self):
+        self._grpc_client = WatchdOcrGRPCClient(config.GPRC_HOST)
+
+        ocr_translate_s = OcrTranslateStub()
+        self._grpc_client.register_stub(ocr_translate_s)
+
+        await self._grpc_client.run()

@@ -1,13 +1,10 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
 from qt.core import Signal, Slot, QRect, Property
-from src.watchdocr.api.processor import ProcessorAPI
-from src.watchdocr.api.workflow import WorkflowAPI
 from src.watchdocr.workflow.workflows import OnetimeWorkflow, LiveWorkflow
 
 
 class ProcessorViewModel(QmlViewModel):
     _name = 'Processor'
-    _needed_api = (ProcessorAPI, WorkflowAPI)
 
     resultReceived = Signal(str)
     activeChanged = Signal()
