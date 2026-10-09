@@ -6,10 +6,13 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "dotenv>=0.9.9",
+    "grpcio>=1.84.0",
+    "grpcio-tools>=1.84.0",
     "imagehash>=4.3.2",
     "mss>=10.2.0",
     "numpy>=2.4.6",
     "pillow>=12.2.0",
+    "protobuf>=7.36.2",
     "pydantic>=2.13.4",
     "pyside6>=6.11.1",
     "pyyaml>=6.0.3",

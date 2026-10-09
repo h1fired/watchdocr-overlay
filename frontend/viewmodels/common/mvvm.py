@@ -2,13 +2,6 @@ from PySide6.QtCore import QObject, Property, Signal, QEnum
 from PySide6.QtQuick import QQuickWindow
 from PySide6.QtQml import qmlRegisterType
 from enum import IntEnum
-from src.common.api import (
-    KernelAPI,
-    KernelAPIStrictCollection,
-    KernelAPICollection,
-    T, Type
-)
-from src.common.event import EventSystem
 
 
 class QmlViewModelStatus(IntEnum):
@@ -44,7 +37,6 @@ class QmlLinkerCoreMeta(type(QObject)):
 
 class QmlViewModel(QObject):
     _name: str
-    _needed_api: tuple[Type[KernelAPI], ...] = tuple()
 
     statusChanged = Signal()
 
@@ -57,15 +49,8 @@ class QmlViewModel(QObject):
     def window(self):
         return self._window
 
-    def initialize(
-        self,
-        window: QQuickWindow,
-        api_collection: KernelAPIStrictCollection,
-        eventsys: EventSystem
-    ):
+    def initialize(self, window: QQuickWindow):
         self._window = window
-        self._apis = api_collection
-        self._eventsys = eventsys
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)
@@ -86,12 +71,6 @@ class QmlViewModel(QObject):
         self.statusChanged.emit()
 
     status = Property(int, getStatus, notify=statusChanged)
-
-    def getApi(self, api: Type[T]) -> T:
-        return self._apis.get(api)
-
-    def getEventSystem(self):
-        return self._eventsys
 
     def onInit(self):
         pass
@@ -120,22 +99,11 @@ class QmlLinkerCore(QObject, metaclass=QmlLinkerCoreMeta):
     def window(self):
         return self._window
 
-    def initialize(
-        self,
-        window,
-        api: KernelAPICollection,
-        eventsys: EventSystem
-    ):
+    def initialize(self, window):
         self._window = window
 
         for vm in self.__viewmodels__.values():
-
-            # Create strict API collection
-            objs = [a for a in api.all() if type(a) in vm._needed_api]
-            strict_api = KernelAPIStrictCollection(tuple(objs))
-
-            # Init viewmodel
-            vm.initialize(window, strict_api, eventsys)
+            vm.initialize(window)
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)

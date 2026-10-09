@@ -1,7 +1,6 @@
 from frontend.core import GuiCoreApplication
 from frontend.utils import ghotkey
 from frontend.preloader.preloader import PreloaderCore
-from src.core import WatchdOcrCore
 from src.utils.sysbehavior import SingleInstance
 from config import config
 import subprocess
@@ -44,9 +43,6 @@ if __name__ == '__main__':
                 'you forgot to compile the resource files?'
             ) from e
 
-    core = WatchdOcrCore()
-    core.initialize()
-
     gui = GuiCoreApplication()
     gui.pre_init()
 
@@ -58,11 +54,12 @@ if __name__ == '__main__':
     guard.activate_requested.connect(show_overlay)
 
     # After preloader
+    # TODO: Implement normally
     def after_preloader():
         gui.tray().setShowActiveVisible(True)
 
         # Load GUI core
-        gui.load(core.api_collection(), core.event_system())
+        gui.load()
 
         # Install global keyboard events hook
         ghotkey.install_keyboard_hook_proc()
@@ -73,10 +70,6 @@ if __name__ == '__main__':
         else:
             sys_obj.setWindowTransparentForInput(True)
 
-    # Run preloader
-    preloader = PreloaderCore(core.plugins_manager())
-    preloader.finished.connect(after_preloader)
-    preloader.error.connect(lambda: sys.exit(0))
-    preloader.exec()
+    after_preloader()
 
     sys.exit(gui.exec())

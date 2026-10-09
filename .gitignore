@@ -217,3 +217,7 @@ nuitka-crash-report.xml
 !oneocr.dll
 !oneocr.onemodel
 !onnxruntime.dll
+
+*_pb2.py
+*_pb2_grpc.py
+*_pb2.pyi
