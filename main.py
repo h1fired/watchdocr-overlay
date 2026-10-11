@@ -61,7 +61,6 @@ if __name__ == '__main__':
     guard.activate_requested.connect(show_overlay)
 
     gui.tray().setShowActiveVisible(True)
-    gui.load()  # Load GUI core
 
     # Install global keyboard events hook
     ghotkey.install_keyboard_hook_proc()

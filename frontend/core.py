@@ -4,7 +4,7 @@ from frontend.qt.qml import (
     qmlRegisterSingletonType,
     qmlRegisterSingletonInstance
 )
-from frontend.qt.core import QApplication, QUrl, QObject, Signal, Property
+from frontend.qt.core import QApplication, QUrl, QObject, Signal, Property, QTimer
 from frontend.ui.tray import SystemTray
 from frontend.viewmodels import WatchdOcrLinkerCore
 from frontend.viewmodels.types.focus import FocusHelper
@@ -134,7 +134,8 @@ class GuiCoreApplication(metaclass=Singleton):
                 _qmlSystemObj.setVisible(True)
         self._tray.showTriggered.connect(onTrayShowTriggered)
 
-    def load(self, load_viewmodels=True):
+    @qasync.asyncSlot()
+    async def _load(self, load_viewmodels=True):
         engine = QQmlApplicationEngine()
         engine.load(config.QML_WINDOW_FILE)
         if not engine.rootObjects():
@@ -145,6 +146,9 @@ class GuiCoreApplication(metaclass=Singleton):
 
         _qmlSystemObj.setWindow(self._window)
 
+        # Exec API
+        await self._register_grpc_stubs()
+
         self._image_providers = registerQmlImageProviders(engine)
 
         if load_viewmodels:
@@ -154,10 +158,6 @@ class GuiCoreApplication(metaclass=Singleton):
 
         # Destroy frontend content before quit
         self._app.aboutToQuit.connect(self.destroy)
-
-        # Exec API
-        loop = asyncio.get_event_loop()
-        loop.create_task(self._register_grpc_stubs())
 
     def destroy(self):
         _qmlLinkerCore.destroyContent()
@@ -170,6 +170,11 @@ class GuiCoreApplication(metaclass=Singleton):
     def exec(self):
         if self._tray:
             self._tray.show()
+        loop = qasync.QEventLoop(self._app)
+        asyncio.set_event_loop(loop)
+
+        QTimer.singleShot(0, self._load)
+
         qasync.run(self._exec())
 
     async def _exec(self):
@@ -193,7 +198,8 @@ class GuiCoreApplication(metaclass=Singleton):
         return self._tray
 
     async def _register_grpc_stubs(self):
-        self._grpc_client = WatchdOcrGRPCClient(config.GPRC_HOST)
+        addr = f'{config.BACKEND_HOST}:{config.BACKEND_PORT}'
+        self._grpc_client = WatchdOcrGRPCClient(addr)
 
         ocr_translate_s = OcrTranslateStub()
         self._grpc_client.register_stub(ocr_translate_s)
