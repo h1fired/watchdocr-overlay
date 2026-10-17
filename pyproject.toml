@@ -24,4 +24,5 @@ dependencies = [
 dev = [
     "grpcio-reflection>=1.84.0",
     "nuitka>=4.1.2",
+    "watchdog>=6.0.0",
 ]
