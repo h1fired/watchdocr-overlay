@@ -37,7 +37,10 @@ class WatchdOcrBackend:
         asyncio.create_task(self._ocr_translate_p.start())
 
     async def run(self, host: str, port: int):
-        self._grpc_server = WatchdOcrGRPCServer(f'{host}:{port}')
+        self._grpc_server = WatchdOcrGRPCServer(
+            f'{host}:{port}',
+            enable_reflection=config.GRPC_ENABLE_REFLECTIONS
+        )
 
         async def register_services():
             ocr_translate_d = OcrTranslateDispatcher(self._ocr_translate_p)

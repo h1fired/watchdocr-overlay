@@ -186,6 +186,19 @@ wheels = [
 ]
 
 [[package]]
+name = "grpcio-reflection"
+version = "1.84.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "grpcio" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6e/8a/94af17ae0738cc4508af96d5f107f352e2b54473eecf32f0ed9bcdd895da/grpcio_reflection-1.84.0.tar.gz", hash = "sha256:06bf3d7d8cef9afbcc721ee52191652b4483831774255e174404b0e0551741bc", size = 19321, upload-time = "2026-09-14T07:10:28.58Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/47/8b/f07f5aa8ee2b2bd060c0100a581ab68a9b501a927fcf97b1855e40b7bd7c/grpcio_reflection-1.84.0-py3-none-any.whl", hash = "sha256:148b382a1a5621496ede90b12b97c868bb94f7bb8e23b18fc03ed32edd5447cb", size = 22986, upload-time = "2026-09-14T07:10:14.038Z" },
+]
+
+[[package]]
 name = "grpcio-tools"
 version = "1.84.0"
 source = { registry = "https://pypi.org/simple" }
@@ -389,6 +402,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "grpcio-reflection" },
     { name = "nuitka" },
 ]
 
@@ -410,7 +424,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "nuitka", specifier = ">=4.1.2" }]
+dev = [
+    { name = "grpcio-reflection", specifier = ">=1.84.0" },
+    { name = "nuitka", specifier = ">=4.1.2" },
+]
 
 [[package]]
 name = "pillow"
