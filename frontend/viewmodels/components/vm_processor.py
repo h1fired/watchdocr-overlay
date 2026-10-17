@@ -1,6 +1,5 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
 from frontend.qt.core import Signal, Slot, QRect, Property
-from frontend.api.grpc.ocrtranslate.stub import OcrTranslateStub
 from qasync import asyncSlot
 
 
@@ -15,11 +14,6 @@ class ProcessorViewModel(QmlViewModel):
         self._recognizer_status = 0
         self._current_mode = ''
 
-        from frontend.core import GuiCoreApplication
-        self._grpc = GuiCoreApplication()._grpc_client
-
-        self.receiveResultStream()
-
     @Slot(str)
     def onModeChanged(self, mode: str):
         # TODO: Implement
@@ -27,14 +21,8 @@ class ProcessorViewModel(QmlViewModel):
 
     @asyncSlot(QRect)
     async def onSelectionAreaBoxReleased(self, box: QRect):
-        stub = self._grpc.get_stub(OcrTranslateStub)
-        bounding = (
-            box.x(),
-            box.y(),
-            box.width(),
-            box.height()
-        )
-        await stub.request_recognize(bounding)
+        # TODO: Implement
+        pass
 
     def getActive(self):
         # TODO: Implement
@@ -64,6 +52,5 @@ class ProcessorViewModel(QmlViewModel):
 
     @asyncSlot()
     async def receiveResultStream(self):
-        stub = self._grpc.get_stub(OcrTranslateStub)
-        async for output in stub.stream_results():
-            print(output)
+        # TODO: Implement
+        pass

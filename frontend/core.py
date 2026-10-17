@@ -7,6 +7,7 @@ from frontend.qt.qml import (
 from frontend.qt.core import QApplication, QUrl, QObject, Signal, Property, QTimer
 from frontend.ui.tray import SystemTray
 from frontend.viewmodels import WatchdOcrLinkerCore
+from frontend.viewmodels.common.mvvm import QmlModelProvider
 from frontend.viewmodels.types.focus import FocusHelper
 from frontend.viewmodels.types import (
     registerUtilsQmlTypes,
@@ -147,12 +148,12 @@ class GuiCoreApplication(metaclass=Singleton):
         _qmlSystemObj.setWindow(self._window)
 
         # Exec API
-        await self._register_grpc_stubs()
+        await self._register_models()
 
         self._image_providers = registerQmlImageProviders(engine)
 
         if load_viewmodels:
-            _qmlLinkerCore.initialize(self._window)
+            _qmlLinkerCore.initialize(self._window, self._model_provider)
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 
@@ -161,11 +162,16 @@ class GuiCoreApplication(metaclass=Singleton):
 
     def destroy(self):
         _qmlLinkerCore.destroyContent()
+        asyncio.ensure_future(self._destroy_models())
 
         if not self._engine:
             raise RuntimeError('GUI already destroyed')
         del self._engine
         self._engine = None
+
+    async def _destroy_models(self):
+        for model in self._model_provider.models():
+            await model.destroy()
 
     def exec(self):
         if self._tray:
@@ -197,11 +203,15 @@ class GuiCoreApplication(metaclass=Singleton):
     def tray(self):
         return self._tray
 
-    async def _register_grpc_stubs(self):
+    async def _register_models(self):
         addr = f'{config.BACKEND_HOST}:{config.BACKEND_PORT}'
         self._grpc_client = WatchdOcrGRPCClient(addr)
 
         ocr_translate_s = OcrTranslateStub()
         self._grpc_client.register_stub(ocr_translate_s)
 
-        await self._grpc_client.run()
+        self._model_provider = QmlModelProvider()
+
+        # Does not wait for the connection, the status is tracked by the model
+        for model in self._model_provider.models():
+            await model.initialize()

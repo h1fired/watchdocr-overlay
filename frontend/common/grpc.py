@@ -4,6 +4,15 @@ from typing import TypeVar
 
 T = TypeVar('T')
 
+_CHANNEL_OPTIONS = (
+    ('grpc.initial_reconnect_backoff_ms', 500),
+    ('grpc.min_reconnect_backoff_ms', 500),
+    ('grpc.max_reconnect_backoff_ms', 5000),
+    ('grpc.keepalive_time_ms', 10000),
+    ('grpc.keepalive_timeout_ms', 5000),
+    ('grpc.keepalive_permit_without_calls', 1),
+)
+
 
 class GRPCClient:
     def __init__(self, host: str):
@@ -12,11 +21,14 @@ class GRPCClient:
         self._is_alive = False
         self._stubs: dict[type[GRPCStub], GRPCStub] = {}
 
-    async def run(self):
+    async def start(self):
         if self._is_alive:
             return
 
-        self._channel = grpc.aio.insecure_channel(self._host)
+        self._channel = grpc.aio.insecure_channel(
+            target=self._host,
+            options=_CHANNEL_OPTIONS
+        )
 
         # Load stubs
         for stub in self._stubs.values():
