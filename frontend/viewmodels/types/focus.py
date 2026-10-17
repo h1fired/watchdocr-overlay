@@ -1,5 +1,5 @@
-from qt.core import QObject, Slot
-from qt.gui import QWindow
+from frontend.qt.core import QObject, Slot
+from frontend.qt.gui import QWindow
 import ctypes
 
 

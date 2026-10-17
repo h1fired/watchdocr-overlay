@@ -1,5 +1,5 @@
-from qt.core import QObject, Property, Signal, QThreadPool, QRunnable
-from qt.gui import QImage
+from frontend.qt.core import QObject, Property, Signal, QThreadPool, QRunnable
+from frontend.qt.gui import QImage
 from .detector import detect_text_colors
 
 

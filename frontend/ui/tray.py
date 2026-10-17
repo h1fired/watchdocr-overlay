@@ -1,4 +1,4 @@
-from qt.core import QObject, QIcon, QAction, QSystemTrayIcon, QMenu, Signal
+from frontend.qt.core import QObject, QIcon, QAction, QSystemTrayIcon, QMenu, Signal
 
 
 class SystemTray(QObject):

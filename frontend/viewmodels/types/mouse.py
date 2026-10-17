@@ -1,4 +1,4 @@
-from qt.core import QObject, Property, Signal, QPoint, QApplication, QEvent
+from frontend.qt.core import QObject, Property, Signal, QPoint, QApplication, QEvent
 
 
 class MouseTracker(QObject):

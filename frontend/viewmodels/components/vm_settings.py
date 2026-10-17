@@ -1,5 +1,5 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import Property, Signal, Slot
+from frontend.qt.core import Property, Signal, Slot
 from config import settings
 from config.preferences import UserSettings
 

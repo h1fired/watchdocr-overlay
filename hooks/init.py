@@ -4,7 +4,7 @@ import grpc_tools
 from itertools import groupby
 
 
-PROTOS_DIR = Path('src/backend/transport/grpc/')
+PROTOS_DIR = Path('grpc_proto/')
 
 
 def compile_protos():

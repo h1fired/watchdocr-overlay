@@ -1,6 +1,6 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import Signal, Slot, QRect, Property
-from src.watchdocr.workflow.workflows import OnetimeWorkflow, LiveWorkflow
+from frontend.qt.core import Signal, Slot, QRect, Property
+from qasync import asyncSlot
 
 
 class ProcessorViewModel(QmlViewModel):
@@ -19,8 +19,8 @@ class ProcessorViewModel(QmlViewModel):
         # TODO: Implement
         pass
 
-    @Slot(QRect)
-    def onSelectionAreaBoxReleased(self, box: QRect):
+    @asyncSlot(QRect)
+    async def onSelectionAreaBoxReleased(self, box: QRect):
         # TODO: Implement
         pass
 
@@ -36,14 +36,21 @@ class ProcessorViewModel(QmlViewModel):
     recognizerStatus = Property(int, getRecognizerStatus, notify=recognizerStatusChanged)
 
     def convertModeStrToType(self, mode: str):
-        workflow = None
-        if mode == 'onetime':
-            workflow = OnetimeWorkflow
-        elif mode == 'live':
-            workflow = LiveWorkflow
-        return workflow
+        # workflow = None
+        # if mode == 'onetime':
+        #     workflow = OnetimeWorkflow
+        # elif mode == 'live':
+        #     workflow = LiveWorkflow
+        # return workflow
+        # TODO: Implement
+        pass
 
     @Slot(bool)
     def enableWorkflowManager(self, value: bool):
+        # TODO: Implement
+        pass
+
+    @asyncSlot()
+    async def receiveResultStream(self):
         # TODO: Implement
         pass

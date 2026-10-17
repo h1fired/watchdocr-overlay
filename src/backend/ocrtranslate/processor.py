@@ -6,7 +6,7 @@ from src.backend.ocrtranslate.runner import (
 )
 from src.backend.ocrtranslate.ocr import Ocr
 from src.backend.ocrtranslate.translator import Translator
-from src.common.plugin import PluginManager
+from src.backend.common.plugin import PluginManager
 from typing import Callable
 
 

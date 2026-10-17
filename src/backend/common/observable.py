@@ -1,4 +1,4 @@
-from src.common.utils.logging import log
+from .utils.logging import log
 from typing import Callable, Any, Generic, TypeVar, Iterable
 from collections import defaultdict
 from threading import Lock

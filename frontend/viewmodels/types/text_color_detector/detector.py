@@ -1,7 +1,7 @@
 import numpy as np
 from PIL.ImageQt import fromqimage
 from PIL import Image, ImageDraw
-from qt.gui import QColor
+from frontend.qt.gui import QColor
 from dataclasses import dataclass, asdict
 import math
 

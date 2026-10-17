@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 from config import config
 from dataclasses import dataclass
-from src.common.utils.logging import log
+from src.backend.common.utils.logging import log
 
 
 @dataclass

@@ -2,6 +2,7 @@ from PySide6.QtCore import QObject, Property, Signal, QEnum
 from PySide6.QtQuick import QQuickWindow
 from PySide6.QtQml import qmlRegisterType
 from enum import IntEnum
+from typing import TypeVar
 
 
 class QmlViewModelStatus(IntEnum):
@@ -15,6 +16,35 @@ class QQmlViewModelStatus(QObject):
 
 
 qmlRegisterType(QQmlViewModelStatus, "App.Backend", 1, 0, "ViewModelStatus")
+
+
+QM = TypeVar('QM', bound='QmlModel')
+
+
+class QmlModel:
+    async def initialize(self):
+        pass
+
+    async def destroy(self):
+        pass
+
+
+class QmlModelProvider:
+    def __init__(self):
+        self._models: dict[type[QmlModel], QmlModel] = {}
+
+    def register(self, model: QmlModel) -> QmlModel:
+        model_type = type(model)
+        if model_type in self._models:
+            raise KeyError(f'Model {model_type.__name__} already registered')
+        self._models[model_type] = model
+        return model
+
+    def get_model(self, model_type: type[QM]) -> QM:
+        return self._models[model_type]
+
+    def models(self):
+        return tuple(self._models.values())
 
 
 class QmlLinkerCoreMeta(type(QObject)):
@@ -37,20 +67,36 @@ class QmlLinkerCoreMeta(type(QObject)):
 
 class QmlViewModel(QObject):
     _name: str
+    models: tuple[type[QmlModel], ...] = ()
 
     statusChanged = Signal()
 
     def __init__(self):
         super().__init__()
         self._window = None
+        self._model_provider: QmlModelProvider | None = None
         self._status = QmlViewModelStatus.NOT_READY
         self.onInit()
 
     def window(self):
         return self._window
 
-    def initialize(self, window: QQuickWindow):
+    def getModel(self, model_type: type[QM]) -> QM:
+        if model_type not in self.models:
+            raise PermissionError(
+                f'{type(self).__name__} has no access to model {model_type.__name__}'
+            )
+        if self._model_provider is None:
+            raise RuntimeError('View model is not initialized')
+        return self._model_provider.get_model(model_type)
+
+    def initialize(
+        self,
+        window: QQuickWindow,
+        model_provider: QmlModelProvider
+    ):
         self._window = window
+        self._model_provider = model_provider
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)
@@ -99,11 +145,11 @@ class QmlLinkerCore(QObject, metaclass=QmlLinkerCoreMeta):
     def window(self):
         return self._window
 
-    def initialize(self, window):
+    def initialize(self, window, model_provider: QmlModelProvider):
         self._window = window
 
         for vm in self.__viewmodels__.values():
-            vm.initialize(window)
+            vm.initialize(window, model_provider)
 
     def loadContent(self):
         self.setStatus(QmlViewModelStatus.LOADING)

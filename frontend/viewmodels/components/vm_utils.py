@@ -1,5 +1,5 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import QApplication, Slot, Signal
+from frontend.qt.core import QApplication, Slot, Signal
 
 
 class UtilsViewModel(QmlViewModel):
