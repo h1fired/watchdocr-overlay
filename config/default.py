@@ -25,6 +25,7 @@ PRELOADER_WINDOW_FILE = ':/qml/ui/preloader/AppPreloaderWindow.qml'
 BACKEND_IS_LOCAL = True
 BACKEND_HOST = 'localhost'
 BACKEND_PORT = 50051
+BACKEND_AUTO_RELOAD = True
 
 GRPC_ENABLE_REFLECTIONS = True
 

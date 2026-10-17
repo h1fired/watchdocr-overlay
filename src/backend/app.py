@@ -1,3 +1,4 @@
+from src.backend.reload import is_reload_child, serve_with_reload
 from src.backend.ocrtranslate import OcrTranslationProcessor
 from src.backend.common.plugin import PluginManager
 from src.backend.common.event import EventSystem
@@ -72,4 +73,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    app(args.host, args.port)
+    if config.BACKEND_AUTO_RELOAD and not is_reload_child():
+        serve_with_reload(args.host, args.port)
+    else:
+        app(args.host, args.port)
