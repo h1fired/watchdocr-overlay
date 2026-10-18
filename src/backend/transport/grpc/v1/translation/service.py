@@ -1,4 +1,4 @@
-from src.backend.core.grpc import GRPCService, UseDispatcher
+from src.backend.transport.grpc.server import GRPCService, UseDispatcher
 from grpc_proto.v1.translation import translation_pb2_grpc
 from grpc_proto.v1.translation.translation_pb2 import LanguagesResponse
 from src.backend.ocrtranslate.translator import Translator

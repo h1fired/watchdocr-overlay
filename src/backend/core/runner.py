@@ -1,5 +1,9 @@
 import asyncio
 from typing import Any
+from src.backend.common.utils.logging import log
+
+
+LOG_TITLE = 'RUNNER'
 
 
 class Runner:
@@ -32,6 +36,15 @@ class Runner:
         try:
             while self._running:
                 item = await self._q.get()
-                await self.handle_item(item)
+                try:
+                    await self.handle_item(item)
+                except asyncio.CancelledError:
+                    pass
+                except Exception as e:
+                    log.exception(
+                        "Error while handling item %s",
+                        str(e),
+                        extra={'title': LOG_TITLE}
+                    )
         except asyncio.CancelledError:
             pass

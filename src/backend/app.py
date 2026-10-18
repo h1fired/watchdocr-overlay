@@ -2,10 +2,13 @@ from src.backend.reload import is_reload_child, serve_with_reload
 from src.backend.ocrtranslate import OcrTranslationProcessor
 from src.backend.common.plugin import PluginManager
 from src.backend.common.event import EventSystem
-from src.backend.transport.grpc import (
-    WatchdOcrGRPCServer,
+from src.backend.transport.grpc.server import GRPCServer
+from src.backend.transport.grpc.interceptors import ExceptionToStatusInterceptor
+from src.backend.transport.grpc.v1.ocrtranslate.service import (
     OcrTranslateService,
-    OcrTranslateDispatcher,
+    OcrTranslateDispatcher
+)
+from src.backend.transport.grpc.v1.translation.service import (
     TranslationService,
     TranslationDispatcher
 )
@@ -40,9 +43,10 @@ class WatchdOcrBackend:
         asyncio.create_task(self._ocr_translate_p.start())
 
     async def run(self, host: str, port: int):
-        self._grpc_server = WatchdOcrGRPCServer(
+        self._grpc_server = GRPCServer(
             f'{host}:{port}',
-            enable_reflection=config.GRPC_ENABLE_REFLECTIONS
+            enable_reflection=config.GRPC_ENABLE_REFLECTIONS,
+            interceptors=[ExceptionToStatusInterceptor()]
         )
 
         async def register_services():

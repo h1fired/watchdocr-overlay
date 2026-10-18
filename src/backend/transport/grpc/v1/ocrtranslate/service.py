@@ -1,17 +1,18 @@
+import asyncio
+import numpy as np
+from google.protobuf.empty_pb2 import Empty
+from grpc_interceptor.exceptions import InvalidArgument
 from grpc_proto.v1.ocrtranslate import ocrtranslate_pb2_grpc
 from grpc_proto.v1.ocrtranslate.ocrtranslate_pb2 import (
     OcrTranslateRequest,
     OcrTranslateResult
 )
-from src.backend.core.grpc import GRPCService, UseDispatcher
+from src.backend.transport.grpc.server import GRPCService, UseDispatcher
 from src.backend.ocrtranslate.processor import (
     OcrTranslationProcessor,
     OcrTranslationTask,
     ExecutionStrategy
 )
-import asyncio
-from google.protobuf.empty_pb2 import Empty
-import numpy as np
 
 
 class OcrTranslateService(
@@ -39,6 +40,12 @@ class OcrTranslateService(
 
 
 class OcrTranslateDispatcher(UseDispatcher):
+    _ALLOWED_METHODS = {
+        'all',
+        'ocr_only',
+        'retranslate',
+    }
+
     def __init__(self, processor: OcrTranslationProcessor):
         super().__init__()
         self._processor = processor
@@ -50,9 +57,13 @@ class OcrTranslateDispatcher(UseDispatcher):
         self._processor.add_output_callback(_on_output)
 
     async def request_recognize(self, request: OcrTranslateRequest):
-        context_data = {}
-
+        if request.strategy not in ExecutionStrategy._value2member_map_:
+            raise InvalidArgument(f'Unknown strategy: {request.strategy}')
         method = request.WhichOneof('method')
+        if method not in self._ALLOWED_METHODS:
+            raise InvalidArgument(f'Unknown method: {request.strategy}')
+
+        context_data = {}
         match method:
             case 'all':
                 context_data.update({
