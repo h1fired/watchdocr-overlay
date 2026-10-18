@@ -169,4 +169,4 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
         return 'Google'
 
     def get_priority(self):
-        return 1
+        return 100

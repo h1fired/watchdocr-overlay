@@ -12,6 +12,10 @@ class TranslationData:
 class TranslatorPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
     def translate(self, text: str, _from: str, to: str) -> TranslationData:
         try:
+            if _from not in self.source_languages():
+                raise ValueError('Invalid source language')
+            if to not in self.target_languages():
+                raise ValueError('Invalid target language')
             return self.on_translate(text, _from, to)
         except Exception as e:
             text = f'Failed to translate text! Error: {e}'

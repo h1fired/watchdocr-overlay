@@ -1,17 +1,48 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 
+enum OcrTranslateStrategy {
+    ALL = 0;
+    OCR_ONLY = 1;
+    RETRANSLATE = 2;
+}
+
 service OcrTranslateService {
     rpc request_recognize(OcrTranslateRequest) returns (google.protobuf.Empty);
     rpc stream_results(google.protobuf.Empty) returns (stream OcrTranslateResult);
 }
 
 message OcrTranslateRequest {
-    repeated int32 bounding = 2;
+    OcrTranslateStrategy strategy = 1;
+    oneof method {
+        MethodAll all = 10;
+        MethodOcrOnly ocr_only = 11;
+        MethodRetranslate retranslate = 12;
+    }
+}
+
+message MethodAll {
+    repeated int32 bounding = 1;
+    string source_language = 2;
+    string target_language = 3;
+}
+
+message MethodOcrOnly {
+    repeated int32 bounding = 1;
+}
+
+message MethodRetranslate {
+    string text = 1;
+    string source_language = 2;
+    string target_language = 3;
 }
 
 message OcrTranslateResult {
     bool success = 1;
     string original_text = 2;
     string translated_text = 3;
+    bytes boxes = 4;
+    repeated string original_parts = 5;
+    repeated string translated_parts = 6;
+    float confidence = 7;
 }

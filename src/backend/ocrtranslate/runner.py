@@ -7,9 +7,9 @@ from typing import Any, Callable
 
 
 class ExecutionStrategy(IntEnum):
-    ALL = 1
-    OCR_ONLY = 2
-    RETRANSLATE = 3
+    ALL = 0
+    OCR_ONLY = 1
+    RETRANSLATE = 2
 
 
 class OcrTranslationTask(BaseModel):
@@ -44,6 +44,8 @@ class OcrTranslationRunner(Runner):
             config.ignored_stages = ['translation']
         elif strategy == ExecutionStrategy.RETRANSLATE:
             config.allowed_stages = ['translation']
+        else:
+            config.ignored_stages = [s.name for s in self._pipeline.spec.stages]
 
         config.dependencies = self._dependencies
 

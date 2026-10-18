@@ -10,11 +10,16 @@ __plugin_main__ = 'DummyTranslatorPlugin'
 
 
 class DummyTranslatorPlugin(TranslatorPlugin):
-    def translate(self, text, _from, to):
-        return TranslationData(text, f'translated({text})')
+    def on_translate(self, text, _from, to):
+        translated = f'translated({text})[{_from}->{to}]'
+        return TranslationData(
+            success=True,
+            original_text=text,
+            translated_text=translated
+        )
 
     def get_priority(self):
-        return 100
+        return 1
 
     def get_provider_name(self):
         return 'Dummy'

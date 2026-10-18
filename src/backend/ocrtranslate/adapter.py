@@ -7,18 +7,18 @@ class OcrTranslatorTextAdapter:
     def __init__(self, separator=MAPPED_TEXT_SEPARATOR):
         self._separator = separator
 
-    def generate_mapped_string(self, full_text: str, parts: tuple[str]):
-        if full_text == '':
+    def generate_mapped_string(
+        self, full_text: str, parts: tuple[str, ...]
+    ) -> str:
+        if not full_text:
             return ''
 
-        mapped_text = (
-            f'{full_text}{self._separator}' +
-            self._separator.join(parts)
-        )
-        return mapped_text
+        return self._separator.join((full_text, *parts))
 
-    def unpack_mapped_string(self, text: str) -> tuple[str, tuple]:
-        if text == '':
-            return '', tuple()
-        parts = tuple(text.split(self._separator))
-        return parts[0], parts[1:]
+    def unpack_mapped_string(
+        self, text: str
+    ) -> tuple[str, tuple[str, ...]]:
+        if not text:
+            return '', ()
+        parts = text.split(self._separator)
+        return parts[0], tuple(parts[1:]) if parts[1:] != [''] else ()
