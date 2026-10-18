@@ -36,3 +36,6 @@ class TranslatorPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
 
     def target_languages(self):
         return {}
+
+    def versobe_languages(self):
+        return {}

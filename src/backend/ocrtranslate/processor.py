@@ -38,3 +38,6 @@ class OcrTranslationProcessor:
 
     def add_output_callback(self, cb: Callable):
         self._runner.add_output_callback(cb)
+
+    def translator(self):
+        return self._translator

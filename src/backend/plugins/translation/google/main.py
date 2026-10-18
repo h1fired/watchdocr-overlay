@@ -115,6 +115,67 @@ TARGET_LANGUAGES = {
     'VI': 'vi',
     'ZU': 'zu'
 }
+VERBOSE_LANGUAGES = {
+    'AUTO': 'Auto',
+    'ORIG': 'Original',
+    'AR': 'Arabic',
+    'BN': 'Bengali',
+    'BG': 'Bulgarian',
+    'CA': 'Catalan',
+    'ZH': 'Chinese',
+    'ZH-HANS': 'Chinese (Simplified)',
+    'ZH-HANT': 'Chinese (Traditional)',
+    'ZH-CN': 'Chinese (Simplified)',
+    'HR': 'Croatian',
+    'CS': 'Czech',
+    'DA': 'Danish',
+    'NL': 'Dutch',
+    'EN': 'English',
+    'EN-GB': 'English (British)',
+    'EN-US': 'English (American)',
+    'ES': 'Spanish',
+    'ES-419': 'Spanish (Latin American)',
+    'ET': 'Estonian',
+    'FI': 'Finnish',
+    'FR': 'French',
+    'DE': 'German',
+    'EL': 'Greek',
+    'GU': 'Gujarati',
+    'HE': 'Hebrew',
+    'HI': 'Hindi',
+    'HU': 'Hungarian',
+    'IS': 'Icelandic',
+    'ID': 'Indonesian',
+    'IT': 'Italian',
+    'JA': 'Japanese',
+    'KN': 'Kannada',
+    'KO': 'Korean',
+    'LT': 'Lithuanian',
+    'LV': 'Latvian',
+    'ML': 'Malayalam',
+    'MR': 'Marathi',
+    'NB': 'Norwegian Bokmål',
+    'FA': 'Persian',
+    'PL': 'Polish',
+    'PT': 'Portuguese',
+    'PT-BR': 'Portuguese (Brazilian)',
+    'PT-PT': 'Portuguese',
+    'PA': 'Punjabi',
+    'RO': 'Romanian',
+    'RU': 'Russian',
+    'SK': 'Slovak',
+    'SL': 'Slovenian',
+    'SW': 'Swahili',
+    'SV': 'Swedish',
+    'TA': 'Tamil',
+    'TE': 'Telugu',
+    'TH': 'Thai',
+    'TR': 'Turkish',
+    'UK': 'Ukrainian',
+    'UR': 'Urdu',
+    'VI': 'Vietnamese',
+    'ZU': 'Zulu',
+}
 
 
 class GoogleTranslatorPlugin(TranslatorPlugin):
@@ -164,6 +225,9 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
 
     def target_languages(self):
         return TARGET_LANGUAGES
+
+    def versobe_languages(self):
+        return VERBOSE_LANGUAGES
 
     def get_provider_name(self):
         return 'Google'

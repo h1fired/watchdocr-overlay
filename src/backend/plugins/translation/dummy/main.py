@@ -9,6 +9,11 @@ __plugin_meta__ = {
 __plugin_main__ = 'DummyTranslatorPlugin'
 
 
+SOURCE_LANGUAGES = {'TEST': 'test'}
+TARGET_LANGUAGES = {'TEST': 'test'}
+VERBOSE_LANGUAGES = {'TEST': 'Test'}
+
+
 class DummyTranslatorPlugin(TranslatorPlugin):
     def on_translate(self, text, _from, to):
         translated = f'translated({text})[{_from}->{to}]'
@@ -23,3 +28,12 @@ class DummyTranslatorPlugin(TranslatorPlugin):
 
     def get_provider_name(self):
         return 'Dummy'
+
+    def source_languages(self):
+        return SOURCE_LANGUAGES
+
+    def target_languages(self):
+        return TARGET_LANGUAGES
+
+    def versobe_languages(self):
+        return VERBOSE_LANGUAGES

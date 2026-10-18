@@ -5,7 +5,9 @@ from src.backend.common.event import EventSystem
 from src.backend.transport.grpc import (
     WatchdOcrGRPCServer,
     OcrTranslateService,
-    OcrTranslateDispatcher
+    OcrTranslateDispatcher,
+    TranslationService,
+    TranslationDispatcher
 )
 from config import config
 import asyncio
@@ -47,6 +49,10 @@ class WatchdOcrBackend:
             ocr_translate_d = OcrTranslateDispatcher(self._ocr_translate_p)
             ocr_translate_s = OcrTranslateService(ocr_translate_d)
             self._grpc_server.register_service(ocr_translate_s)
+
+            translation_d = TranslationDispatcher(self._ocr_translate_p.translator())
+            translation_s = TranslationService(translation_d)
+            self._grpc_server.register_service(translation_s)
 
         await register_services()
         await self._grpc_server.run()
