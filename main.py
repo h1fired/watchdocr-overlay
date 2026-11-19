@@ -3,19 +3,81 @@ from frontend.utils import ghotkey
 from frontend.preloader.preloader import PreloaderCore
 from src.core import WatchdOcrCore
 from src.utils.sysbehavior import SingleInstance
+from src.common.utils.logging import log
 from config import config
 import subprocess
 import sys
 import ctypes
 import argparse
+import asyncio
 
 
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('company.app.1')
 
 
+SHUTDOWN_TIMEOUT = 3
+
+
 def show_overlay():
     gui = GuiCoreApplication()
     gui.system_obj().setVisible(True)
+
+
+async def shutdown(core: WatchdOcrCore):
+    try:
+        async with asyncio.timeout(SHUTDOWN_TIMEOUT):
+            await core.destroy()
+    except TimeoutError:
+        log.warning(
+            'Core shutdown timed out after %ss. Forcing exit...',
+            SHUTDOWN_TIMEOUT,
+            extra={'title': 'Core'}
+        )
+    except Exception:
+        log.exception('Core shutdown failed', extra={'title': 'Core'})
+
+    ghotkey.uninstall_keyboard_hook_proc()
+    GuiCoreApplication().destroy()
+
+
+async def main(args: argparse.Namespace):
+    gui = GuiCoreApplication()
+
+    # Check for single application instance
+    guard = SingleInstance(config.APP_ID)
+    if not guard.try_run():
+        return 0
+
+    guard.activate_requested.connect(show_overlay)
+
+    core = WatchdOcrCore()
+    try:
+        await core.initialize()
+
+        # Run preloader
+        preloader = PreloaderCore(core.plugins_manager())
+        if not await preloader.exec():
+            return 0
+
+        gui.tray().setShowActiveVisible(True)
+
+        # Load GUI core
+        gui.load(core.api_collection(), core.event_system())
+
+        # Install global keyboard events hook
+        await ghotkey.install_keyboard_hook_proc()
+
+        sys_obj = gui.system_obj()
+        if not args.hide_on_exec:
+            sys_obj.setVisible(True)
+        else:
+            sys_obj.setWindowTransparentForInput(True)
+
+        await gui.wait_for_quit()
+    finally:
+        await shutdown(core)
+
+    return 0
 
 
 if __name__ == '__main__':
@@ -44,39 +106,7 @@ if __name__ == '__main__':
                 'you forgot to compile the resource files?'
             ) from e
 
-    core = WatchdOcrCore()
-    core.initialize()
-
     gui = GuiCoreApplication()
     gui.pre_init()
 
-    # Check for single application instance
-    guard = SingleInstance(config.APP_ID)
-    if not guard.try_run():
-        sys.exit(0)
-
-    guard.activate_requested.connect(show_overlay)
-
-    # After preloader
-    def after_preloader():
-        gui.tray().setShowActiveVisible(True)
-
-        # Load GUI core
-        gui.load(core.api_collection(), core.event_system())
-
-        # Install global keyboard events hook
-        ghotkey.install_keyboard_hook_proc()
-
-        sys_obj = gui.system_obj()
-        if not args.hide_on_exec:
-            sys_obj.setVisible(True)
-        else:
-            sys_obj.setWindowTransparentForInput(True)
-
-    # Run preloader
-    preloader = PreloaderCore(core.plugins_manager())
-    preloader.finished.connect(after_preloader)
-    preloader.error.connect(lambda: sys.exit(0))
-    preloader.exec()
-
-    sys.exit(gui.exec())
+    sys.exit(gui.exec(main(args)))

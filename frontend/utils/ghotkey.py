@@ -1,20 +1,23 @@
+from src.common.utils.logging import log
 from typing import Callable
 from collections import defaultdict
 from ctypes import wintypes
 import ctypes
-import atexit
+import asyncio
 import threading
-import queue
 
 
 user32 = ctypes.windll.user32
+kernel32 = ctypes.windll.kernel32
 
 
 WH_KEYBOARD_LL = 13
+WM_QUIT = 0x0012
 WM_KEYDOWN = 0x0100
 WM_SYSKEYDOWN = 0x0104
 WM_KEYUP = 0x0101
 WM_SYSKEYUP = 0x0105
+PM_NOREMOVE = 0x0000
 
 VK_SHIFT = 0x10
 VK_CONTROL = 0x11
@@ -37,30 +40,27 @@ class KBDLLHOOKSTRUCT(ctypes.Structure):
 
 
 context = {
-    'e': threading.Event(),
     'hotkeys': defaultdict(list),
     'pressed_keys': set(),
     'hook': None,
-    'running': True
+    'thread_id': None,
+    'loop': None
 }
-event_queue = queue.Queue()
 
 
-def _process_callbacks():
-    while context['running']:
-        try:
-            # Wait for keystrokes from the hook
-            keys = event_queue.get(timeout=0.5)
-            if not keys:
-                continue
-
-            for shortcut, callbacks in context['hotkeys'].items():
-                s_shortcut = set(shortcut.split('+'))
-                if s_shortcut.issubset(keys):
-                    for cb in callbacks:
-                        cb()
-        except queue.Empty:
-            continue
+def _process_keys(keys: set):
+    # Executed in the event loop thread
+    for shortcut, callbacks in tuple(context['hotkeys'].items()):
+        s_shortcut = set(shortcut.split('+'))
+        if s_shortcut.issubset(keys):
+            for cb in tuple(callbacks):
+                try:
+                    cb()
+                except Exception:
+                    log.exception(
+                        'Hotkey %s callback failed', shortcut,
+                        extra={'title': 'Hotkeys'}
+                    )
 
 
 def _hookProc(nCode, wParam, lParam):
@@ -86,8 +86,11 @@ def _hookProc(nCode, wParam, lParam):
                 if user32.GetAsyncKeyState(VK_MENU) & 0x8000:
                     keys.add('Alt')
 
-                # Offload to the queue immediately. Do NOT run callbacks here.
-                event_queue.put(keys)
+                # Offload to the event loop immediately. Do NOT run callbacks here.
+                try:
+                    context['loop'].call_soon_threadsafe(_process_keys, keys)
+                except RuntimeError:
+                    pass  # Event loop is closed
 
         elif wParam in (WM_KEYUP, WM_SYSKEYUP):
             if vk in context['pressed_keys']:
@@ -96,36 +99,53 @@ def _hookProc(nCode, wParam, lParam):
     return user32.CallNextHookEx(context['hook'], nCode, wParam, lParam)
 
 
-def _install_keyboard_hook_proc():
+def _install_keyboard_hook_proc(installed: asyncio.Future):
+    loop = context['loop']
+
     context['pointer'] = HOOKPROTYPE(_hookProc)
     context['hook'] = user32.SetWindowsHookExA(WH_KEYBOARD_LL, context['pointer'], None, 0)
+    context['thread_id'] = kernel32.GetCurrentThreadId()
 
-    context['e'].set()
+    # Force message queue creation, so WM_QUIT can be posted to this thread
+    msg = wintypes.MSG()
+    user32.PeekMessageA(ctypes.byref(msg), 0, 0, 0, PM_NOREMOVE)
+
+    def set_installed(value: bool):
+        if not installed.done():
+            installed.set_result(value)
+    loop.call_soon_threadsafe(set_installed, bool(context['hook']))
 
     if context['hook']:
-        msg = wintypes.MSG()
         # Windows requires a message pump to keep the hook alive
         while user32.GetMessageA(ctypes.byref(msg), 0, 0, 0) > 0:
             user32.TranslateMessage(ctypes.byref(msg))
             user32.DispatchMessageA(ctypes.byref(msg))
 
 
-def _uninstallHookProc():
-    context['running'] = False
+def uninstall_keyboard_hook_proc():
     if context['hook']:
         user32.UnhookWindowsHookEx(context['hook'])
+        context['hook'] = None
+
+    # Stop the hook thread message pump
+    if context['thread_id']:
+        user32.PostThreadMessageW(context['thread_id'], WM_QUIT, 0, 0)
+        context['thread_id'] = None
 
 
-def install_keyboard_hook_proc():
-    processor_thread = threading.Thread(target=_process_callbacks, daemon=True)
-    processor_thread.start()
+async def install_keyboard_hook_proc():
+    loop = asyncio.get_running_loop()
+    context['loop'] = loop
 
-    th = threading.Thread(target=_install_keyboard_hook_proc, daemon=True)
+    installed = loop.create_future()
+    th = threading.Thread(
+        target=_install_keyboard_hook_proc,
+        args=(installed,),
+        daemon=True
+    )
     th.start()
 
-    context['e'].wait()
-    atexit.register(_uninstallHookProc)
-    return bool(context['hook'])
+    return await installed
 
 
 def bind(shortcut: str, callback: Callable):

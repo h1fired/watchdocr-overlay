@@ -3,52 +3,57 @@
 from . import WatchdOcrWorkflow
 from src.watchdocr.processor.processor import PipelineStrategy
 from src.common.utils.logging import log
-from threading import Thread, Event
 from config.preferences import settings
+import asyncio
 
 
 class LiveWorkflow(WatchdOcrWorkflow):
     def __init__(self, processor):
         super().__init__(processor)
-        self._running = False
-        self._th = None
-        self._e = Event()
+        self._task: asyncio.Task | None = None
 
-    def run(self):
-        if self._running:
+    async def run(self):
+        if self._task:
             return
 
-        log.info('Starting LiveWorkflow thread...', extra={'title': 'Workflow'})
-        self._e.clear()
-        self._running = True
-        self._th = Thread(target=self._run, daemon=True)
-        self._th.start()
+        log.info('Starting LiveWorkflow task...', extra={'title': 'Workflow'})
+        self._task = asyncio.create_task(self._run())
 
-    def _run(self):
-        while self._running:
-            boundings = self._processor.context().config.boundings
-            if not all(b == 0 for b in boundings):
-                self._processor.queue_pipeline(
-                    strategy=PipelineStrategy.OCR_TRANSLATION,
-                    context_data={}
-                )
-                self._processor.wait_for_pipeline_finish()
-            self._e.wait(settings.live_mode_recognition_frequency)
-        log.info('LiveWorkflow thread exiting.', extra={'title': 'Workflow'})
+    async def _run(self):
+        pipeline = None
+        try:
+            while True:
+                boundings = self._processor.config().boundings
+                if not all(b == 0 for b in boundings):
+                    pipeline = self._processor.queue_pipeline(
+                        strategy=PipelineStrategy.OCR_TRANSLATION,
+                        context_data={}
+                    )
+                    if pipeline:
+                        # Pipeline can be cancelled by a newer one, so wait
+                        # for its finish without raising an exception
+                        await asyncio.wait((pipeline,))
+                        pipeline = None
+                await asyncio.sleep(settings.live_mode_recognition_frequency)
+        except asyncio.CancelledError:
+            if pipeline:
+                pipeline.cancel()
+            raise
+        finally:
+            log.info('LiveWorkflow task exiting.', extra={'title': 'Workflow'})
 
-    def close(self):
-        if not self._running:
+    async def close(self):
+        if not self._task:
             return
 
         log.info('Stopping LiveWorkflow...', extra={'title': 'Workflow'})
-        self._running = False
-        self._e.set()
-        if self._th and self._th.is_alive():
-            self._th.join()
+        task, self._task = self._task, None
+        task.cancel()
+        await asyncio.wait((task,))
         log.info('LiveWorkflow stopped.', extra={'title': 'Workflow'})
 
     def execute(self):
         pass
 
     def is_active(self):
-        return self._running
+        return self._task is not None

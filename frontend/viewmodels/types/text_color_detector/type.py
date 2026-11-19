@@ -1,6 +1,8 @@
-from qt.core import QObject, Property, Signal, QThreadPool, QRunnable
-from qt.gui import QImage
+from qt.core import QObject, Property, Signal
+from concurrent.futures import ThreadPoolExecutor
+from shiboken6 import isValid
 from .detector import detect_text_colors
+import asyncio
 
 
 MAX_THREAD_COUNT = 3
@@ -11,25 +13,36 @@ class TextColorDetector(QObject):
     coordinatesChanged = Signal()
     colorsOutputChanged = Signal()
 
-    _pool = None
+    _executor = None
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._image_id = ''
         self._coords = []
         self._colors = []
-        self._active_tasks = []
+
+        self._task = None
+        self._pending = None  # Latest detection request (image, coordinates)
+        self._revision = 0
 
         self._image_provider = None
         self._image_changed = False
         self._coordinates_changed = False
 
     @classmethod
-    def pool(cls):
-        if cls._pool is None:
-            cls._pool = QThreadPool()
-            cls._pool.setMaxThreadCount(MAX_THREAD_COUNT)
-        return cls._pool
+    def executor(cls):
+        if cls._executor is None:
+            cls._executor = ThreadPoolExecutor(
+                max_workers=MAX_THREAD_COUNT,
+                thread_name_prefix='TextColorDetector'
+            )
+        return cls._executor
+
+    @classmethod
+    def shutdownExecutor(cls):
+        if cls._executor is not None:
+            cls._executor.shutdown(wait=False, cancel_futures=True)
+            cls._executor = None
 
     def getImageProvider(self):
         return self._image_id
@@ -72,6 +85,9 @@ class TextColorDetector(QObject):
 
     def update(self):
         if not len(self._coords) or not self._image_id:
+            # Drop running and pending detections
+            self._pending = None
+            self._revision += 1
             self.setColorsOutput([])
             return
         elif not self._image_changed or not self._coordinates_changed:
@@ -89,33 +105,35 @@ class TextColorDetector(QObject):
         if image is None or image.isNull():
             return
 
-        task = _Task(image, self._coords)
-        task.done.connect(self._on_task_done)
-        self._active_tasks.append(task)
+        # Only the latest request is stored, so detections are never
+        # queued while previous one is running
+        self._pending = (image, self._coords)
+        if self._task is None or self._task.done():
+            self._task = asyncio.ensure_future(self._process())
 
-        self.pool().start(task)
+    async def _process(self):
+        loop = asyncio.get_running_loop()
+        while self._pending:
+            image, coords = self._pending
+            self._pending = None
+            revision = self._revision
 
-    def _on_task_done(self, task, colors):
-        self._active_tasks.remove(task)
-        self.setColorsOutput(colors)
+            try:
+                colors = await loop.run_in_executor(
+                    self.executor(),
+                    detect_text_colors,
+                    image,
+                    coords
+                )
+            except Exception:
+                colors = []
+
+            # Object can be deleted by QML while detection is running
+            if not isValid(self):
+                return
+            if revision == self._revision:
+                self.setColorsOutput(colors)
 
     def _on_provider_image_change(self):
         self._image_changed = True
         self.update()
-
-
-class _Task(QObject, QRunnable):
-    done = Signal(object, list)
-
-    def __init__(self, image: QImage, coordinates: list):
-        QObject.__init__(self)
-        QRunnable.__init__(self)
-        self._image = image
-        self._coords = coordinates
-
-    def run(self):
-        try:
-            colors = detect_text_colors(self._image, self._coords)
-        except Exception:
-            colors = []
-        self.done.emit(self, colors)

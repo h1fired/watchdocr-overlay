@@ -8,11 +8,11 @@ class OnetimeWorkflow(WatchdOcrWorkflow):
         super().__init__(processor)
         self._active = False
 
-    def run(self):
+    async def run(self):
         log.info('OnetimeWorkflow workflow active.', extra={'title': 'Workflow'})
         self._active = True
 
-    def close(self):
+    async def close(self):
         log.info('OnetimeWorkflow workflow closed.', extra={'title': 'Workflow'})
         self._active = False
 

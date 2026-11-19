@@ -1,8 +1,10 @@
 from frontend.viewmodels.common.mvvm import QmlViewModel
-from qt.core import Signal, Slot
+from qt.core import Signal
 from src.common.event import IEvent, EventData
 from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.processor import Events
+from qasync import asyncSlot
+import asyncio
 
 
 class PreviewViewModel(QmlViewModel):
@@ -19,9 +21,9 @@ class PreviewViewModel(QmlViewModel):
             case Events.PROCESSOR_AREA_IMAGE_CHANGED:
                 self.onPreviewAreaImage(data.image)
 
-    @Slot()
-    def requestAllScreensPreview(self):
-        image = ScreenGrabber.grab_all_screens()
+    @asyncSlot()
+    async def requestAllScreensPreview(self):
+        image = await asyncio.to_thread(ScreenGrabber.grab_all_screens)
         if not image:
             return
 

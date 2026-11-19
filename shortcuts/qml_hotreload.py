@@ -2,6 +2,8 @@ from qt.core import QApplication, QUrl, QTimer
 from qt.qml import QQmlApplicationEngine
 from qt.utils import invokeFunc
 from frontend.utils import ghotkey
+import qasync
+import asyncio
 import sys
 import os
 
@@ -40,17 +42,21 @@ def reload():
     QTimer.singleShot(1, load)
 
 
-def main():
-    global engine
-
-    app = QApplication(sys.argv)
-
+async def setup():
     load()
 
-    ghotkey.install_keyboard_hook_proc()
+    await ghotkey.install_keyboard_hook_proc()
     ghotkey.bind(RELOAD_HOTKEY, reload)
 
-    sys.exit(app.exec())
+
+def main():
+    app = QApplication(sys.argv)
+
+    loop = qasync.QEventLoop(app)
+    asyncio.set_event_loop(loop)
+    with loop:
+        loop.run_until_complete(setup())
+        sys.exit(loop.run_forever())
 
 
 if __name__ == '__main__':

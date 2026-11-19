@@ -3,6 +3,7 @@ from qt.core import QObject, QIcon, QAction, QSystemTrayIcon, QMenu, Signal
 
 class SystemTray(QObject):
     showTriggered = Signal()
+    quitTriggered = Signal()
 
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -16,7 +17,7 @@ class SystemTray(QObject):
         self.quit_action = QAction('Quit')
 
         self.show_action.triggered.connect(self.showTriggered)
-        self.quit_action.triggered.connect(app.quit)
+        self.quit_action.triggered.connect(self.quitTriggered)
 
         self.menu.addAction(self.show_action)
         self.menu.addAction(self.quit_action)

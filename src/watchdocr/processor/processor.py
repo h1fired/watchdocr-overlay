@@ -1,17 +1,16 @@
 from src.common.utils.logging import log
 from src.common.event import EventSystem, IEvent
 from src.common.plugin import PluginManager
-from src.watchdocr.processor.context import WatchdOcrRuntimeContext, OcrBox
+from src.watchdocr.processor.context import WatchdOcrRuntimeContext, RuntimeConfig, OcrBox
 from src.watchdocr.processor.ocr import Ocr
 from src.watchdocr.processor.translator import Translator
 from src.watchdocr.processor.image import ScreenGrabber
 from src.watchdocr.processor.adapter import OcrTranslatorTextAdapter
 from pydantic import BaseModel, ConfigDict
 from enum import IntEnum, auto
-from threading import Thread, Event
 from PIL import Image
 from typing import Callable
-import queue
+import asyncio
 
 
 LOG_PROCESSOR = 'Processor'
@@ -28,15 +27,8 @@ class PipelineStrategy(IntEnum):
 class PipelineStage:
     def __init__(self, plugin_manager: PluginManager):
         self._plugin_manager = plugin_manager
-        self._enabled = True
 
-    def set_enabled(self, enable: bool):
-        self._enabled = enable
-
-    def enabled(self):
-        return self._enabled
-
-    def execute(self, ctx: WatchdOcrRuntimeContext):
+    async def execute(self, ctx: WatchdOcrRuntimeContext):
         raise NotImplementedError
 
     @property
@@ -45,7 +37,7 @@ class PipelineStage:
 
 
 class ImageGrabberStage(PipelineStage):
-    def execute(self, ctx):
+    async def execute(self, ctx):
         log.info(
             'Starting Image Grabber Pipeline Stage...',
             extra={'title': LOG_PROCESSOR}
@@ -53,7 +45,10 @@ class ImageGrabberStage(PipelineStage):
 
         ctx.image = None  # Clean up
 
-        image = ScreenGrabber.grab_screen_area(ctx.config.boundings)
+        image = await asyncio.to_thread(
+            ScreenGrabber.grab_screen_area,
+            ctx.config.boundings
+        )
         if not image:
             log.warning(
                 'Screen grabber returned no image for boundings %s',
@@ -63,7 +58,7 @@ class ImageGrabberStage(PipelineStage):
             return
 
         # Call image process hook
-        image = self.plugin_manager.call_hook(
+        image = await self.plugin_manager.call_hook(
             id='watchdocr.image_grabber_pipeline.image_process',
             data=image,
             ctx=ctx
@@ -82,7 +77,7 @@ class OcrPipelineStage(PipelineStage):
         super().__init__(plugin_manager)
         self._ocr = ocr
 
-    def execute(self, ctx):
+    async def execute(self, ctx):
         log.info(
             'Starting OCR Pipeline Stage...',
             extra={'title': LOG_PROCESSOR}
@@ -95,7 +90,7 @@ class OcrPipelineStage(PipelineStage):
             ctx.ocr.ignore = False
             return
 
-        data = self._ocr.recognize(ctx.image)
+        data = await self._ocr.recognize(ctx.image)
         ctx.ocr.success = data.success
 
         if not data.success:
@@ -116,7 +111,7 @@ class TranslationPipelineStage(PipelineStage):
         super().__init__(plugin_manager)
         self._translator = translator
 
-    def execute(self, ctx):
+    async def execute(self, ctx):
         ctx.translation.clear()  # Clean up
 
         # Skip if OCR pipeline if failed
@@ -129,7 +124,7 @@ class TranslationPipelineStage(PipelineStage):
             parts=ctx.ocr.parts
         )
 
-        data = self._translator.translate(
+        data = await self._translator.translate(
             text=mapped_text,
             source_lang=ctx.config.source_language,
             target_lang=ctx.config.target_language
@@ -138,7 +133,8 @@ class TranslationPipelineStage(PipelineStage):
         ctx.translation.success = data.success
         if not data.success:
             log.error(
-                'Translation failed. Reusing original text.',
+                'Translation failed (%s). Reusing original text.',
+                data.translated_text,
                 extra={'title': LOG_PROCESSOR}
             )
 
@@ -160,6 +156,14 @@ STRATEGY_STAGES: dict[PipelineStrategy, frozenset[str]] = {
 }
 
 
+def merge_strategies(*strategies: PipelineStrategy):
+    stages = frozenset().union(*(STRATEGY_STAGES[s] for s in strategies))
+    for strategy, strategy_stages in STRATEGY_STAGES.items():
+        if strategy_stages == stages:
+            return strategy
+    raise ValueError(f'No strategy found for stages -> {stages}')
+
+
 class WatchdOcrPipeline:
     def __init__(
         self,
@@ -173,45 +177,34 @@ class WatchdOcrPipeline:
             'ocr': OcrPipelineStage(plugin_manager, ocr),
             'translation': TranslationPipelineStage(plugin_manager, translator)
         }
-        self._strategy = PipelineStrategy.OCR_TRANSLATION
 
-    def execute(
+    async def execute(
         self,
         ctx: WatchdOcrRuntimeContext,
         strategy: PipelineStrategy
     ):
         # Call pipeline start hook
-        self._plugin_manager.call_hook(
+        await self._plugin_manager.call_hook(
             id='watchdocr.processor_pipeline.start',
             data=ctx,
         )
 
-        self._apply_strategy(strategy)
-
-        for stage in self._stages.values():
-            if stage.enabled():
-                stage.execute(ctx)
+        active = STRATEGY_STAGES[strategy]
+        for name, stage in self._stages.items():
+            if name in active:
+                await stage.execute(ctx)
 
         # Call text output hook
-        ctx.translation.text = self._plugin_manager.call_hook(
+        ctx.translation.text = await self._plugin_manager.call_hook(
             id='watchdocr.processor_pipeline.output_text',
             data=ctx.translation.text
         )
 
         # Call pipeline finish hook
-        self._plugin_manager.call_hook(
+        await self._plugin_manager.call_hook(
             id='watchdocr.processor_pipeline.finish',
             data=ctx,
         )
-
-    def current_strategy(self):
-        return self._strategy
-
-    def _apply_strategy(self, strategy):
-        active = STRATEGY_STAGES[strategy]
-        for name, stage in self._stages.items():
-            stage.set_enabled(name in active)
-        self._strategy = strategy
 
 
 # Output
@@ -234,87 +227,130 @@ class WatchdOcrProcessorStatus(IntEnum):
 
 
 class WatchdOcrRunner:
-    _Sentinel = object()
-
     def __init__(self, pipeline: WatchdOcrPipeline):
-        self._ctx = WatchdOcrRuntimeContext()
+        self._ctx = WatchdOcrRuntimeContext()  # Context of last finished pipeline
+        self._config = RuntimeConfig()  # Actual config for the next pipelines
         self._pipeline = pipeline
-        self._q = queue.Queue()
-        self._th = None
+        self._task: asyncio.Task | None = None
+        self._strategy: PipelineStrategy | None = None
         self._running = False
         self._output_callback = None
         self._status_callback = None
         self._area_preview_callback = None
-        self._e = Event()
-        self._e.set()
 
     def put(self, task: 'StrategyTask'):
         log.debug(
             'Queueing strategy: %s', task.strategy.name,
             extra={'title': LOG_PROCESSOR}
         )
-        self._q.put(task)
+
+        # Context changes are applied immediately, running
+        # pipeline works with config snapshot
+        for key, value in task.context_data.items():
+            setattr(self._config, key, value)
+
+        if task.strategy == PipelineStrategy.ONLY_CONTEXT_CHANGE:
+            return None
+
+        if not self._running:
+            log.warning(
+                'WatchdOcrRunner is not running. Skipping strategy: %s',
+                task.strategy.name,
+                extra={'title': LOG_PROCESSOR}
+            )
+            return None
+
+        # Latest wins: cancel current pipeline and restart it with merged
+        # strategy, so changes requested by both of them are applied
+        strategy = task.strategy
+        if self._task and not self._task.done():
+            strategy = merge_strategies(self._strategy, strategy)
+            log.debug(
+                'Cancelling current pipeline, restarting with strategy: %s',
+                strategy.name,
+                extra={'title': LOG_PROCESSOR}
+            )
+            self._task.cancel()
+
+        self._strategy = strategy
+        self._task = asyncio.create_task(self._execute(strategy))
+        return self._task
 
     def start(self):
         log.info(
-            'Starting WatchdOcrRunner background thread...',
+            'Starting WatchdOcrRunner...',
             extra={'title': LOG_PROCESSOR}
         )
         self._running = True
-        self._th = Thread(target=self._run, daemon=True)
-        self._th.start()
 
-    def stop(self):
+    async def stop(self):
         log.info(
-            'Stopping WatchdOcrRunner background thread...',
+            'Stopping WatchdOcrRunner...',
             extra={'title': LOG_PROCESSOR}
         )
         self._running = False
-        self._q.put(self._Sentinel)
-        if self._th and self._th.is_alive():
-            self._th.join()
-        self._q.queue.clear()
+        task, self._task = self._task, None
+        if task and not task.done():
+            task.cancel()
+            await asyncio.wait((task,))
         log.info(
-            'WatchdOcrRunner background thread stopped.',
+            'WatchdOcrRunner stopped.',
             extra={'title': LOG_PROCESSOR}
         )
 
     def is_running(self):
         return self._running
 
-    def _run(self):
-        while self._running:
-            task: StrategyTask = self._q.get()
+    async def _execute(self, strategy: PipelineStrategy):
+        ctx = self._create_context()
 
-            if task is self._Sentinel:
-                break
-
-            self._ctx.update_config(task.context_data)
-
-            if task.strategy != PipelineStrategy.ONLY_CONTEXT_CHANGE:
-                self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
-                self._e.clear()
-                self._pipeline.execute(self._ctx, task.strategy)
+        self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
+        try:
+            await self._pipeline.execute(ctx, strategy)
+        except asyncio.CancelledError:
+            log.debug(
+                'Pipeline with strategy %s cancelled.', strategy.name,
+                extra={'title': LOG_PROCESSOR}
+            )
+            raise
+        except Exception:
+            log.exception(
+                'Pipeline with strategy %s failed.', strategy.name,
+                extra={'title': LOG_PROCESSOR}
+            )
+            return
+        finally:
+            # Don't reset status if pipeline was replaced by a new one
+            if self._task in (None, asyncio.current_task()):
                 self._send_status(WatchdOcrProcessorStatus.IDLE)
 
-                output = self.create_output_data()
-                if self._output_callback:
-                    self._output_callback(output)
+        self._ctx = ctx
 
-                if task.strategy in (PipelineStrategy.OCR_ONLY,
-                                     PipelineStrategy.OCR_TRANSLATION):
-                    self._send_area_preview(self._ctx.image)
-                self._e.set()
+        output = self.create_output_data(strategy)
+        if self._output_callback:
+            self._output_callback(output)
 
-    def wait_for_exec_finish(self):
-        self._e.wait()
+        if strategy in (PipelineStrategy.OCR_ONLY,
+                        PipelineStrategy.OCR_TRANSLATION):
+            self._send_area_preview(ctx.image)
+
+    def _create_context(self):
+        # Image is shared with the previous context,
+        # pipeline stages are only replacing it
+        return WatchdOcrRuntimeContext(
+            config=self._config.model_copy(),
+            ocr=self._ctx.ocr.model_copy(deep=True),
+            translation=self._ctx.translation.model_copy(deep=True),
+            image=self._ctx.image
+        )
 
     def clean_current_pipelines(self):
-        self._q.queue.clear()
+        if self._task and not self._task.done():
+            self._task.cancel()
 
-    def create_output_data(self):
+    def create_output_data(self, strategy: PipelineStrategy):
         return WatchdOcrOutput(
-            strategy=self._pipeline.current_strategy(),
+            strategy=strategy,
             original_text=self._ctx.ocr.text,
             translated_text=self._ctx.translation.text,
             boxes=self._ctx.ocr.boxes,
@@ -325,6 +361,9 @@ class WatchdOcrRunner:
 
     def context(self):
         return self._ctx.model_copy(deep=True)
+
+    def config(self):
+        return self._config.model_copy()
 
     def register_output_callback(self, cb: Callable[[WatchdOcrOutput], None]):
         self._output_callback = cb
@@ -377,12 +416,12 @@ class WatchdOcrProcessor:
         )
         self._runner.start()
 
-    def stop(self):
+    async def stop(self):
         log.info(
             'Stopping WatchdOcrProcessor...',
             extra={'title': LOG_PROCESSOR}
         )
-        self._runner.stop()
+        await self._runner.stop()
 
     def get_active(self):
         return self._runner.is_running()
@@ -395,13 +434,13 @@ class WatchdOcrProcessor:
         )
 
         task = StrategyTask(strategy=strategy, context_data=context_data)
-        self._runner.put(task)
+        return self._runner.put(task)
 
     def context(self):
         return self._runner.context()
 
-    def wait_for_pipeline_finish(self):
-        return self._runner.wait_for_exec_finish()
+    def config(self):
+        return self._runner.config()
 
     def _on_output(self, data: WatchdOcrOutput):
         self._eventsys.dispatch(
@@ -423,7 +462,7 @@ class WatchdOcrProcessor:
 
     def clean_current_pipelines(self):
         log.info(
-            'Cleaning current runner pipelines queue...',
+            'Cancelling current runner pipeline...',
             extra={'title': LOG_PROCESSOR}
         )
         self._runner.clean_current_pipelines()

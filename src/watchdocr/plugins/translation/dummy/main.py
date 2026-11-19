@@ -10,8 +10,8 @@ __plugin_main__ = 'DummyTranslatorPlugin'
 
 
 class DummyTranslatorPlugin(TranslatorPlugin):
-    def translate(self, text, _from, to):
-        return TranslationData(text, f'translated({text})')
+    async def translate(self, text, _from, to):
+        return TranslationData(True, text, f'translated({text})')
 
     def get_priority(self):
         return 100

@@ -49,7 +49,7 @@ class WatchdOcrKernel:
 
 
 class WatchdOcrCore:
-    def initialize(self):
+    async def initialize(self):
         log.info('Initializing WatchdOcr core...', extra={'title': 'Core'})
         self._kernel = WatchdOcrKernel()
         self._kernel_apis = KernelAPICollection()
@@ -57,6 +57,7 @@ class WatchdOcrCore:
         log.info('Discovering and initializing plugins...', extra={'title': 'Core'})
         self._kernel.plugins.add_entry_point('src.watchdocr.plugins')
         self._kernel.plugins.init()
+        await self._kernel.plugins.start()
 
         log.info('Starting WatchdOcr processor...', extra={'title': 'Core'})
         processor = WatchdOcrProcessor(
@@ -71,7 +72,7 @@ class WatchdOcrCore:
             workflows=tuple([w(processor) for w in WORKFLOWS])
         )
         log.info('Switching default workflow to OnetimeWorkflow...', extra={'title': 'Core'})
-        workflow_manager.switch_to(OnetimeWorkflow)
+        await workflow_manager.switch_to(OnetimeWorkflow)
         self._kernel.objects.set('watchdocr-workflows', workflow_manager)
 
         # API
@@ -89,11 +90,18 @@ class WatchdOcrCore:
         self._kernel_apis.add(translation_api)
         log.success('WatchdOcr Core initialized successfully!', extra={'title': 'Core'})
 
-    def destroy(self):
+    async def destroy(self):
         log.info('Destroying WatchdOcr core...', extra={'title': 'Core'})
+        workflow_manager = self._kernel.objects.pull('watchdocr-workflows')
+        await workflow_manager.stop()
+        log.info('WatchdOcr workflows stopped.', extra={'title': 'Core'})
+
         processor = self._kernel.objects.pull('watchdocr-processor')
-        processor.stop()
+        await processor.stop()
         log.info('WatchdOcr processor stopped.', extra={'title': 'Core'})
+
+        await self._kernel.plugins.shutdown()
+        log.info('WatchdOcr plugins stopped.', extra={'title': 'Core'})
 
     def api_collection(self):
         return self._kernel_apis

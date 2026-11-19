@@ -10,9 +10,9 @@ class TranslationData:
 
 
 class TranslatorPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
-    def translate(self, text: str, _from: str, to: str) -> TranslationData:
+    async def translate(self, text: str, _from: str, to: str) -> TranslationData:
         try:
-            return self.on_translate(text, _from, to)
+            return await self.on_translate(text, _from, to)
         except Exception as e:
             text = f'Failed to translate text! Error: {e}'
             return TranslationData(
@@ -21,7 +21,7 @@ class TranslatorPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
                 translated_text=text
             )
 
-    def on_translate(self, text: str, _from: str, to: str) -> TranslationData:
+    async def on_translate(self, text: str, _from: str, to: str) -> TranslationData:
         raise NotImplementedError
 
     def get_provider_name(self) -> str:

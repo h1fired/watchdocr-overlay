@@ -5,7 +5,9 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "certifi>=2026.5.20",
     "dotenv>=0.9.9",
+    "httpx>=0.28.1",
     "imagehash>=4.3.2",
     "mss>=10.2.0",
     "numpy>=2.4.6",
@@ -14,10 +16,17 @@ dependencies = [
     "pyside6>=6.11.1",
     "pyyaml>=6.0.3",
     "qasync>=0.28.0",
-    "requests>=2.34.2",
 ]
 
 [dependency-groups]
 dev = [
     "nuitka>=4.1.2",
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.5.0",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -12,9 +12,11 @@ from frontend.viewmodels import WatchdOcrLinkerCore
 from frontend.viewmodels.types.focus import FocusHelper
 from frontend.viewmodels.types import (
     registerUtilsQmlTypes,
-    registerQmlImageProviders
+    registerQmlImageProviders,
+    TextColorDetector
 )
 from config import config
+from typing import Coroutine
 import qasync
 import asyncio
 import ctypes
@@ -121,6 +123,8 @@ qmlRegisterSingletonInstance(WatchdOcrLinkerCore, 'App.System', 1, 0, 'System', 
 class GuiCoreApplication(metaclass=Singleton):
     def __init__(self):
         self._tray = None
+        self._engine = None
+        self._quit_event = asyncio.Event()
 
     def pre_init(self):
         self._app = QApplication([])
@@ -133,6 +137,7 @@ class GuiCoreApplication(metaclass=Singleton):
             if not _qmlSystemObj.getVisible():
                 _qmlSystemObj.setVisible(True)
         self._tray.showTriggered.connect(onTrayShowTriggered)
+        self._tray.quitTriggered.connect(self.quit)
 
     def load(
         self,
@@ -157,26 +162,30 @@ class GuiCoreApplication(metaclass=Singleton):
             _qmlLinkerCore.loadContent()
             _qmlLinkerCore.loadFullyContent()
 
-        # Destroy frontend content before quit
-        self._app.aboutToQuit.connect(self.destroy)
-
     def destroy(self):
-        _qmlLinkerCore.destroyContent()
+        # GUI is not loaded or already destroyed
+        if self._engine is None:
+            return
 
-        if not self._engine:
-            raise RuntimeError('GUI already destroyed')
+        _qmlLinkerCore.destroyContent()
+        TextColorDetector.shutdownExecutor()
+
         del self._engine
         self._engine = None
 
-    def exec(self):
+    def exec(self, main: Coroutine):
         if self._tray:
             self._tray.show()
-        qasync.run(self._exec())
+        return qasync.run(main)
 
-    async def _exec(self):
-        close_event = asyncio.Event()
-        self._app.aboutToQuit.connect(close_event.set)
-        await close_event.wait()
+    def quit(self):
+        # Quit is only requested here, the main coroutine has to finish itself.
+        # Event loop stops right after QApplication quit, so async cleanup
+        # is not possible after it
+        self._quit_event.set()
+
+    async def wait_for_quit(self):
+        await self._quit_event.wait()
 
     def engine(self):
         return self._engine

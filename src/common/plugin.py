@@ -9,7 +9,9 @@ from collections import defaultdict
 from contextlib import suppress
 import pkgutil
 import importlib
-import requests
+import inspect
+import asyncio
+import httpx
 import zipfile
 import os
 import re
@@ -131,8 +133,6 @@ class PluginManager:
             instance = getattr(module, module.__plugin_main__)()
             if isinstance(instance, EventPlugin):
                 instance.__eventsys__ = self._eventsys
-            if isinstance(instance, LaunchPlugin):
-                instance.on_startup()
 
             meta = PluginMeta(
                 id=module.__plugin_meta__['id'],
@@ -149,11 +149,30 @@ class PluginManager:
 
         # Register on_event callback for event system
         def on_event(event: IEvent, data: EventData):
-            for instance in self._plugins:
+            for instance in self._plugins.values():
                 if isinstance(instance, EventPlugin):
                     instance.on_event(event, data)
         self._eventsys.listen(on_event)
         self._initialized = True
+
+    async def start(self):
+        if not self._initialized:
+            raise RuntimeError('Cannot start plugins before manager initialized')
+
+        log.info('Starting plugins...', extra={'title': LOG_TITLE})
+        for instance in self.get_realizations(LaunchPlugin):
+            await instance.on_startup()
+
+    async def shutdown(self):
+        log.info('Shutting down plugins...', extra={'title': LOG_TITLE})
+        for instance in self.get_realizations(LaunchPlugin):
+            try:
+                await instance.on_shutdown()
+            except Exception:
+                log.exception(
+                    'Failed to shutdown plugin %s', instance.meta.name,
+                    extra={'title': LOG_TITLE}
+                )
 
     def add_entry_point(self, dir: str):
         if self._initialized:
@@ -167,12 +186,15 @@ class PluginManager:
         ])
         return realizations
 
-    def call_hook(self, id: str, data: Any, *args, **kwargs):
+    async def call_hook(self, id: str, data: Any, *args, **kwargs):
         for plugin in self.get_realizations(HookPlugin):
             hooks = plugin.__plugin_hooks__.get(id)
             if hooks:
                 for hook in hooks:
+                    # Hook can be either sync or async function
                     data = hook(plugin, data, *args, **kwargs)
+                    if inspect.isawaitable(data):
+                        data = await data
         return data
 
 
@@ -204,7 +226,10 @@ def hook(id: str):
 
 
 class LaunchPlugin(Plugin):
-    def on_startup(self):
+    async def on_startup(self):
+        pass
+
+    async def on_shutdown(self):
         pass
 
 
@@ -245,7 +270,7 @@ def file_sha256_sum(filename: str):
 
 
 class DownloadablePlugin(Plugin):
-    def on_after_download(self):
+    async def on_after_download(self):
         pass
 
     def get_download_resource(self) -> DownloadResource:
@@ -263,7 +288,7 @@ class PluginResourceDownloader:
         self._manager = manager
         self._observable = MappedObservable()
 
-    def start_download(self) -> bool:
+    async def start_download(self) -> bool:
         plugins = self._manager.get_realizations(DownloadablePlugin)
 
         length = len(plugins)
@@ -272,7 +297,7 @@ class PluginResourceDownloader:
 
         for index, plugin in enumerate(plugins, start=1):
             try:
-                self._download_plugin(plugin, index, length)
+                await self._download_plugin(plugin, index, length)
             except Exception:
                 log.exception(
                     'Failed to download plugin %s', plugin.meta.name,
@@ -285,7 +310,7 @@ class PluginResourceDownloader:
     def observe(self, trigger: str, callback: Callable):
         self._observable.register(trigger, callback)
 
-    def _download_plugin(
+    async def _download_plugin(
         self,
         plugin: DownloadablePlugin,
         index: int,
@@ -295,15 +320,15 @@ class PluginResourceDownloader:
         download_path = plugin.get_resource_path()
 
         last_progress = None
-        for total_size, current_size in self._download_resource(resource, download_path):
+        async for total_size, current_size in self._download_resource(resource, download_path):
             progress = self._calculate_progress(index, total, total_size, current_size)
             if progress != last_progress:
                 self._observable.notify('progress', progress)
                 last_progress = progress
 
-        plugin.on_after_download()
+        await plugin.on_after_download()
 
-    def _download_resource(
+    async def _download_resource(
         self,
         download_res: DownloadResource,
         download_path: str
@@ -320,12 +345,14 @@ class PluginResourceDownloader:
         )
 
         try:
-            yield from self._stream_download(download_res.url, archive_path)
+            async for progress in self._stream_download(download_res.url, archive_path):
+                yield progress
 
+            # Hashing and extracting are blocking, run them in thread
             if download_res.sha256:
-                self._verify_sha256(archive_path, download_res.sha256)
+                await asyncio.to_thread(self._verify_sha256, archive_path, download_res.sha256)
 
-            self._extract_archive(archive_path, download_path)
+            await asyncio.to_thread(self._extract_archive, archive_path, download_path)
         finally:
             with suppress(OSError):
                 os.remove(archive_path)
@@ -333,19 +360,20 @@ class PluginResourceDownloader:
         with open(checkfile_path, 'w'):
             pass
 
-    def _stream_download(self, url: str, dest_path: str):
-        with requests.get(url, stream=True, timeout=DOWNLOAD_TIMEOUT) as r:
-            r.raise_for_status()
+    async def _stream_download(self, url: str, dest_path: str):
+        async with httpx.AsyncClient(timeout=DOWNLOAD_TIMEOUT, follow_redirects=True) as client:
+            async with client.stream('GET', url) as r:
+                r.raise_for_status()
 
-            total_size = int(r.headers.get('content-length') or 0)
+                total_size = int(r.headers.get('content-length') or 0)
 
-            with open(dest_path, 'wb') as f:
-                bytes_downloaded = 0
-                for chunk in r.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
-                    f.write(chunk)
-                    bytes_downloaded += len(chunk)
+                with open(dest_path, 'wb') as f:
+                    bytes_downloaded = 0
+                    async for chunk in r.aiter_bytes(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                        f.write(chunk)
+                        bytes_downloaded += len(chunk)
 
-                    yield total_size, bytes_downloaded
+                        yield total_size, bytes_downloaded
 
     def _verify_sha256(self, filename: str, expected: str):
         actual_sum = file_sha256_sum(filename)

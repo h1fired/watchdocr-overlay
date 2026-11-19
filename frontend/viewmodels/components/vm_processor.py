@@ -5,6 +5,7 @@ from src.watchdocr.api.processor import ProcessorAPI
 from src.watchdocr.api.workflow import WorkflowAPI
 from src.watchdocr.workflow.workflows import OnetimeWorkflow, LiveWorkflow
 from src.watchdocr.processor.processor import Events
+from qasync import asyncSlot
 import json
 
 
@@ -35,11 +36,11 @@ class ProcessorViewModel(QmlViewModel):
                 self._recognizer_status = data.status
                 self.recognizerStatusChanged.emit()
 
-    @Slot(str)
-    def onModeChanged(self, mode: str):
+    @asyncSlot(str)
+    async def onModeChanged(self, mode: str):
         workflow = self.convertModeStrToType(mode)
         if workflow:
-            self._workflow_api.switch_to(workflow)
+            await self._workflow_api.switch_to(workflow)
             self._current_mode = mode
 
     @Slot(QRect)
@@ -75,10 +76,10 @@ class ProcessorViewModel(QmlViewModel):
             workflow = LiveWorkflow
         return workflow
 
-    @Slot(bool)
-    def enableWorkflowManager(self, value: bool):
+    @asyncSlot(bool)
+    async def enableWorkflowManager(self, value: bool):
         if value is True:
-            self._workflow_api.start()
+            await self._workflow_api.start()
         else:
-            self._workflow_api.stop()
+            await self._workflow_api.stop()
         self.activeChanged.emit()

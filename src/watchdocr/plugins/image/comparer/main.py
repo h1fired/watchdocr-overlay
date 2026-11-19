@@ -20,9 +20,10 @@ LOG_TITLE = f'{__plugin_meta__["name"]} Plugin'
 
 class ImageComparerPlugin(LaunchPlugin, HookPlugin):
 
-    def on_startup(self):
+    async def on_startup(self):
         self._image_hash_cache = None
-        self._ctx_cache = None
+        self._pending_image_hash = None
+        self._ocr_cache = None
 
     @hook('watchdocr.image_grabber_pipeline.image_process')
     def on_image_grabber_image(
@@ -30,19 +31,18 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         image: Image.Image,
         ctx: WatchdOcrRuntimeContext
     ):
+        # Hash is cached only after pipeline finish,
+        # cancelled pipelines must not affect it
+        image_hash = imagehash.average_hash(image, HASH_SIZE)
+        self._pending_image_hash = image_hash
+
         if self._image_hash_cache is None:
-            self._image_hash_cache = imagehash.average_hash(image, HASH_SIZE)
             return image
 
-        hash1 = self._image_hash_cache
-        hash2 = imagehash.average_hash(image, HASH_SIZE)
-        diff = hash1 - hash2
-
-        # Cache image hash
-        self._image_hash_cache = hash2
+        diff = self._image_hash_cache - image_hash
 
         # Return cached data if images are similar
-        if diff <= IMAGE_DIFF_TOLERANCE and self._ctx_cache:
+        if diff <= IMAGE_DIFF_TOLERANCE and self._ocr_cache:
             log.info(
                 'Similar images detected (tolerance <= %s), run pipeline optimization',
                 IMAGE_DIFF_TOLERANCE,
@@ -54,13 +54,18 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
 
     @hook('watchdocr.processor_pipeline.finish')
     def on_processor_pipeline_finish(self, ctx: WatchdOcrRuntimeContext):
-        self._ctx_cache = ctx.model_copy(deep=True)
+        if self._pending_image_hash is not None:
+            self._image_hash_cache = self._pending_image_hash
+            self._pending_image_hash = None
+
+        # Cache only OCR data, copying the whole context (with image) is expensive
+        self._ocr_cache = ctx.ocr.model_copy(deep=True)
         return ctx
 
     def _update_context(self, ctx: WatchdOcrRuntimeContext):
         ctx.ocr.ignore = True
-        ctx.ocr.success = self._ctx_cache.ocr.success
-        ctx.ocr.text = self._ctx_cache.ocr.text
-        ctx.ocr.total_confidence = self._ctx_cache.ocr.total_confidence
-        ctx.ocr.boxes = self._ctx_cache.ocr.boxes
-        ctx.ocr.parts = self._ctx_cache.ocr.parts
+        ctx.ocr.success = self._ocr_cache.success
+        ctx.ocr.text = self._ocr_cache.text
+        ctx.ocr.total_confidence = self._ocr_cache.total_confidence
+        ctx.ocr.boxes = self._ocr_cache.boxes
+        ctx.ocr.parts = self._ocr_cache.parts
