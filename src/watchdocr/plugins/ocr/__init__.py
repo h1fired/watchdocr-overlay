@@ -4,6 +4,7 @@ from PIL import Image
 from dataclasses import dataclass, asdict
 from enum import IntFlag
 from config import config
+import asyncio
 import re
 
 
@@ -42,10 +43,11 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
         super().__init__()
         self._optimizations = self.Options.optimizations
 
-    def recognize(self, image: Image.Image) -> OcrData:
+    async def recognize(self, image: Image.Image) -> OcrData:
         try:
-            image, scale = self.process_image(image)
-            return self.recognizable(image, scale)
+            # Resizing and filtering is CPU heavy, run it in thread
+            image, scale = await asyncio.to_thread(self.process_image, image)
+            return await self.recognizable(image, scale)
         except Exception as e:
             return OcrData(
                 success=False,
@@ -54,7 +56,7 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
                 confidence=0.
             )
 
-    def recognizable(self, image: Image.Image, scale: float) -> OcrData:
+    async def recognizable(self, image: Image.Image, scale: float) -> OcrData:
         raise NotImplementedError
 
     def get_provider_name(self):

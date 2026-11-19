@@ -1,17 +1,14 @@
+import asyncio
 from PySide6.QtCore import QObject, Signal, Property
 from PySide6.QtQml import QQmlApplicationEngine
 from src.common.plugin import PluginManager, PluginResourceDownloader
 from config import config
-from threading import Thread
-import time
 
 
 class PreloaderWorker(QObject):
     loadingChanged = Signal()
     labelChanged = Signal()
     progressChanged = Signal()
-    finished = Signal()
-    error = Signal()
 
     def __init__(self, manager: PluginManager, parent=None):
         super().__init__(parent)
@@ -19,8 +16,6 @@ class PreloaderWorker(QObject):
         self._loading = False
         self._label = ''
         self._progress = 0.
-
-        self._thread = None
 
     def getLoading(self):
         return self._loading
@@ -45,49 +40,39 @@ class PreloaderWorker(QObject):
 
     progress = Property(float, getProgress, notify=progressChanged)
 
-    def startDownloading(self):
-        self._thread = Thread(target=self._runner, daemon=True)
-        self._thread.start()
-
-    def _runner(self):
+    async def download(self) -> bool:
         self.setLabel('Downloading resources')
 
         downloader = PluginResourceDownloader(self._manager)
         downloader.observe('progress', self.setProgress)
 
-        if not downloader.start_download():
+        if not await downloader.start_download():
             self.setLabel('An error occured! Exit...')
-            time.sleep(1)
-            self.error.emit()
-            return
+            await asyncio.sleep(1)
+            return False
 
         # Starting app
         self.setLabel('Starting WatchdOcr...')
-        time.sleep(0.5)
+        await asyncio.sleep(0.5)
 
-        self.finished.emit()
+        return True
 
 
 class PreloaderCore(QObject):
-    finished = Signal()
-    error = Signal()
-
     def __init__(self, manager: PluginManager, parent=None):
         super().__init__(parent)
         self._engine = QQmlApplicationEngine()
         self._worker = PreloaderWorker(manager)
 
-    def exec(self):
+    async def exec(self) -> bool:
         context = self._engine.rootContext()
         context.setContextProperty('preloaderWorker', self._worker)
         self._engine.load(config.PRELOADER_WINDOW_FILE)
 
-        def on_downloading_finish():
-            component = self._engine.rootObjects()[0]
-            component.close()
-            component.deleteLater()
-            self.finished.emit()
+        success = await self._worker.download()
 
-        self._worker.finished.connect(on_downloading_finish)
-        self._worker.error.connect(self.error)
-        self._worker.startDownloading()
+        component = self._engine.rootObjects()[0]
+        component.close()
+        component.deleteLater()
+
+        return success

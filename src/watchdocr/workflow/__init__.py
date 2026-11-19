@@ -3,16 +3,17 @@ from src.watchdocr.processor.processor import (
     PipelineStrategy
 )
 from src.common.utils.logging import log
+import asyncio
 
 
 class WatchdOcrWorkflow:
     def __init__(self, processor: WatchdOcrProcessor):
         self._processor = processor
 
-    def run(self):
+    async def run(self):
         raise NotImplementedError
 
-    def close(self):
+    async def close(self):
         raise NotImplementedError
 
     def is_active(self):
@@ -36,42 +37,46 @@ class WatchdOcrWorkflowManager:
         self._workflows = {type(w): w for w in workflows}
         self._current: WatchdOcrWorkflow | None = None
         self._active = False
+        self._lock = asyncio.Lock()  # Serializes workflows lifecycle changes
 
-    def start(self):
-        if self._active:
-            return
-        if self._current:
-            self._current.run()
-        self._active = True
+    async def start(self):
+        async with self._lock:
+            if self._active:
+                return
+            if self._current:
+                await self._current.run()
+            self._active = True
 
-    def stop(self):
-        if not self._active:
-            return
-        if self._current:
-            self._current.close()
-        self._active = False
+    async def stop(self):
+        async with self._lock:
+            if not self._active:
+                return
+            if self._current:
+                await self._current.close()
+            self._active = False
 
     def is_active(self):
         return self._active
 
-    def switch_to(self, workflow: type[WatchdOcrWorkflow]):
+    async def switch_to(self, workflow: type[WatchdOcrWorkflow]):
         if workflow not in self._workflows.keys():
             raise TypeError(f'Invalid workflow type -> {type(workflow)}')
 
-        if workflow is type(self._current):
-            return
+        async with self._lock:
+            if workflow is type(self._current):
+                return
 
-        if self._current:
-            log.info('Closing current workflow: %s', self._current.__class__.__name__, extra={'title': 'Workflow'})
-            self._current.close()
+            if self._current:
+                log.info('Closing current workflow: %s', self._current.__class__.__name__, extra={'title': 'Workflow'})
+                await self._current.close()
 
-        new = self._workflows[workflow]
-        log.info('Switching to workflow: %s', new.__class__.__name__, extra={'title': 'Workflow'})
+            new = self._workflows[workflow]
+            log.info('Switching to workflow: %s', new.__class__.__name__, extra={'title': 'Workflow'})
 
-        if self._active:
-            new.run()
+            if self._active:
+                await new.run()
 
-        self._current = new
+            self._current = new
 
     def get_current_workflow(self):
         return self._current

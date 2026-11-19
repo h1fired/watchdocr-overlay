@@ -1,46 +1,41 @@
-from src.common.utils.logging import log
 from typing import Callable, Any, Generic, TypeVar, Iterable
 from collections import defaultdict
-from threading import Lock
 from functools import wraps
+from src.common.utils.logging import log
 
 
 class Observable:
     def __init__(self):
-        self._lock = Lock()
         self._notifiers: list[Callable] = []
         self._identified_notifiers = {}
 
     def register(self, callback: Callable, id: str | None = None):
-        with self._lock:
-            self._notifiers.append(callback)
-            if id:
-                if id in self._identified_notifiers.keys():
-                    raise KeyError('Callback <id> already exists')
-                self._identified_notifiers[id] = callback
+        self._notifiers.append(callback)
+        if id:
+            if id in self._identified_notifiers.keys():
+                raise KeyError('Callback <id> already exists')
+            self._identified_notifiers[id] = callback
 
     def unregister(self, callback: Callable | str):
-        with self._lock:
-            if isinstance(callback, str):
-                callback = self._identified_notifiers.pop(callback)
-                self._notifiers.remove(callback)
-            else:
-                if callback in self._identified_notifiers.values():
-                    key = next(
-                        k for k, v
-                        in self._identified_notifiers.items()
-                        if v == callback
-                    )
-                    self._identified_notifiers.pop(key)
-                self._notifiers.remove(callback)
+        if isinstance(callback, str):
+            callback = self._identified_notifiers.pop(callback)
+            self._notifiers.remove(callback)
+        else:
+            if callback in self._identified_notifiers.values():
+                key = next(
+                    k for k, v
+                    in self._identified_notifiers.items()
+                    if v == callback
+                )
+                self._identified_notifiers.pop(key)
+            self._notifiers.remove(callback)
 
     def notify(self, *args):
-        with self._lock:
-            for notifier in self._notifiers:
-                try:
-                    notifier(*args)
-                except Exception as e:
-                    log.exception(e, extra={'title': 'CALLBACK'})
+        for notifier in self._notifiers:
+            try:
+                notifier(*args)
+            except Exception as e:
+                log.exception(e, extra={'title': 'CALLBACK'})
 
     def clear(self):
         self._notifiers.clear()
@@ -82,31 +77,27 @@ class MappedObservable(Observable):
         callback: Callable,
         id: str | None = None
     ):
-        with self._lock:
-            self._notifiers[subject].append(callback)
-            if id:
-                if id in self._identified_notifiers.keys():
-                    raise KeyError('Callback <id> already exists')
-                self._identified_notifiers[id] = (subject, callback)
+        self._notifiers[subject].append(callback)
+        if id:
+            if id in self._identified_notifiers.keys():
+                raise KeyError('Callback <id> already exists')
+            self._identified_notifiers[id] = (subject, callback)
 
     def unregister(self, subject: str, callback: Callable):
-        with self._lock:
-            self._notifiers[subject].remove(callback)
+        self._notifiers[subject].remove(callback)
 
     def unregister_by_id(self, id: str):
-        with self._lock:
-            subject, callback = self._identified_notifiers.pop(id)
-            self._notifiers[subject].remove(callback)
+        subject, callback = self._identified_notifiers.pop(id)
+        self._notifiers[subject].remove(callback)
 
     def notify(self, subject: str, *args):
-        with self._lock:
-            if subject not in self._notifiers.keys():
-                return
-            for notifier in self._notifiers[subject]:
-                try:
-                    notifier(*args)
-                except Exception as e:
-                    log.exception(e, extra={'title': 'CALLBACK'})
+        if subject not in self._notifiers.keys():
+            return
+        for notifier in self._notifiers[subject]:
+            try:
+                notifier(*args)
+            except Exception as e:
+                log.exception(e, extra={'title': 'CALLBACK'})
 
     def clear(self):
         self._notifiers.clear()

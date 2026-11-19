@@ -1,7 +1,9 @@
 from src.common.plugin import DownloadResource, DownloadablePlugin
 from src.watchdocr.plugins.ocr import OcrPlugin, OcrData, OcrBoxData
 from src.watchdocr.plugins.ocr.windows_one.engine import OcrEngine, OcrLine
+from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
+import asyncio
 
 
 __plugin_meta__ = {
@@ -19,9 +21,24 @@ RESOURCE_SHA256 = '03c4b49f0f4e863b1027e19ae84575c2c399870818d9c56bfc347e09711f7
 class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
     _id = 'windowsone_ocr'
 
-    def on_after_download(self):
+    async def on_startup(self):
+        # Engine is created and used only in one dedicated thread,
+        # so DLL calls are never executed in parallel
+        self._executor = ThreadPoolExecutor(
+            max_workers=1,
+            thread_name_prefix='WindowsOneOcr'
+        )
+
+    async def on_shutdown(self):
+        self._executor.shutdown(wait=False, cancel_futures=True)
+
+    async def on_after_download(self):
         dlls_path = self.get_resource_path()
-        self._api = OcrEngine(dlls_path=dlls_path)
+        loop = asyncio.get_running_loop()
+        self._api = await loop.run_in_executor(
+            self._executor,
+            lambda: OcrEngine(dlls_path=dlls_path)
+        )
 
     def get_download_resource(self):
         return DownloadResource(
@@ -35,8 +52,9 @@ class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
     def get_provider_name(self):
         return 'WindowsOne'
 
-    def recognizable(self, image: Image.Image, scale: float):
-        res = self._api.recognize(image)
+    async def recognizable(self, image: Image.Image, scale: float):
+        loop = asyncio.get_running_loop()
+        res = await loop.run_in_executor(self._executor, self._api.recognize, image)
         boxes = self._parse_boxes(res.lines, scale)
         return OcrData(True, res.text, tuple(boxes), 0., True)
 

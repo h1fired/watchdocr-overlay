@@ -1,8 +1,8 @@
 from typing import Protocol, runtime_checkable, Callable, Any
 from types import SimpleNamespace
 from collections import defaultdict
-from threading import Lock
 from .utils.logging import log
+import threading
 
 
 class EventData(SimpleNamespace):
@@ -65,17 +65,23 @@ class EventSystem:
     def __init__(self):
         self._events = defaultdict(list)
         self._listeners: list[Callable] = []
-        self._lock = Lock()
+        self._thread_id = threading.get_ident()
 
     def register(self, event: _Event):
-        with self._lock:
-            self._events[event.interface].append(event)
+        self._events[event.interface].append(event)
         return event
 
     def listen(self, callback: Callable):
         self._listeners.append(callback)
 
     def dispatch(self, event: IEvent, data: dict):
+        # Listeners must be called from the event loop thread only
+        if threading.get_ident() != self._thread_id:
+            raise RuntimeError(
+                f'Event {event.__name__} dispatched outside '
+                f'of the event loop thread'
+            )
+
         if type(data) is not dict:
             raise TypeError('Only dict is supported for event data')
 
@@ -92,7 +98,7 @@ class EventSystem:
                 log.exception('[EVENT LISTENER ERROR] %s', e, extra={'title': 'Events'})
 
         entities = self._events[event]
-        for e in entities:
+        for e in tuple(entities):  # Copy, disposable events removes itself
             if type(e) is _BusEvent:
                 if e.condition(namespace):
                     try:
@@ -103,14 +109,12 @@ class EventSystem:
                 if e.condition(namespace):
                     try:
                         e.handler(namespace)
-                    except Exception as e:
-                        log.exception(f'[EVENT CALLBACK] {e}', extra={'title': 'Events'})
+                    except Exception as ex:
+                        log.exception(f'[EVENT CALLBACK] {ex}', extra={'title': 'Events'})
                     finally:
                         entities.remove(e)
 
     def dispose(self, event: _Event):
         entities = self._events[event.interface]
-        for handler in entities:
-            if handler == event:
-                with self._lock:
-                    entities.remove(event)
+        if event in entities:
+            entities.remove(event)

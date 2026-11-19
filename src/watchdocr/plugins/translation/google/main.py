@@ -1,5 +1,7 @@
 from src.watchdocr.plugins.translation import TranslatorPlugin, TranslationData
-import requests
+import certifi
+import httpx
+import ssl
 
 
 __plugin_meta__ = {
@@ -117,13 +119,32 @@ TARGET_LANGUAGES = {
 }
 
 
-class GoogleTranslatorPlugin(TranslatorPlugin):
-    def on_startup(self):
-        self.session = requests.Session()
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        self.session.headers.update(headers)
+class _NoAlpnSSLContext(ssl.SSLContext):
+    # Google responds with 429 to requests with ALPN in TLS handshake,
+    # but httpx always sets it, so it's ignored here
+    def set_alpn_protocols(self, protocols):
+        pass
 
-    def on_translate(self, text, _from, to):
+
+def create_ssl_context():
+    context = _NoAlpnSSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations(certifi.where())
+    return context
+
+
+class GoogleTranslatorPlugin(TranslatorPlugin):
+    async def on_startup(self):
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        self.session = httpx.AsyncClient(
+            headers=headers,
+            timeout=5,
+            verify=create_ssl_context()
+        )
+
+    async def on_shutdown(self):
+        await self.session.aclose()
+
+    async def on_translate(self, text, _from, to):
         if text == '':
             return TranslationData(True, text, text)
 
@@ -142,8 +163,8 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
                 'dt': 't',
                 'q': text
             }
-            response = self.session.get(URL, params=params, timeout=5)
-            if not response.ok:
+            response = await self.session.get(URL, params=params)
+            if response.is_error:
                 raise ValueError('Request failed')
 
             translated_text = ''.join(t[0] for t in response.json()[0])
@@ -151,11 +172,11 @@ class GoogleTranslatorPlugin(TranslatorPlugin):
             if not translated_text:
                 raise ValueError('No translation')
             return TranslationData(True, text, translated_text)
-        except requests.exceptions.Timeout:
+        except httpx.TimeoutException:
             err_msg = 'Translation error: Network timeout'
-        except requests.exceptions.ConnectionError:
+        except httpx.NetworkError:
             err_msg = 'Translation error: Network unavailable'
-        except requests.exceptions.HTTPError:
+        except httpx.HTTPStatusError:
             err_msg = 'Translation error: Server returned an error response'
         return TranslationData(False, err_msg, err_msg)
 
