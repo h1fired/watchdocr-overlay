@@ -21,8 +21,8 @@ LOG_TITLE = f'{__plugin_meta__["name"]} Plugin'
 class ImageComparerPlugin(LaunchPlugin, HookPlugin):
 
     async def on_startup(self):
-        self._image_hash_cache = None
-        self._pending_image_hash = None
+        self._image_cache = None
+        self._pending_image = None
         self._ocr_cache = None
 
     @hook('watchdocr.image_grabber_pipeline.image_process')
@@ -34,12 +34,19 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
         # Hash is cached only after pipeline finish,
         # cancelled pipelines must not affect it
         image_hash = imagehash.average_hash(image, HASH_SIZE)
-        self._pending_image_hash = image_hash
+        boundings = ctx.config.boundings
+        self._pending_image = (image_hash, boundings)
 
-        if self._image_hash_cache is None:
+        if self._image_cache is None:
             return image
 
-        diff = self._image_hash_cache - image_hash
+        cached_hash, cached_boundings = self._image_cache
+
+        # Similar content of another area is not the same image
+        if cached_boundings != boundings:
+            return image
+
+        diff = cached_hash - image_hash
 
         # Return cached data if images are similar
         if diff <= IMAGE_DIFF_TOLERANCE and self._ocr_cache:
@@ -54,9 +61,9 @@ class ImageComparerPlugin(LaunchPlugin, HookPlugin):
 
     @hook('watchdocr.processor_pipeline.finish')
     def on_processor_pipeline_finish(self, ctx: WatchdOcrRuntimeContext):
-        if self._pending_image_hash is not None:
-            self._image_hash_cache = self._pending_image_hash
-            self._pending_image_hash = None
+        if self._pending_image is not None:
+            self._image_cache = self._pending_image
+            self._pending_image = None
 
         # Cache only OCR data, copying the whole context (with image) is expensive
         self._ocr_cache = ctx.ocr.model_copy(deep=True)

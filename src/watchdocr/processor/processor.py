@@ -83,12 +83,13 @@ class OcrPipelineStage(PipelineStage):
             extra={'title': LOG_PROCESSOR}
         )
 
-        ctx.ocr.clear()  # Clean up
-
-        # Skip OCR pipeline if ignore flag is set (created for hooks)
+        # Skip OCR pipeline if ignore flag is set (created for hooks).
+        # Checked before clean up, so data provided by hooks is kept
         if ctx.ocr.ignore:
             ctx.ocr.ignore = False
             return
+
+        ctx.ocr.clear()  # Clean up
 
         data = await self._ocr.recognize(ctx.image)
         ctx.ocr.success = data.success
@@ -233,6 +234,7 @@ class WatchdOcrRunner:
         self._pipeline = pipeline
         self._task: asyncio.Task | None = None
         self._strategy: PipelineStrategy | None = None
+        self._last_output: WatchdOcrOutput | None = None
         self._running = False
         self._output_callback = None
         self._status_callback = None
@@ -273,7 +275,7 @@ class WatchdOcrRunner:
             self._task.cancel()
 
         self._strategy = strategy
-        self._task = asyncio.create_task(self._execute(strategy))
+        self._task = asyncio.create_task(self._execute(strategy, task.skip_unchanged))
         return self._task
 
     def start(self):
@@ -301,7 +303,7 @@ class WatchdOcrRunner:
     def is_running(self):
         return self._running
 
-    async def _execute(self, strategy: PipelineStrategy):
+    async def _execute(self, strategy: PipelineStrategy, skip_unchanged: bool):
         ctx = self._create_context()
 
         self._send_status(WatchdOcrProcessorStatus.RECOGNIZING)
@@ -327,6 +329,16 @@ class WatchdOcrRunner:
         self._ctx = ctx
 
         output = self.create_output_data(strategy)
+
+        # Nothing to update in UI if result is the same
+        if skip_unchanged and output == self._last_output:
+            log.debug(
+                'Pipeline result is unchanged, skipping output.',
+                extra={'title': LOG_PROCESSOR}
+            )
+            return
+        self._last_output = output
+
         if self._output_callback:
             self._output_callback(output)
 
@@ -388,6 +400,7 @@ class StrategyTask(BaseModel):
 
     strategy: PipelineStrategy
     context_data: dict
+    skip_unchanged: bool = False  # Don't send output equal to the previous one
 
 
 class WatchdOcrProcessor:
@@ -426,14 +439,23 @@ class WatchdOcrProcessor:
     def get_active(self):
         return self._runner.is_running()
 
-    def queue_pipeline(self, strategy: PipelineStrategy, context_data: dict):
+    def queue_pipeline(
+        self,
+        strategy: PipelineStrategy,
+        context_data: dict,
+        skip_unchanged: bool = False
+    ):
         log.info(
             'Queueing pipeline execution with strategy: %s',
             strategy.name,
             extra={'title': LOG_PROCESSOR}
         )
 
-        task = StrategyTask(strategy=strategy, context_data=context_data)
+        task = StrategyTask(
+            strategy=strategy,
+            context_data=context_data,
+            skip_unchanged=skip_unchanged
+        )
         return self._runner.put(task)
 
     def context(self):

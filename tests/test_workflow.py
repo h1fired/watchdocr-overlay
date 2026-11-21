@@ -12,11 +12,13 @@ class FakeProcessor:
         self._config = RuntimeConfig(boundings=boundings)
         self.block = block
         self.tasks = []
+        self.skip_flags = []
 
     def config(self):
         return self._config
 
-    def queue_pipeline(self, strategy, context_data):
+    def queue_pipeline(self, strategy, context_data, skip_unchanged=False):
+        self.skip_flags.append(skip_unchanged)
         if self.block:
             coro = asyncio.Event().wait()
         else:
@@ -41,6 +43,9 @@ async def test_live_workflow_runs_pipelines_periodically():
 
     assert len(processor.tasks) >= 2
     assert not workflow.is_active()
+    # First result is always sent, next unchanged ones are skipped
+    assert processor.skip_flags[0] is False
+    assert all(processor.skip_flags[1:])
 
 
 async def test_live_workflow_skips_empty_boundings():

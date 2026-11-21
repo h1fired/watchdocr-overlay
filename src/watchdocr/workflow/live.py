@@ -21,14 +21,18 @@ class LiveWorkflow(WatchdOcrWorkflow):
 
     async def _run(self):
         pipeline = None
+        skip_unchanged = False  # First result is always sent, UI may be cleared
         try:
             while True:
                 boundings = self._processor.config().boundings
                 if not all(b == 0 for b in boundings):
+                    # Unchanged results are skipped, UI keeps the previous one
                     pipeline = self._processor.queue_pipeline(
                         strategy=PipelineStrategy.OCR_TRANSLATION,
-                        context_data={}
+                        context_data={},
+                        skip_unchanged=skip_unchanged
                     )
+                    skip_unchanged = True
                     if pipeline:
                         # Pipeline can be cancelled by a newer one, so wait
                         # for its finish without raising an exception

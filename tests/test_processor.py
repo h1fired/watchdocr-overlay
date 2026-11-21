@@ -17,12 +17,13 @@ class FakePipeline:
         self.started = []
         self.block = block
         self.release = asyncio.Event()
+        self.text = None  # Constant text instead of unique one per execution
 
     async def execute(self, ctx, strategy):
         self.started.append((strategy, ctx.config.boundings))
         if self.block:
             await self.release.wait()
-        ctx.ocr.text = f'text-{len(self.started)}'
+        ctx.ocr.text = self.text or f'text-{len(self.started)}'
 
 
 class Recorder:
@@ -43,8 +44,12 @@ def create_runner(block=False):
     return runner, pipeline, recorder
 
 
-def task(strategy: PipelineStrategy, **context_data):
-    return StrategyTask(strategy=strategy, context_data=context_data)
+def task(strategy: PipelineStrategy, skip_unchanged=False, **context_data):
+    return StrategyTask(
+        strategy=strategy,
+        context_data=context_data,
+        skip_unchanged=skip_unchanged
+    )
 
 
 async def test_pipeline_output_is_sent():
@@ -188,3 +193,63 @@ async def test_finished_pipeline_calls_all_hooks():
         'watchdocr.processor_pipeline.output_text',
         'watchdocr.processor_pipeline.finish'
     ]
+
+
+# Unchanged results
+async def test_unchanged_output_is_skipped():
+    runner, pipeline, recorder = create_runner()
+    pipeline.text = 'same'
+
+    await runner.put(task(PipelineStrategy.OCR_TRANSLATION, skip_unchanged=True))
+    await runner.put(task(PipelineStrategy.OCR_TRANSLATION, skip_unchanged=True))
+
+    assert len(recorder.outputs) == 1
+    assert len(recorder.previews) == 1
+    assert recorder.statuses[-1] == WatchdOcrProcessorStatus.IDLE
+
+
+async def test_unchanged_output_is_sent_without_skip_flag():
+    runner, pipeline, recorder = create_runner()
+    pipeline.text = 'same'
+
+    await runner.put(task(PipelineStrategy.OCR_TRANSLATION, skip_unchanged=True))
+    await runner.put(task(PipelineStrategy.OCR_TRANSLATION))
+
+    assert len(recorder.outputs) == 2
+
+
+async def test_changed_output_is_sent_with_skip_flag():
+    runner, pipeline, recorder = create_runner()
+
+    await runner.put(task(PipelineStrategy.OCR_TRANSLATION, skip_unchanged=True))
+    await runner.put(task(PipelineStrategy.OCR_TRANSLATION, skip_unchanged=True))
+
+    assert [o.original_text for o in recorder.outputs] == ['text-1', 'text-2']
+
+
+# OCR stage
+class FakeOcr:
+    def __init__(self):
+        self.calls = 0
+
+    async def recognize(self, image):
+        self.calls += 1
+        raise AssertionError('OCR must be skipped')
+
+
+async def test_ocr_stage_keeps_hook_data_when_ignored():
+    from src.watchdocr.processor.processor import OcrPipelineStage
+
+    ocr = FakeOcr()
+    stage = OcrPipelineStage(FakePluginManager(), ocr)
+    ctx = WatchdOcrRuntimeContext()
+    ctx.ocr.ignore = True
+    ctx.ocr.success = True
+    ctx.ocr.text = 'from hook'
+
+    await stage.execute(ctx)
+
+    assert ocr.calls == 0
+    assert ctx.ocr.text == 'from hook'
+    assert ctx.ocr.success
+    assert not ctx.ocr.ignore

@@ -52,8 +52,16 @@ class ImageProvider(QQuickImageProvider):
     def getImage(self):
         return self._image
 
+    @staticmethod
+    def convertImage(image: Image.Image):
+        # CPU heavy for big images, can be called from any thread
+        return ImageQt.ImageQt(image.convert('RGBA'))
+
     def setImage(self, image: Image.Image):
-        self._image = ImageQt.ImageQt(image.convert('RGBA'))
+        self.setQImage(self.convertImage(image))
+
+    def setQImage(self, image: QImage):
+        self._image = image
         self.imageChanged.emit()
 
     def requestImage(self, id, size, requestedSize):
