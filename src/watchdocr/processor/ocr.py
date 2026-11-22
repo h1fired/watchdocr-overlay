@@ -35,7 +35,7 @@ class Ocr:
                 confidence=0.
             )
 
-        min_image_size = api.Options.min_image_size
+        min_image_size = api.Capabilities.min_image_size
         scale = self._scaler.scale_for(area, image.size, min_image_size)
         data = await api.recognize(image, scale)
 

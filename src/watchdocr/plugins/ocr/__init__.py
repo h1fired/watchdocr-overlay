@@ -35,13 +35,13 @@ class OcrOptimization(IntFlag):
 
 class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
 
-    class Options:
+    class Capabilities:
         optimizations = OcrOptimization.NONE
         min_image_size = 0  # Smallest image side the backend accepts
 
     def __init__(self):
         super().__init__()
-        self._optimizations = self.Options.optimizations
+        self._optimizations = self.Capabilities.optimizations
 
     async def recognize(
         self,

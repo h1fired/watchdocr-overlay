@@ -1,17 +1,23 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls.Basic
 import App.Backend
-import "qrc:/qml/ui/common/controls"
 import "qrc:/qml/ui/common/components"
+import "qrc:/qml/ui/overlay/components/settings"
 
 OMessageBoxFrame {
     id: root
 
     readonly property int titleBarHeight: 52
 
-    implicitWidth: 340
-    implicitHeight: column.implicitHeight + titleBarHeight
+    readonly property var sections: Backend.Settings.sections
+    property string currentSectionId: ""
+    readonly property var currentSection: {
+        let found = root.sections.find(s => s.id === root.currentSectionId);
+        return found ?? (root.sections.length ? root.sections[0] : null);
+    }
+
+    implicitWidth: 560
+    implicitHeight: content.implicitHeight + titleBarHeight + 1
 
     title: "Settings"
 
@@ -24,219 +30,42 @@ OMessageBoxFrame {
         Backend.General.blockOverlayToggleHotkey(visible);
     }
 
-    ColumnLayout {
-        id: column
+    // Layout computes its own implicit size, so fixed height is set on a wrapper
+    Item {
+        id: content
 
         width: parent.width
-        spacing: 0
+        height: implicitHeight
+        implicitHeight: 400
 
-        Repeater {
-            id: fieldsRepeater
+        RowLayout {
+            anchors.fill: parent
 
-            model: Backend.Settings.fields
+            spacing: 0
 
-            delegate: ColumnLayout {
-                id: fieldRow
+            SettingsNavigation {
+                Layout.preferredWidth: 170
+                Layout.fillHeight: true
 
-                required property var modelData
-                required property int index
+                model: root.sections
+                currentSectionId: root.currentSection?.id ?? ""
 
-                readonly property bool isFirstInGroup: {
-                    if (index === 0) return true;
-                    let prev = Backend.Settings.fields[index - 1];
-                    return prev.group !== modelData.group;
-                }
-
-                Layout.fillWidth: true
-                spacing: 0
-
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 0
-                    visible: fieldRow.isFirstInGroup
-
-                    // Top divider (skip for the very first group)
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.topMargin: 4
-                        height: 1
-                        color: "#2C2C2C"
-                        visible: fieldRow.index !== 0
-                    }
-
-                    Text {
-                        Layout.fillWidth: true
-                        Layout.topMargin: fieldRow.index === 0 ? 14 : 10
-                        Layout.bottomMargin: 4
-                        Layout.leftMargin: 16
-
-                        text: fieldRow.modelData.group.toUpperCase()
-
-                        font.family: "Segoe UI"
-                        font.weight: 700
-                        font.pixelSize: 9
-                        font.letterSpacing: 1.2
-                        color: "#4d4d4d"
-                    }
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                    implicitHeight: 44
-
-                    // Hover highlight
-                    Rectangle {
-                        anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
-                        radius: 6
-                        color: fieldHover.containsMouse ? "#222222" : "transparent"
-                    }
-
-                    MouseArea {
-                        id: fieldHover
-                        anchors.fill: parent
-                        hoverEnabled: true
-
-                        // Toggle booleans on row click (anywhere, not just the switch)
-                        onClicked: {
-                            if (fieldRow.modelData.type === "bool") {
-                                let newVal = !Backend.Settings.values[fieldRow.modelData.key];
-                                Backend.Settings.set(fieldRow.modelData.key, newVal);
-                            }
-                        }
-                    }
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 16
-                        anchors.rightMargin: 16
-
-                        spacing: 12
-
-                        // Label + description
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 2
-
-                            Text {
-                                Layout.fillWidth: true
-                                text: fieldRow.modelData.label
-                                font.family: "Segoe UI"
-                                font.weight: 500
-                                font.pixelSize: 12
-                                color: "#d4d4d4"
-                                elide: Text.ElideRight
-                            }
-
-                            Text {
-                                Layout.fillWidth: true
-                                text: fieldRow.modelData.description
-                                visible: text.length > 0
-                                font.family: "Segoe UI"
-                                font.pixelSize: 10
-                                color: "#595959"
-                                elide: Text.ElideRight
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-
-                        OSwitch {
-                            visible: fieldRow.modelData.type === "bool"
-                            enabled: fieldRow.modelData.type === "bool"
-
-                            // Read current value from the live values map.
-                            checked: fieldRow.modelData.type === "bool"
-                                ? Boolean(Backend.Settings.values[fieldRow.modelData.key])
-                                : false
-
-                            onToggled: {
-                                Backend.Settings.set(fieldRow.modelData.key, checked);
-                            }
-                        }
-
-                        OComboBox {
-                            readonly property var choices: fieldRow.modelData.type === "choice"
-                                ? Object.entries(fieldRow.modelData.options).map(
-                                    ([value, text]) => ({ value: value, text: text }))
-                                : []
-
-                            visible: fieldRow.modelData.type === "choice"
-                            enabled: fieldRow.modelData.type === "choice"
-
-                            model: choices
-                            textRole: "text"
-                            valueRole: "value"
-                            currentIndex: choices.findIndex(
-                                c => c.value === Backend.Settings.values[fieldRow.modelData.key])
-
-                            onActivated: {
-                                Backend.Settings.set(fieldRow.modelData.key, currentValue);
-                            }
-                        }
-
-                        TextField {
-                            visible: fieldRow.modelData.type !== "bool"
-                                && fieldRow.modelData.type !== "hotkey"
-                                && fieldRow.modelData.type !== "choice"
-                            enabled: fieldRow.modelData.type !== "bool"
-                                && fieldRow.modelData.type !== "hotkey"
-                                && fieldRow.modelData.type !== "choice"
-
-                            implicitWidth: 100
-                            implicitHeight: 28
-
-                            text: fieldRow.modelData.type !== "bool"
-                                ? String(Backend.Settings.values[fieldRow.modelData.key] ?? "")
-                                : ""
-
-                            font.family: "Segoe UI"
-                            font.pixelSize: 12
-                            color: "#d4d4d4"
-
-                            background: Rectangle {
-                                color: "#242424"
-                                radius: 6
-                                border.width: 1
-                                border.color: parent.activeFocus ? "#5a5a5a" : "#2C2C2C"
-
-                                Behavior on border.color {
-                                    ColorAnimation { duration: 120 }
-                                }
-                            }
-
-                            onEditingFinished: {
-                                let val = text;
-                                if (fieldRow.modelData.type === "int") val = parseInt(val) || 0;
-                                if (fieldRow.modelData.type === "float") val = parseFloat(val) || 0.0;
-                                Backend.Settings.set(fieldRow.modelData.key, val);
-                            }
-                        }
-
-                        KeySequenceField {
-                            visible: fieldRow.modelData.type === "hotkey"
-                            enabled: fieldRow.modelData.type === "hotkey"
-
-                            implicitWidth: 140
-                            implicitHeight: 28
-
-                            value: fieldRow.modelData.type === "hotkey"
-                                ? String(Backend.Settings.values[fieldRow.modelData.key] ?? "")
-                                : ""
-
-                            onSequenceCaptured: function(newSequence) {
-                                Backend.Settings.set(fieldRow.modelData.key, newSequence);
-                            }
-                        }
-                    }
-                }
+                onSectionSelected: (sectionId) => root.currentSectionId = sectionId
             }
-        }
 
-        // Bottom padding
-        Item {
-            Layout.fillWidth: true
-            implicitHeight: 12
+            Rectangle {
+                Layout.preferredWidth: 1
+                Layout.fillHeight: true
+                Layout.bottomMargin: 12
+                color: "#2C2C2C"
+            }
+
+            SettingsSectionPage {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                section: root.currentSection
+            }
         }
     }
 }

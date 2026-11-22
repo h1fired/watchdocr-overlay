@@ -1,2 +1,2 @@
 from .base import config
-from .preferences import settings
+from .preferences import settings, settings_registry

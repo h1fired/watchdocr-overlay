@@ -47,3 +47,21 @@ _Avoid_: Theme, mode
 
 **Text Color Detection**:
 Estimating the original text color and background color of each OCR Box from the grabbed image; used only by the Simple Inpaint style.
+
+### Settings
+
+**Setting**:
+A value the user changes in the Settings window that is kept between launches; takes effect immediately.
+_Avoid_: Preference, option, config
+
+**Settings Section**:
+A named set of Settings contributed either by the app itself or by one plugin; one entry in the Settings window navigation.
+_Avoid_: Tab, page, group
+
+**Config**:
+A value fixed when the app is built; the user never changes it.
+_Avoid_: Setting, constant
+
+**Capabilities**:
+What a plugin's backend can or cannot do (e.g. the smallest image it accepts); declared by the plugin, never changed by the user.
+_Avoid_: Options, settings

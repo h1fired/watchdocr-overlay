@@ -25,7 +25,7 @@ RESOURCE_SHA256 = '03c4b49f0f4e863b1027e19ae84575c2c399870818d9c56bfc347e09711f7
 class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
     _id = 'windowsone_ocr'
 
-    class Options(OcrPlugin.Options):
+    class Capabilities(OcrPlugin.Capabilities):
         min_image_size = MIN_IMAGE_SIZE
 
     async def on_startup(self):

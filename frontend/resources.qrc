@@ -13,6 +13,7 @@
     <file>ui/common/controls/OMenuItem.qml</file>
     <file>ui/common/controls/OSwitch.qml</file>
     <file>ui/common/controls/OText.qml</file>
+    <file>ui/common/controls/OTextField.qml</file>
     <file>ui/overlay/OverlayControlPanel.qml</file>
     <file>ui/overlay/OverlayScreensPreview.qml</file>
     <file>ui/overlay/OverlaySelectionArea.qml</file>
@@ -40,6 +41,15 @@
     <file>ui/overlay/components/TranslationSelectorButton.qml</file>
     <file>ui/overlay/components/TranslationSelectorMenu.qml</file>
     <file>ui/overlay/components/VisualHintsToolButtonMenu.qml</file>
+    <file>ui/overlay/components/settings/SettingsFieldRow.qml</file>
+    <file>ui/overlay/components/settings/SettingsNavigation.qml</file>
+    <file>ui/overlay/components/settings/SettingsSectionPage.qml</file>
+    <file>ui/overlay/components/settings/editors/BoolEditor.qml</file>
+    <file>ui/overlay/components/settings/editors/ChoiceEditor.qml</file>
+    <file>ui/overlay/components/settings/editors/HotkeyEditor.qml</file>
+    <file>ui/overlay/components/settings/editors/NumberEditor.qml</file>
+    <file>ui/overlay/components/settings/editors/SecretEditor.qml</file>
+    <file>ui/overlay/components/settings/editors/TextEditor.qml</file>
     <file>ui/overlay/components/visualhint/Delegate.qml</file>
     <file>ui/overlay/components/visualhint/MatrixDelegateBox.qml</file>
     <file>ui/overlay/components/visualhint/MatrixUtils.js</file>

@@ -2,7 +2,8 @@ from __future__ import annotations
 from .event import IEvent, EventSystem, EventData
 from .utils.logging import log
 from common.observable import MappedObservable
-from config import config
+from config import config, settings_registry
+from config.preferences import SettingsModel, SettingsRegistry
 from dataclasses import dataclass
 from typing import Any, Type, TypeVar, Callable
 from collections import defaultdict
@@ -103,8 +104,13 @@ class PluginMeta:
 
 
 class PluginManager:
-    def __init__(self, eventsys: EventSystem):
+    def __init__(
+        self,
+        eventsys: EventSystem,
+        settings: SettingsRegistry = settings_registry
+    ):
         self._eventsys = eventsys
+        self._settings = settings
         self._initialized = False
         self._plugins: dict[str, Plugin] = {}
 
@@ -140,6 +146,15 @@ class PluginManager:
                 version=module.__plugin_meta__['version'],
             )
             instance.__plugin_meta__ = meta
+
+            if isinstance(instance, ConfigurablePlugin):
+                instance.__plugin_settings__ = self._settings.register_plugin(
+                    meta.id,
+                    meta.name,
+                    instance.Settings,
+                    instance.on_settings_changed
+                )
+
             self._plugins[meta.id] = instance
             log.success(
                 'Successfully loaded plugin: %s v%s',
@@ -246,6 +261,22 @@ class EventPlugin(Plugin):
 class PriorityPlugin(Plugin):
     def get_priority(self):
         return 0
+
+
+class ConfigurablePlugin(Plugin):
+    """Plugin with its own Settings Section in the Settings window."""
+
+    class Settings(SettingsModel):
+        pass
+
+    __plugin_settings__: SettingsModel = None
+
+    @property
+    def settings(self) -> Settings:
+        return self.__plugin_settings__
+
+    def on_settings_changed(self, name: str, value: Any):
+        pass
 
 
 @dataclass(slots=True)

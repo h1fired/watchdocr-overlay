@@ -2,7 +2,8 @@ from src.watchdocr.processor.context import RuntimeConfig
 from src.watchdocr.workflow import WatchdOcrWorkflowManager
 from src.watchdocr.workflow.live import LiveWorkflow
 from src.watchdocr.workflow.onetime import OnetimeWorkflow
-from config.preferences import settings
+from types import SimpleNamespace
+import src.watchdocr.workflow.live as live_module
 import asyncio
 import pytest
 
@@ -30,7 +31,11 @@ class FakeProcessor:
 
 @pytest.fixture(autouse=True)
 def fast_live_mode(monkeypatch):
-    monkeypatch.setattr(settings, 'live_mode_recognition_frequency', 0.001)
+    # Real settings object would save every change to the user's file
+    monkeypatch.setattr(
+        live_module, 'settings',
+        SimpleNamespace(live_mode_recognition_frequency=0.001)
+    )
 
 
 async def test_live_workflow_runs_pipelines_periodically():
