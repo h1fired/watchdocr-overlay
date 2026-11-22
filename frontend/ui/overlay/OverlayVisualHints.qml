@@ -29,6 +29,9 @@ Item {
         width: areaPreview.width
         height: areaPreview.height
 
+        style: Backend.Settings.values.visual_hints_style === "solid"
+            ? VisualHints.Style.Solid
+            : VisualHints.Style.SimpleInpaint
         provider: areaPreview
     }
 

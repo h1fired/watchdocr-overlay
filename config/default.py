@@ -28,3 +28,8 @@ PLUGINS_DOWNLOAD_DATA_PATH = Path(
 )
 
 OCR_MAX_RECOGNITION_RES = 1920
+
+# Adaptive recognition scale: image is shrunk so the smallest text line
+# of the previous recognition gets this height (px), never enlarged
+OCR_ADAPTIVE_TEXT_HEIGHT = 20
+OCR_ADAPTIVE_MIN_SCALE = 0.25

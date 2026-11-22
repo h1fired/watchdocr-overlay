@@ -1,4 +1,5 @@
 from src.common.utils.logging import log
+from src.common.utils.timing import Stopwatch
 from src.common.event import EventSystem, IEvent
 from src.common.plugin import PluginManager
 from src.watchdocr.processor.context import WatchdOcrRuntimeContext, RuntimeConfig, OcrBox
@@ -91,7 +92,7 @@ class OcrPipelineStage(PipelineStage):
 
         ctx.ocr.clear()  # Clean up
 
-        data = await self._ocr.recognize(ctx.image)
+        data = await self._ocr.recognize(ctx.image, ctx.config.boundings)
         ctx.ocr.success = data.success
 
         if not data.success:
@@ -184,27 +185,39 @@ class WatchdOcrPipeline:
         ctx: WatchdOcrRuntimeContext,
         strategy: PipelineStrategy
     ):
+        stopwatch = Stopwatch()
+
         # Call pipeline start hook
-        await self._plugin_manager.call_hook(
-            id='watchdocr.processor_pipeline.start',
-            data=ctx,
-        )
+        with stopwatch.measure('start_hook'):
+            await self._plugin_manager.call_hook(
+                id='watchdocr.processor_pipeline.start',
+                data=ctx,
+            )
 
         active = STRATEGY_STAGES[strategy]
         for name, stage in self._stages.items():
             if name in active:
-                await stage.execute(ctx)
+                with stopwatch.measure(name):
+                    await stage.execute(ctx)
 
         # Call text output hook
-        ctx.translation.text = await self._plugin_manager.call_hook(
-            id='watchdocr.processor_pipeline.output_text',
-            data=ctx.translation.text
-        )
+        with stopwatch.measure('output_text_hook'):
+            ctx.translation.text = await self._plugin_manager.call_hook(
+                id='watchdocr.processor_pipeline.output_text',
+                data=ctx.translation.text
+            )
 
         # Call pipeline finish hook
-        await self._plugin_manager.call_hook(
-            id='watchdocr.processor_pipeline.finish',
-            data=ctx,
+        with stopwatch.measure('finish_hook'):
+            await self._plugin_manager.call_hook(
+                id='watchdocr.processor_pipeline.finish',
+                data=ctx,
+            )
+
+        log.debug(
+            'Pipeline %s timings: %s',
+            strategy.name, stopwatch.summary(),
+            extra={'title': LOG_PROCESSOR}
         )
 
 

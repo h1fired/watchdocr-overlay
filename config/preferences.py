@@ -3,6 +3,7 @@ from pathlib import Path
 import yaml
 from config import config
 from dataclasses import dataclass
+from typing import Literal
 from src.common.utils.logging import log
 
 
@@ -14,6 +15,7 @@ class SettingField:
     runtime_only: bool = False
     group: str = 'General'
     field_type: str | None = None
+    options: dict[str, str] | None = None  # Value -> label, for 'choice' fields
 
     def as_dict(self) -> dict:
         return {
@@ -23,6 +25,7 @@ class SettingField:
             'runtime_only': self.runtime_only,
             'group': self.group,
             'field_type': self.field_type,
+            'options': self.options,
         }
 
 
@@ -51,6 +54,19 @@ class UserSettings(BaseModel):
             group='Visual',
         ).as_dict(),
     )
+    visual_hints_style: Literal['simple_inpaint', 'solid'] = Field(
+        default='simple_inpaint',
+        json_schema_extra=SettingField(
+            label='Visual hints style',
+            description='Solid is faster, Simple inpaint keeps original look.',
+            group='Visual',
+            field_type='choice',
+            options={
+                'simple_inpaint': 'Simple inpaint',
+                'solid': 'Solid',
+            },
+        ).as_dict(),
+    )
     text_viewer_show: bool = Field(
         default=False,
         json_schema_extra=SettingField(
@@ -73,6 +89,19 @@ class UserSettings(BaseModel):
         json_schema_extra=SettingField(
             label='Live mode recognition frequency',
             group='General',
+        ).as_dict(),
+    )
+    ocr_recognition_scale: Literal['adaptive', 'original'] = Field(
+        default='adaptive',
+        json_schema_extra=SettingField(
+            label='Recognition scale',
+            description='Shrink image by previous text size for faster recognition.',
+            group='General',
+            field_type='choice',
+            options={
+                'adaptive': 'Adaptive',
+                'original': 'Original',
+            },
         ).as_dict(),
     )
     source_language: str = Field(
@@ -170,6 +199,7 @@ class UserSettings(BaseModel):
                 'description': extra.get('description', ''),
                 'group': extra.get('group', 'General'),
                 'type': field_type,
+                'options': extra.get('options'),
                 'value': getattr(instance, field_name),
             })
         return result

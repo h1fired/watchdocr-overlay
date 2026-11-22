@@ -1,6 +1,10 @@
 from src.common.plugin import DownloadResource, DownloadablePlugin
 from src.watchdocr.plugins.ocr import OcrPlugin, OcrData, OcrBoxData
-from src.watchdocr.plugins.ocr.windows_one.engine import OcrEngine, OcrLine
+from src.watchdocr.plugins.ocr.windows_one.engine import (
+    OcrEngine,
+    OcrLine,
+    MIN_IMAGE_SIZE
+)
 from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
 import asyncio
@@ -20,6 +24,9 @@ RESOURCE_SHA256 = '03c4b49f0f4e863b1027e19ae84575c2c399870818d9c56bfc347e09711f7
 
 class WindowsOneOcrPlugin(OcrPlugin, DownloadablePlugin):
     _id = 'windowsone_ocr'
+
+    class Options(OcrPlugin.Options):
+        min_image_size = MIN_IMAGE_SIZE
 
     async def on_startup(self):
         # Engine is created and used only in one dedicated thread,

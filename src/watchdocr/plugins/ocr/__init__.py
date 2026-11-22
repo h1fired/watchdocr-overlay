@@ -3,8 +3,8 @@ from src.watchdocr.plugins.ocr.filter import OcrImageFilter
 from PIL import Image
 from dataclasses import dataclass, asdict
 from enum import IntFlag
-from config import config
 import asyncio
+import math
 import re
 
 
@@ -29,7 +29,6 @@ class OcrData:
 
 class OcrOptimization(IntFlag):
     NONE = 0
-    ADAPTIVE_SIZE = 1 << 0
     FILTER_GRAYSCALE = 1 << 2
     FILTER_SHADOW_REMOVE = 1 << 3
 
@@ -38,15 +37,20 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
 
     class Options:
         optimizations = OcrOptimization.NONE
+        min_image_size = 0  # Smallest image side the backend accepts
 
     def __init__(self):
         super().__init__()
         self._optimizations = self.Options.optimizations
 
-    async def recognize(self, image: Image.Image) -> OcrData:
+    async def recognize(
+        self,
+        image: Image.Image,
+        scale: float = 1.0
+    ) -> OcrData:
         try:
             # Resizing and filtering is CPU heavy, run it in thread
-            image, scale = await asyncio.to_thread(self.process_image, image)
+            image = await asyncio.to_thread(self.process_image, image, scale)
             return await self.recognizable(image, scale)
         except Exception as e:
             return OcrData(
@@ -71,26 +75,17 @@ class OcrPlugin(LaunchPlugin, EventPlugin, PriorityPlugin):
         ctext = re.sub(r'\n{3,}', '\n\n', ctext)  # Clean excessive blank lines
         return ctext
 
-    def process_image(self, image: Image.Image):
-        w, h = image.size
-        scale = 1.0
-
-        # Decrease size of image if it bigger that max size
-        max_size = config.OCR_MAX_RECOGNITION_RES
-        if image.width > max_size or image.height > max_size:
-            scale = min(max_size / w, max_size / h)
-
+    def process_image(self, image: Image.Image, scale: float):
         if self._optimizations != OcrOptimization.NONE:
-            if OcrOptimization.ADAPTIVE_SIZE & self._optimizations:
-                scale = 4.0 if h < 150 else 3.0 if h < 300 else 2.0 if h < 600 else scale
             if OcrOptimization.FILTER_GRAYSCALE & self._optimizations:
                 image = OcrImageFilter.adjust_to_grayscale(image)
             if OcrOptimization.FILTER_SHADOW_REMOVE & self._optimizations:
                 image = OcrImageFilter.adjust_shadow_remove(image)
 
         if scale != 1.0:
-            new_w = int(w * scale)
-            new_h = int(h * scale)
-            image = image.resize((new_w, new_h), Image.Resampling.LANCZOS)
+            w, h = image.size
+            new_w = math.ceil(w * scale)
+            new_h = math.ceil(h * scale)
+            image = image.resize((new_w, new_h), Image.Resampling.BILINEAR)
 
-        return image, scale
+        return image

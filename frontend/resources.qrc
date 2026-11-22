@@ -8,6 +8,7 @@
     <file>ui/common/components/OMessageBoxFrame.qml</file>
     <file>ui/common/components/OWindowPopup.qml</file>
     <file>ui/common/controls/OButton.qml</file>
+    <file>ui/common/controls/OComboBox.qml</file>
     <file>ui/common/controls/OMenu.qml</file>
     <file>ui/common/controls/OMenuItem.qml</file>
     <file>ui/common/controls/OSwitch.qml</file>

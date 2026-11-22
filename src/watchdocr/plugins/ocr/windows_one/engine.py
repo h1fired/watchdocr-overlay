@@ -9,6 +9,10 @@ MODEL_NAME = 'oneocr.onemodel'
 DLL_NAME = 'oneocr.dll'
 MODEL_KEY = b"kj)TGtrK>f]b[Piow.gU+nC@s\"\"\"\"\"\"4"
 
+# Image side limits accepted by the engine
+MIN_IMAGE_SIZE = 50
+MAX_IMAGE_SIZE = 10000
+
 
 c_int64_p = POINTER(c_int64)
 c_float_p = POINTER(c_float)
@@ -102,21 +106,18 @@ class OcrEngine:
 
     def recognize(self, image: Image.Image):
         '''Process PIL Image object'''
-        if any(x < 50 or x > 10000 for x in image.size):
+        if any(x < MIN_IMAGE_SIZE or x > MAX_IMAGE_SIZE for x in image.size):
             return OcrOutputData('', tuple(), 0.)
 
-        if image.mode != 'RGBA':
-            image = image.convert('RGBA')
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
 
-        # Convert to BGRA format expected by DLL
-        b, g, r, a = image.split()
-        bgra_image = Image.merge('RGBA', (b, g, r, a))
-
+        # Raw BGRX packing gives BGRA layout expected by DLL in one pass
         return self._process_image(
-            cols=bgra_image.width,
-            rows=bgra_image.height,
-            step=bgra_image.width * 4,
-            data=bgra_image.tobytes()
+            cols=image.width,
+            rows=image.height,
+            step=image.width * 4,
+            data=image.tobytes('raw', 'BGRX')
         )
 
     def __del__(self):

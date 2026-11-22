@@ -1,7 +1,6 @@
 import numpy as np
-from PIL.ImageQt import fromqimage
 from PIL import Image, ImageDraw
-from qt.gui import QColor
+from qt.gui import QColor, QImage
 from dataclasses import dataclass, asdict
 import math
 
@@ -11,36 +10,31 @@ def otsu_threshold(gray):
     hist = hist.astype(np.float64)
     total = hist.sum()
 
-    sum_total = np.sum(np.arange(256) * hist)
-    sum_bg = 0.0
-    weight_bg = 0.0
+    # Background/foreground statistics for every threshold at once
+    weight_bg = np.cumsum(hist)
+    weight_fg = total - weight_bg
+    sum_bg = np.cumsum(np.arange(256) * hist)
+    sum_total = sum_bg[-1]
 
-    best_thresh = 0
-    best_variance = -1.0
+    valid = (weight_bg > 0) & (weight_fg > 0)
+    if not valid.any():
+        return 0
 
-    for t in range(256):
-        weight_bg += hist[t]
-        if weight_bg == 0:
-            continue
-        weight_fg = total - weight_bg
-        if weight_fg == 0:
-            break
+    mean_bg = sum_bg[valid] / weight_bg[valid]
+    mean_fg = (sum_total - sum_bg[valid]) / weight_fg[valid]
+    variance = weight_bg[valid] * weight_fg[valid] * (mean_bg - mean_fg) ** 2
 
-        sum_bg += t * hist[t]
-        mean_bg = sum_bg / weight_bg
-        mean_fg = (sum_total - sum_bg) / weight_fg
-
-        variance = weight_bg * weight_fg * (mean_bg - mean_fg) ** 2
-
-        if variance > best_variance:
-            best_variance = variance
-            best_thresh = t
-
-    return best_thresh
+    # First threshold with max variance
+    return int(np.flatnonzero(valid)[np.argmax(variance)])
 
 
-def qimage_to_pil(qimage):
-    return fromqimage(qimage).convert("RGB")
+def _qimage_to_array(qimage):
+    # Direct pixel access, avoids image encoding round trip
+    image = qimage.convertToFormat(QImage.Format.Format_RGBX8888)
+    w, h = image.width(), image.height()
+    data = np.frombuffer(image.constBits(), np.uint8, count=image.sizeInBytes())
+    rows = data.reshape(h, image.bytesPerLine())[:, :w * 4]
+    return rows.reshape(h, w, 4)[:, :, :3].copy()
 
 
 @dataclass(slots=True)
@@ -141,8 +135,7 @@ def _normalize(region):
 
 
 def detect_text_colors(qimage, regions):
-    img = qimage_to_pil(qimage)
-    img_arr = np.array(img).astype(np.float64)
+    img_arr = _qimage_to_array(qimage)
     H, W = img_arr.shape[:2]
 
     results = []
@@ -158,7 +151,8 @@ def detect_text_colors(qimage, regions):
             results.append(_DEFAULT.to_dict())
             continue
 
-        crop_arr = img_arr[y0:y1, x0:x1]
+        # Only crops are converted to float, not the whole image
+        crop_arr = img_arr[y0:y1, x0:x1].astype(np.float64)
         mask = _polygon_mask(pts, x0, y0, x1 - x0, y1 - y0)
         results.append(_detect_text_color_from_masked(crop_arr, mask).to_dict())
 

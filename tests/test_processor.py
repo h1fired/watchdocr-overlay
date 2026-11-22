@@ -232,7 +232,7 @@ class FakeOcr:
     def __init__(self):
         self.calls = 0
 
-    async def recognize(self, image):
+    async def recognize(self, image, area):
         self.calls += 1
         raise AssertionError('OCR must be skipped')
 

@@ -155,9 +155,33 @@ OMessageBoxFrame {
                             }
                         }
 
+                        OComboBox {
+                            readonly property var choices: fieldRow.modelData.type === "choice"
+                                ? Object.entries(fieldRow.modelData.options).map(
+                                    ([value, text]) => ({ value: value, text: text }))
+                                : []
+
+                            visible: fieldRow.modelData.type === "choice"
+                            enabled: fieldRow.modelData.type === "choice"
+
+                            model: choices
+                            textRole: "text"
+                            valueRole: "value"
+                            currentIndex: choices.findIndex(
+                                c => c.value === Backend.Settings.values[fieldRow.modelData.key])
+
+                            onActivated: {
+                                Backend.Settings.set(fieldRow.modelData.key, currentValue);
+                            }
+                        }
+
                         TextField {
-                            visible: fieldRow.modelData.type !== "bool" && fieldRow.modelData.type !== "hotkey"
-                            enabled: fieldRow.modelData.type !== "bool" && fieldRow.modelData.type !== "hotkey"
+                            visible: fieldRow.modelData.type !== "bool"
+                                && fieldRow.modelData.type !== "hotkey"
+                                && fieldRow.modelData.type !== "choice"
+                            enabled: fieldRow.modelData.type !== "bool"
+                                && fieldRow.modelData.type !== "hotkey"
+                                && fieldRow.modelData.type !== "choice"
 
                             implicitWidth: 100
                             implicitHeight: 28
